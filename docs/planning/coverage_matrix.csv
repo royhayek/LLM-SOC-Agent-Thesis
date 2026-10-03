@@ -1,0 +1,348 @@
+ID,Item,Category,Status,Ticket(s) / enforced in,Note
+R-001,"System turns three IoT telemetry streams into one validated, machine-checkable incident verdict plus a recommended action",requirement,Covered,"E3-05, E6-06, E7-02",
+R-002,A measurement rig proves whether the agentic pipeline beats two non-agentic versions,requirement,Covered,"E9-01, E9-05",
+R-003,"The software is the instrument, the experiment is the thesis: engineering choices serve the experiment",decision,Not a ticket,DoR,Planning principle: every ticket must trace to an H or a risk (DoR)
+R-004,Subsystems 5 (agent + safety) and 6 (evaluation) carry the scientific contribution; 1–4 only feed them,decision,Not a ticket,Epic structure,Reflected in epic order and priorities; no work item
+R-005,"Thesis title: ""LLM-Based Autonomous SOC Agent for IoT Cyberattack Detection and Response""",writing,Covered,"E11-02, E11-14",Title may change with the system name
+R-006,"Central RQ: does the agent significantly improve detection, classification accuracy and response safety vs non-agentic approaches",requirement,Covered,"E9-11, E11-02",
+R-007,"RQ1: does combining MQTT, flows and honeypot improve detection and classification vs a single source",requirement,Covered,"E9-10, E11-07",
+R-008,RQ2: does the agentic workflow classify more accurately than a prompt-only LLM on the same base model,requirement,Covered,"E9-05, E11-07",
+R-009,RQ3: do explicit safety constraints reduce unsafe/invalid recommendations without making them less useful,requirement,Covered,"E9-04, E11-08",
+R-010,"RQ4: does the complete agent beat both non-agentic baselines on detection, classification and response safety",requirement,Covered,"E9-05, E11-08",
+R-011,H1: all three sources combined give significantly higher detection and classification than any single source,requirement,Covered,"E9-05, E9-10",
+R-012,"H2: agentic workflow classifies incident type and severity significantly more accurately than prompt-only, same model",requirement,Covered,"E9-03, E9-05",
+R-013,H3: safety constraints significantly reduce unsafe or invalid recommendations with no significant loss in usefulness,requirement,Covered,"E7-06, E9-04, E9-05",
+R-014,H4: complete agent significantly outperforms both baselines on detection and classification and gives significantly fewer unsafe recommendations,requirement,Covered,"E8-02, E8-04, E9-05",
+R-015,"Objective 1: build a small IoT testbed with normal and malicious activity and collect MQTT anomalies, flows and honeypot logs",deliverable,Covered,"E0-07, E1-07, E2-05",
+R-016,"Objective 2: agent reads alerts, correlates evidence across the three sources, classifies type, severity and affected device",requirement,Covered,"E6-03, E6-04, E6-05, E6-06",
+R-017,"Objective 3: safety constraints (limited action space, schemas, validation) so recommendations are controlled, auditable and never executed",requirement,Covered,"E7-01, E7-02, E7-03, E7-04, E7-05, E7-06",
+R-018,"Objective 4: define a ground-truth reference and a scoring protocol for classification accuracy, safety and usefulness",deliverable,Covered,"E0-12, E1-03, E2-04",
+R-019,"Objective 5: evaluate against ground truth and both baselines on detection, classification, response safety and reliability",requirement,Covered,"E9-01, E9-03, E9-04, E9-05",Reliability part is orphaned: see R-020
+R-020,"""Reliability"" is promised as an evaluation dimension but no metric for it is defined anywhere",open question,Covered,"E0-13, E9-04",No ticket defines a reliability metric; Objective 5 promises one
+R-021,"Evaluate response quality, reliability and robustness",requirement,Covered,"E0-13, E9-03, E9-04",Quality = usefulness (E9-04); reliability and robustness need E0-13
+R-022,"""Robustness"" is named in the brief but has no defined test or metric",open question,Covered,"E0-13, E9-04",Robustness must be defined or explicitly scoped out before results
+R-023,"Expected outcome: a working agent, the testbed, and labelled normal and malicious scenarios as ground truth",deliverable,Covered,"E1-07, E2-09, E6-06",
+R-024,"Report results honestly, including any case where the agent does not beat a baseline",writing,Covered,"E9-11, E11-07, E11-08, E11-09",
+R-025,Results must show where the agent is reliable and where it is not,writing,Covered,"E9-10, E11-09",
+R-026,"Main-contribution statement: controlled, auditable assistant reaching safe structured response recommendation, evaluated end to end in IoT",writing,Covered,"E11-02, E11-10",
+R-027,"Gap claim: no work combines multi-source IoT telemetry, agentic classification and safety-constrained recommendation evaluated end to end against testbed ground truth",writing,Covered,"E11-02, E11-03",
+R-028,Position IDS-Agent [16] as stopping at detection + explanation,writing,Covered,E11-03,
+R-029,Position Ferrag et al. [17] as stopping at detection,writing,Covered,E11-03,
+R-030,Position Chou et al. [18] as stopping at report generation,writing,Covered,E11-03,
+R-031,"Position CyberRAG [19] as enterprise alerts, stopping at reporting",writing,Covered,E11-03,
+R-032,"Frame the problem as the intersection of IoT IDS, LLM agents and AI risk management",writing,Covered,E11-02,
+R-033,"Motivate controlled autonomy with [13] (agents fail at measurable rates), [14] (risk awareness) and [15] (NIST AI RMF)",writing,Covered,E11-03,
+R-034,Design draws on IDS-Agent [16] and CyberRAG [19]; cite them as the design lineage,writing,Covered,"E11-03, E11-05",
+R-035,Motivation example: a wrong automatic action (e.g. stopping a hospital machine) can harm as much as the attack,writing,Covered,E11-02,
+R-036,The agent recommends and never executes any action,prohibition,Covered,"E0-04, E7-01, E10-06",
+R-037,The system can read but never change anything on the network; a human always decides,constraint,Covered,"E0-04, E10-06",
+R-038,"Agent classifies incident type, severity and affected device",requirement,Covered,E6-04,
+R-039,Agent emits a structured response recommendation,requirement,Covered,"E6-05, E7-01",
+R-040,"Report fields: incident type, severity, affected device, evidence, recommended action",requirement,Covered,E7-01,
+R-041,The human receives one clear report with a suggestion instead of many separate alerts,requirement,Covered,"E7-08, E10-05, E10-06",At risk if the console is descoped: see conflict C-12
+R-042,LLM generates hypotheses about attacks,requirement,Covered,E6-03,ASSUMPTION: node 1 output gains a 'candidate hypotheses' field; no extra LLM call
+R-043,LLM asks for missing information,requirement,Covered,E6-03,"ASSUMPTION: node 1 lists the missing evidence that would change the verdict; no interactive asking (batch evaluation). Needs your confirmation, see C-08"
+R-044,LLM explains its reasoning in a structured format,requirement,Covered,"E6-03, E7-01, E7-08",
+R-045,LLM produces incident reports,requirement,Covered,"E7-01, E7-08, E10-05",
+R-046,"Agent uses external tools: log parsers, detectors, an MQTT monitor and a retrieval component",requirement,Covered,"E4-04, E4-05, E4-06, E5-04","Detectors run upstream, only retrieval is an agent tool: see C-07"
+R-047,Agent may use vulnerability databases as a tool,requirement,Covered (also enforced outside tickets),"E5-02, E11-09 | E5-02 Out of scope + E11-09","Brief-only; not in the proposal. Scope out and state as limitation (confirm, C-08)"
+R-048,Agent follows a reason-and-act loop [10],requirement,Covered,"E6-06, E11-04",Superseded by the bounded graph; trade-off stated in thesis: C-06
+R-049,Detectors (rule-based or ML) convert telemetry into the alerts the agent consumes,requirement,Covered,"E4-02, E4-04, E4-05, E4-06",
+R-050,"Three telemetry sources: MQTT anomalies, network flows, honeypot logs",requirement,Covered,"E0-07, E3-02, E3-03, E3-04",
+R-051,"Testbed contains IoT devices or emulators over MQTT, a captured network segment, and a decoy honeypot host",requirement,Covered,"E0-07, E0-14",
+R-052,Testbed is fully emulated with Docker Compose; no physical hardware,decision,Covered,E0-07,
+R-053,"Testbed produces labelled raw telemetry on demand, reproducibly",requirement,Covered,"E1-07, E1-15",
+R-054,Testbed resets with one command and is portable (corpus may be regenerated in month 5),requirement,Covered,"E0-07, E1-15",
+R-055,"Skeleton composition: Mosquitto broker, 3–4 MQTT emulators, one honeypot, a capture sidecar",decision,Covered,"E0-07, E0-14",
+R-056,First testbed version runs benign traffic only,decision,Covered,E0-07,
+R-057,Testbed runs under both normal and malicious activity,requirement,Covered,"E1-05, E1-08, E1-09, E1-10, E1-11, E1-12, E1-13",
+R-058,"Devices, protocols and attacks guided by Bot-IoT [6], TON_IoT [7], CICIoT2023 [8], MQTTset [9]",requirement,Covered,"E1-02, E1-04",
+R-059,"Attack types include denial of service, scanning, brute-force login and botnet traffic",requirement,Covered,E1-02,"Selection must include DoS, scanning, brute force and botnet"
+R-060,Exactly six attack families,decision,Covered,E1-02,
+R-061,"Family mix: two visible in all three sources, two in exactly two, two in one",decision,Covered,E1-02,Conflicts with R-062: C-01
+R-062,"Candidate families: MQTT flood, MQTT broker password guessing, port scan, SSH password guessing, botnet, DoS (proposal only)",decision,Covered,"E1-02, E1-08, E1-09, E1-10, E1-11, E1-12, E1-13",
+R-063,Which six attack families?,open question,Covered,E1-02,
+R-064,A meaningful subset of families must leave traces in at least two sources,constraint,Covered,"E1-02, E1-14, E2-07",
+R-065,Attack generation by replaying published datasets plus standard tooling,decision,Covered,E1-04,
+R-066,No custom attack code,prohibition,Covered,E1-04,
+R-067,"Every attack is executed deliberately, so each event's label is known in advance",requirement,Covered,E1-07,
+R-068,Schedule attacks so they never overlap on the same device,constraint,Covered,"E1-06, E2-03, E2-07",
+R-069,Testbed on an isolated Docker network with no route to the host LAN or the internet,requirement,Covered,E0-07,
+R-070,"Verify network isolation before running any attack tooling, not after",test,Covered,"E0-07, E1-01",
+R-071,"Attacks only on the isolated testbed, never on production or third-party networks",prohibition,Covered,E1-01,
+R-072,Never run Ollama and the full testbed at the same time on 16 GB,prohibition,Covered,"E0-07, E1-15, E2-05",
+R-073,"Workflow: generate corpus, shut testbed down, then develop the agent against frozen bundles",decision,Covered,"E2-05, E3-09",
+R-074,Ground truth derived mechanically from the scenario schedule,decision,Covered,"E2-03, E2-04",
+R-075,"Label rule: family F if the window overlaps a scheduled episode of F against device D, else benign",decision,Covered,E2-04,
+R-076,Target corpus size 200–400 bundles,decision,Covered,"E2-02, E2-03",
+R-077,Repetitions k = 3–5 per condition,decision,Covered,E0-03,Conflicts with R-078/R-260: C-03
+R-078,Matrix sizing uses ~250 bundles and k = 3,decision,Covered,"E0-06, E2-02",C-03
+R-079,Run a power calculation before generating the corpus,requirement,Covered,"E2-02, E2-03",
+R-080,How many scenarios are needed for statistical validity?,open question,Covered,E2-02,
+R-081,Corpus freeze is a formal milestone with a version number,deliverable,Covered,E2-09,
+R-082,Corpus has a dataset card,deliverable,Covered,E2-08,
+R-083,Raw telemetry kept as files on disk with a corpus manifest holding SHA-256 per file,requirement,Covered,E2-06,
+R-084,Any format change after the freeze forces full regeneration of the corpus,constraint,Covered,E2-09,Interpretation differs between record and round 1: C-13
+R-085,EPIC-2 (corpus) is the critical-path gate; nothing downstream can be measured before it,decision,Covered,E2-09,
+R-086,"Bundle = all normalized alerts, from sources in the current config, with timestamp in window W and subject device D",decision,Covered,"E0-03, E3-05",
+R-087,Window W = 60 seconds,decision,Covered,"E0-03, E2-04, E3-05",
+R-088,Is a 60-second window the right unit?,open question,Covered,E0-03,C-05
+R-089,Device D = the non-infrastructure endpoint; honeypot events key to the honeypot,decision,Covered,"E0-08, E3-03",
+R-090,"Device mapping is defined once, in the normalizer, in code",constraint,Covered,"E0-08, E3-02, E3-03, E3-04",
+R-091,"Tiling is contiguous and non-overlapping, per device, across the full capture",decision,Covered,E3-05,
+R-092,Empty windows are dropped,decision,Covered,E3-05,
+R-093,"Bundles are assembled deterministically, outside the agent, before any condition runs",decision,Covered,E3-05,
+R-094,Every condition receives the identical bundle set,constraint,Covered,E3-09,
+R-095,Normalization rewrites all telemetry into one format; downstream code never needs to know the source,requirement,Covered,"E0-08, E3-01, E3-02, E3-03, E3-04",
+R-096,Pipeline order: raw logs → clean → detect → group → shrink → agent → safety check → report,decision,Covered,"E3-05, E4-06",Locked epic order puts assembly before detectors: C-15
+R-097,Only the agent step uses AI; every other step is deterministic code,constraint,Covered,E6-06,
+R-098,Alert schema v0.1 is written after the spike and informed by it,decision,Covered,"E0-08, E3-01",
+R-099,Do not let anyone hand you an alert schema: derive it from the spike's failures,constraint,Covered,"E0-01, E0-08, E3-01",
+R-100,Normalized alerts and bundles stored as Parquet,decision,Covered,"E3-05, E3-09",
+R-101,"Methods chapter states the scoping choice: the agent classifies bundles it is given, it does not discover incident boundaries",writing,Covered,"E0-03, E11-04",
+R-102,A deterministic reduction bounds the bundle size before it reaches any model,requirement,Covered,"E0-05, E3-06",
+R-103,"Identical reduction for every condition, including both baselines",constraint,Covered,"E0-05, E3-06, E8-02",
+R-104,Reduction frozen in METHODS.md with a stated reduction ratio before the first experiment,requirement,Covered,E0-05,
+R-105,If the reduction must change: rerun everything and record it in the changelog,constraint,Covered,"E0-05, E3-06",Also a DoD rule (locked parameter change)
+R-106,Over-compression can hide the H1 fusion benefit (token optimisation is not research-neutral),risk,Covered,"E0-05, E9-10",
+R-107,"Flows reduction: count, unique dst IPs, unique dst ports, bytes in/out, protocol mix, SYN-only ratio, duration stats",decision,Covered,"E0-05, E0-14, E3-06",
+R-108,Flows exemplars: top-5 by detector score,decision,Covered,"E0-05, E3-06",
+R-109,"MQTT reduction: message count, unique topics, payload size stats, QoS mix, connect/disconnect count, auth failures",decision,Covered,"E0-05, E3-06",
+R-110,MQTT exemplars: top-3 anomalous messages,decision,Covered,"E0-05, E3-06",
+R-111,"Honeypot reduction: session count, unique source IPs, auth attempts, success/fail",decision,Covered,"E0-05, E0-14, E3-06",
+R-112,"Honeypot exemplars: up to 3 command sequences, hard-truncated",decision,Covered,"E0-05, E3-06",
+R-113,Reduced bundle includes each detector's score and label,decision,Covered,"E0-05, E3-06, E4-06",
+R-114,"Reduced bundle target size ~800–1,200 tokens",decision,Covered,"E0-05, E3-08",
+R-115,Node-scoped context: the classification node gets no action catalog,decision,Covered,E6-04,
+R-116,"Node-scoped context: the recommendation node gets only the classification output and evidence IDs, no raw exemplars",decision,Covered,E6-05,
+R-117,"Prompt order static prefix first: system role, schema, action catalog, then variable bundle content last (caching)",decision,Covered,E6-02,
+R-118,Output target 150–250 tokens via enums and evidence-by-ID,decision,Covered,E7-01,
+R-119,No conversation accumulation: each graph node is a fresh call with explicitly built context,prohibition,Covered,E6-06,
+R-120,"Input tokens per call: target ≤2,000, hard ceiling 2,500",decision,Covered,"E0-05, E3-08",Conflicts with R-123: C-02
+R-121,"Output tokens per call: target ≤200, hard ceiling 250",decision,Covered,"E0-05, E3-08, E6-01",Output ceiling has no enforcement: add max_tokens=250 in the client and an output-token assertion
+R-122,"Total per bundle ~6,600 input / ~600 output tokens",decision,Covered,"E6-06, E9-07",
+R-123,Cost estimate assumes ~3k input and ~250 output tokens per call (~36M in / 3M out),decision,Covered,E0-06,C-02
+R-124,Token ceiling enforced as a code assertion that fails at build time,test,Covered,E3-08,
+R-125,Do not trim the reasoning instructions in the agentic prompts (would weaken H2's treatment),prohibition,Covered,E6-02,
+R-126,Do not cut the evidence field from the output schema,prohibition,Covered,E7-01,
+R-127,Do not remove the explicit action catalog from the recommendation prompt (H3 depends on it),prohibition,Covered,E6-05,
+R-128,Hardware: 16 GB Apple Silicon M2 MacBook Pro,constraint,Covered,"E0-06, E1-15",
+R-129,Total experiment budget under €100,constraint,Covered,E0-06,
+R-130,"System under test: open-weights instruct model on a hosted provider, pinned by model name and revision",decision,Covered,E0-06,
+R-131,"Local Ollama (8B class) is the development environment, not the experiment runner",decision,Covered,"E0-06, E6-01",
+R-132,One LLM client against an OpenAI-compatible interface; local vs hosted is a base-URL change,decision,Covered,E6-01,
+R-133,Configuration via LLM_BASE_URL and LLM_MODEL,decision,Covered,"E0-02, E0-06, E6-01",
+R-134,"Record per run: model name + revision, provider, sampling params, seed, prompt template version, graph version, in every result row",requirement,Covered,"E0-09, E9-02",
+R-135,"Develop on the same model family as the experiments (same model, or smaller sibling)",constraint,Covered,E0-06,
+R-136,Sanity comparison between development and experiment model before the matrix,test,Covered,E6-08,
+R-137,Never develop on one vendor's model and run experiments on another's,prohibition,Covered,E0-06,
+R-138,No vLLM or self-hosted serving at scale,prohibition,Covered (also enforced outside tickets),E0-06 | ADR-001 (E0-06),Prohibition recorded in ADR-001; nothing to build
+R-139,"ADR-001: LLM serving, cost and time budget",deliverable,Covered,E0-06,
+R-140,Verify current hosted rates when writing ADR-001,requirement,Covered,E0-06,
+R-141,Hard spending cap on the provider account,requirement,Covered,E0-06,
+R-142,Retries use backoff (a tight retry loop is how the cap gets tested),requirement,Covered,"E6-01, E9-01",
+R-143,"Budget covers one exploratory partial run, three full matrix runs and headroom",decision,Covered,"E0-06, E9-08, E9-09",
+R-144,Ollama default context (2048) truncates silently,risk,Covered,"E0-01, E6-01",
+R-145,Set Ollama num_ctx to 8192 explicitly,decision,Covered,"E0-01, E6-01",
+R-146,Verify context with a marker test before any run,test,Covered,"E0-01, E6-01",
+R-147,Memory: 8B at Q4 fits comfortably; 14B is tight on 16 GB; 8B Q4_K_M ≈ 4.5–5 GB,constraint,Covered,"E0-06, E1-15",
+R-148,One base model only; no model comparison,decision,Covered (also enforced outside tickets),E0-06 | ADR-001 (E0-06) + EPIC-9 Out of scope,No model-comparison ticket on purpose
+R-149,Prompt-only baseline uses the same base model as the agent,constraint,Covered,"E0-09, E8-04",
+R-150,Methods chapter states the reproducibility claim: pinned open weights can be re-served by anyone,writing,Covered,"E11-04, E11-13",
+R-151,"ExperimentConfig with sources (any subset of mqtt/flows/honeypot), strategy (agentic/prompt_only/ml_classifier), safety (enforcing/logging_only)",decision,Covered,E0-09,
+R-152,No condition is hardcoded; all are runtime-injected from one config object,constraint,Covered,"E0-09, E6-06",Also DoD
+R-153,Every result row carries the config and its hash,requirement,Covered,"E0-09, E9-02",Also DoD
+R-154,Modular monolith with hard internal seams,decision,Covered (also enforced outside tickets),E0-02 | ADR-000 (E0-02),Architecture rule; recorded once in ADR-000
+R-155,No microservices,prohibition,Covered (also enforced outside tickets),E0-02 | ADR-000 (E0-02) + DoD,No new service without an ADR
+R-156,Backend: FastAPI,decision,Covered,E10-01,
+R-157,The safety schema and the API schema are the same Pydantic object,decision,Covered,"E7-01, E10-01",
+R-158,"Frontend: React, kept thin",decision,Covered,"E10-04, E10-05, E10-06, E10-07",
+R-159,"REST for commands, Server-Sent Events for the reasoning trace (no WebSockets)",decision,Covered,"E10-01, E10-02",
+R-160,openapi-typescript generates TS types from the OpenAPI schema so a schema change breaks the build,decision,Covered,E10-03,
+R-161,"No agent framework (no LangChain, LlamaIndex, LangGraph); graph written directly, ~200 lines",prohibition,Covered (also enforced outside tickets),"E0-02, E6-06 | ADR-000 + E6-06 Out of scope + DoD",No agent framework dependency may be added
+R-162,Exact prompt bytes sent to the model must be capturable (reproducibility claim),requirement,Covered,"E0-10, E6-02, E7-05",
+R-163,"Retrieval: sentence-transformers embeddings in a numpy array, cosine similarity",decision,Covered,"E5-03, E5-04",
+R-164,"No vector database (no Chroma, no Qdrant)",prohibition,Covered (also enforced outside tickets),E5-03 | E5-03 Out of scope + DoD,No vector DB dependency
+R-165,BM25 is an acceptable alternative retrieval method,decision,Covered,E5-04,"Allowed alternative, noted in technical notes"
+R-166,Flow detector: LightGBM or XGBoost,decision,Covered,E4-02,
+R-167,MQTT detector: statistical thresholds,decision,Covered,E4-04,
+R-168,Honeypot detector: parser plus rules,decision,Covered,E4-05,
+R-169,Detectors are conventional/off-the-shelf; they are not the contribution,decision,Covered,"E4-02, E4-04, E4-05",
+R-170,"Knowledge subsystem holds device inventory, action catalog and ATT&CK mitigations",requirement,Covered,"E0-04, E5-01, E5-02",
+R-171,"Small curated knowledge base of 50–200 documents, not a general RAG corpus",decision,Covered,E5-02,
+R-172,"Results stored as Parquet, one row per (bundle, condition, repetition), with full provenance",decision,Covered,E9-02,
+R-173,Console operational state in SQLite,decision,Covered,E10-06,
+R-174,"Audit log is append-only JSONL, never rewritten",decision,Covered,"E0-10, E7-05",
+R-175,No Postgres,prohibition,Covered (also enforced outside tickets),E0-02 | ADR-000 (E0-02) + DoD,No new infrastructure without an ADR
+R-176,No message queue,prohibition,Covered (also enforced outside tickets),E0-02 | ADR-000 (E0-02) + DoD,No new infrastructure without an ADR
+R-177,No orchestration beyond Docker Compose,prohibition,Covered (also enforced outside tickets),E0-02 | ADR-000 (E0-02) + DoD,No new infrastructure without an ADR
+R-178,No authentication; console binds to localhost,decision,Covered,E10-01,
+R-179,"API key in .env, gitignored, never logged",requirement,Covered,"E0-02, E0-10",
+R-180,No personal data and no human subjects,constraint,Covered,E11-06,
+R-181,Structured JSON logging with structlog from the first commit,requirement,Covered,E0-10,
+R-182,"Every LLM call logs node, model, revision, tokens in/out, latency, full prompt, raw completion, parse outcome, condition, bundle ID, repetition",requirement,Covered,E0-10,
+R-183,"One logging mechanism serves as audit log, cost instrumentation and debugger",decision,Covered,"E0-10, E7-05",
+R-184,"No OpenTelemetry, no Prometheus",prohibition,Covered (also enforced outside tickets),E0-02 | ADR-000 (E0-02),No monitoring stack
+R-185,"Monorepo scaffold with uv or Poetry, ruff, mypy, pytest, pre-commit, CI and an ADR log",deliverable,Covered,E0-02,
+R-186,Repository and package scaffolded as `thesis` until a name is chosen,decision,Covered,E0-02,
+R-187,"Bounded reasoning graph with fixed topology, not free-form ReAct",decision,Covered,E6-06,
+R-188,Methods chapter states the fixed-graph vs free-form ReAct trade-off,writing,Covered,E11-04,
+R-189,Exactly 3 LLM calls per bundle; deterministic code does everything else,decision,Covered,E6-06,
+R-190,Bundle ingestion and reduction is a deterministic (non-LLM) node,decision,Covered,"E3-06, E6-06",
+R-191,Knowledge retrieval is deterministic and called as a tool,decision,Covered,"E5-04, E6-03",
+R-192,"Node 1 evidence analysis (LLM, tool access): reduced bundle + device context in; per-source findings + cross-source observations out",requirement,Covered,E6-03,
+R-193,"Node 2 classification (LLM, structured output): node 1 findings in; type, severity, affected device, confidence out",requirement,Covered,E6-04,
+R-194,"Node 3 recommendation (LLM, enum-constrained): classification + permitted catalog in; one action with evidence refs out",requirement,Covered,E6-05,
+R-195,Validation and rejection handling is a deterministic node,requirement,Covered,"E7-02, E7-04",
+R-196,Audit log write is a deterministic node,requirement,Covered,E7-05,
+R-197,Limited action space: a closed enumeration defined in advance,requirement,Covered,"E0-04, E7-01",
+R-198,"Action catalog derived from NIST SP 800-61, MITRE ATT&CK mitigations and published IR playbooks, with a citation per entry",requirement,Covered,E0-04,
+R-199,Action catalog has 6–8 candidate actions to start,decision,Covered,E0-04,
+R-200,Action catalog defined before seeing any agent output,constraint,Covered,E0-04,
+R-201,Optional: a classmate double-rates 20% of the catalog as a bonus; never block on it,decision,Covered (also enforced outside tickets),E0-04 | E0-04 Out of scope,Optional bonus; must never block
+R-202,Solo work means no second rater (Cohen's κ unavailable; intra-rater test-retest is weak),risk,Covered,E0-04,
+R-203,"Output schema (Pydantic): incident_type, severity, affected_device, evidence, recommended_action, confidence",requirement,Covered,"E0-01, E7-01",
+R-204,incident_type enum: the six attack families plus benign,decision,Covered,"E1-02, E7-01",
+R-205,severity enum: low / medium / high / critical,decision,Covered,E7-01,
+R-206,affected_device: string device ID,decision,Covered,E7-01,
+R-207,"evidence: list of alert IDs referenced from the input, not quoted text",decision,Covered,E7-01,
+R-208,confidence: float 0–1,decision,Covered,E7-01,
+R-209,Constrained decoding enforces the schema at generation time,decision,Covered,E7-01,
+R-210,Validator rejects malformed output,requirement,Covered,E7-02,
+R-211,Validator rejects any action outside the enum,requirement,Covered,E7-02,
+R-212,Validator rejects evidence references not present in the bundle,requirement,Covered,E7-02,
+R-213,"Audit log records every attempt, passed or not, with full prompt, raw completion and parse outcome",requirement,Covered,E7-05,
+R-214,"What happens when the validator rejects: retry with feedback, escalate to human, or hard fail?",open question,Covered,E0-11,
+R-215,Fix the rejection policy in advance and log it per attempt,requirement,Covered,"E0-11, E7-04",
+R-216,Safety layer can be switched on and off (enforcing vs logging_only) for the H3 ablation,requirement,Covered,"E0-12, E7-06",What exactly is switched off is undefined: C-16
+R-217,Honeypot attacker text enters prompts and is a prompt-injection channel,risk,Covered,E7-07,
+R-218,Honeypot text is strictly delimited,requirement,Covered,"E0-05, E6-02, E7-07",
+R-219,Honeypot text is hard-truncated,requirement,Covered,"E0-05, E7-07",
+R-220,Honeypot text is never placed adjacent to schema instructions,constraint,Covered,"E6-02, E7-07",
+R-221,"Validation is a hard gate, not a filter",constraint,Covered,"E0-11, E7-02, E7-07",
+R-222,"Prompt-injection experiment (inject adversarial strings, measure steering outside the action set) is stretch only",decision,Covered,E9-12,
+R-223,Decide at month four whether to run the prompt-injection experiment (only if ahead),decision,Covered,E9-12,'Month four' timing no longer fits: C-11
+R-224,"Note in the thesis that [16], [18], [19] do not address prompt injection",writing,Covered,E11-03,Add prompt-injection gap to related work
+R-225,Baseline A: conventional ML classifier trained on the same telemetry,requirement,Covered,"E2-01, E4-01, E4-02, E8-02",Round-1 E2-01 option (b) contradicts 'same telemetry': C-14
+R-226,The flow classifier doubles as Baseline A,decision,Covered,E4-03,
+R-227,Baseline A gets a severity→action lookup so the H4 safety comparison is well-posed,decision,Covered,E8-01,
+R-228,"Baseline B: same LLM, one request, no reasoning steps, tools, retrieval or safety layer",requirement,Covered,"E8-03, E8-04",
+R-229,Baseline B receives the same alerts as the agent,constraint,Covered,"E0-05, E8-04",
+R-230,Baseline B gets a well-written prompt with the same output schema,requirement,Covered,E8-03,
+R-231,"Tune Baseline A properly: feature engineering, hyperparameter search, class-imbalance handling",requirement,Covered,"E2-01, E4-01, E4-02",
+R-232,A weak baseline invalidates the result; an examiner will attack this first,risk,Covered,"E2-01, E4-02, E8-03",
+R-233,Thesis frames Baseline A as 'is an LLM needed?' and Baseline B as 'does the architecture help?',writing,Covered,E11-04,
+R-234,Are two baselines sufficient?,open question,Covered,E0-03,Record the two-baselines question in the METHODS.md condition matrix
+R-235,"Paired design: same scenarios for every condition, analysed with paired tests",requirement,Covered,"E0-03, E9-01, E9-05",
+R-236,H1 ablation: agent on each single source and on all three combined,requirement,Covered,"E0-03, E9-01",
+R-237,H2 ablation: agent vs prompt-only LLM,requirement,Covered,E9-01,
+R-238,H3 ablation: same agent with safety layer on and off,requirement,Covered,"E7-06, E9-01",
+R-239,H4 comparison: complete agent vs both baselines,requirement,Covered,E9-01,
+R-240,"Report H1 stratified by attack family, separating gain-from-fusion from gain-from-having-a-source",requirement,Covered,E9-10,
+R-241,"Consider pairwise source conditions (MQTT+flows, flows+honeypot)",open question,Covered,E0-03,C-04
+R-242,Matrix: 5 agentic conditions × 3 calls + 1 prompt-only condition × 1 call per bundle per repetition,decision,Covered,E0-03,C-04
+R-243,"Detection metrics: precision, recall, F1",metric,Covered,E9-03,
+R-244,Classification metrics: accuracy and macro-F1,metric,Covered,E9-03,
+R-245,Safety metric: proportion of unsafe or invalid recommendations,metric,Covered,E9-04,
+R-246,Usefulness metric: agreement with a predefined acceptable-action set,metric,Covered,"E1-03, E9-04",
+R-247,"Acceptable and unsafe action sets fixed per scenario family before any experiment, identical across conditions",constraint,Covered,"E0-12, E1-03",
+R-248,H3 is circular: the validator drives the out-of-catalog count to zero by construction,risk,Covered,E0-12,
+R-249,Safety metric part 1: schema validity,metric,Covered,"E0-12, E9-04",
+R-250,"Safety metric part 2: action-space membership — reported, never the headline",metric,Covered,"E0-12, E9-04",
+R-251,Safety metric part 3: contextual appropriateness — the real H3 result (e.g. isolating a critical device for one port scan is unsafe),metric,Covered,"E0-12, E9-04",
+R-252,How should contextual safety be scored?,open question,Covered,E0-12,
+R-253,H1 has a built-in confound: not every family is visible in every source,risk,Covered,"E1-02, E2-07, E9-10",
+R-254,McNemar test for paired binary outcomes,metric,Covered,"E0-03, E9-05",
+R-255,Wilcoxon signed-rank test for paired scores,metric,Covered,"E0-03, E9-05",
+R-256,Bundle-level metrics are primary,decision,Covered,"E0-03, E9-03",
+R-257,Block bootstrap with the attack episode as the resampling unit (bundles in one episode are not independent),metric,Covered,E9-06,
+R-258,Methods chapter mentions the clustering issue and the block bootstrap,writing,Covered,E11-04,
+R-259,Run an exploratory partial run before the full matrix,requirement,Covered,E9-08,
+R-260,Run the full matrix three times,requirement,Covered,E9-09,C-03
+R-261,Cost per incident analysed is reported as a result,metric,Covered,E9-07,
+R-262,Per-call token and latency data written into the same result rows as the metrics,requirement,Covered,"E0-10, E9-02",
+R-263,"Evaluation harness runs conditions, computes metrics and runs the paired tests",requirement,Covered,"E9-01, E9-03, E9-04, E9-05, E9-06",
+R-264,Test parsers hard,test,Covered,"E3-02, E3-03, E3-04, E4-05",
+R-265,Test bundle assembly hard (a bug here silently invalidates every experiment),test,Covered,E3-05,
+R-266,Test the reduction step hard,test,Covered,E3-07,
+R-267,Test validators hard,test,Covered,"E7-02, E7-03",
+R-268,"Golden-file tests on reduction: fixed input bundle, exact expected output, committed",test,Covered,E3-07,
+R-269,Property tests on the validator: no output outside the action enum ever passes,test,Covered,E7-03,
+R-270,Do not unit-test LLM output quality,prohibition,Not a ticket,DoD,Testing rule
+R-271,"One end-to-end integration test against local Ollama, marked slow, excluded from CI",test,Covered,"E0-02, E6-07",
+R-272,The test split matters more than the coverage number (no coverage target),decision,Not a ticket,DoD,No coverage target
+R-273,No supervisor guidance: design flaws would otherwise surface only at the defense,risk,Covered,E0-03,
+R-274,Write METHODS.md before building and freeze it,deliverable,Covered,E0-03,
+R-275,METHODS.md is 4–6 pages,constraint,Covered,E0-03,
+R-276,"METHODS.md contains: incident unit, condition matrix, metric definitions, action catalog derivation, statistical tests, target N",requirement,Covered,E0-03,
+R-277,The incident unit is the first section of METHODS.md,decision,Covered,E0-03,
+R-278,METHODS.md is dated,requirement,Covered,E0-03,
+R-279,"Once experiments start, METHODS.md gets an appended changelog instead of edits",constraint,Covered,E0-03,Also DoD
+R-280,METHODS.md blocks EPIC-3 and EPIC-9,constraint,Covered,E0-03,
+R-281,"Bundle reduction policy v1.0: aggregate fields and exemplar criteria per source, frozen in METHODS.md",deliverable,Covered,E0-05,
+R-282,Action catalog v0.1 with a citation per entry,deliverable,Covered,E0-04,
+R-283,"Research tickets (METHODS.md, catalog, reduction policy) are not postponed",constraint,Not a ticket,Sprint plan + DoR,Research tickets scheduled in S1
+R-284,Explicit scope cuts stand in for a supervisor saying 'that's too much',decision,Not a ticket,Sprint plan (descope trigger list),Cuts listed in round-1 sprint plan
+R-285,12 epics with the dependency graph in §7,decision,Not a ticket,Epic structure,Locked epics
+R-286,"Four phases: A build the data, B prepare, C build the agent, D measure and write",decision,Not a ticket,Epic structure,Phase recorded on each epic
+R-287,EPIC-10 (console) runs in parallel and late; EPIC-11 (writing) is continuous,decision,Not a ticket,Sprint plan,Scheduling rule
+R-288,"Sprint 0 has 8 tickets (spike 5, scaffold 3, METHODS 5, catalog 5, reduction 5, ADR-001 3, testbed 5, alert schema 3)",decision,Covered,"E0-01, E0-02, E0-03, E0-04, E0-05, E0-06, E0-07, E0-08",
+R-289,"The spike is the first ticket, before the repo scaffold",decision,Covered,E0-01,
+R-290,Subsystems 1 (testbed) and 7 (console) are the biggest calendar risks and are explicitly capped,risk,Not a ticket,Step E console check + EPIC-1 Out of scope fields,"Caps, not work"
+R-291,Console is built in the last three weeks,constraint,Not a ticket,Sprint plan,Console scheduled last; conflicts with descope list: C-12
+R-292,"Console has exactly four screens: incident list, incident detail with evidence and trace, recommendation with accept/reject, audit log",decision,Covered,"E10-04, E10-05, E10-06, E10-07",
+R-293,Console stays at or below ~10% of engineering time,constraint,Not a ticket,Step E console check,"Measured, not built"
+R-294,Console produces zero results for any hypothesis; it is for demonstration only,constraint,Covered,E10-01,Stated in EPIC-10 Out of scope
+R-295,"A user interface is a personal requirement, not a thesis requirement",constraint,Not a ticket,Sprint plan (descope trigger list),Why the console is first to be cut
+R-296,"Spike timebox: 5 working days, hard stop",constraint,Covered,E0-01,
+R-297,"Spike is one file, ~150 lines, kept throwaway and never used as the foundation",constraint,Covered,E0-01,
+R-298,Spike input: hand-written JSON of what the normalized alerts from each source would look like,requirement,Covered,E0-01,
+R-299,"Spike: one prompt, one LLM call constrained to a Pydantic schema, one validator, print the result",requirement,Covered,E0-01,
+R-300,"No testbed, detectors, retrieval or agent framework in the spike",prohibition,Covered,E0-01,
+R-301,Spike scenario: SSH brute force against the honeypot with flow traces; MQTT deliberately absent,decision,Covered,E0-01,
+R-302,Spike output uses the §6.5 schema,requirement,Covered,E0-01,
+R-303,Spike: num_ctx set explicitly and verified with the marker test before any run,test,Covered,E0-01,
+R-304,"Spike: 20 runs, 10 on local Ollama and 10 on one hosted mid-size model",test,Covered,E0-01,
+R-305,"Spike records per run: schema-valid or not, verdict, input tokens, output tokens, latency",requirement,Covered,E0-01,
+R-306,"Spike logs the full prompt and raw completion, not only the parsed object",requirement,Covered,E0-01,
+R-307,Spike reports validity rate per model,metric,Covered,E0-01,
+R-308,Spike reports agreement rate across the 10 runs per model,metric,Covered,E0-01,
+R-309,Spike reports mean input and output tokens per call,metric,Covered,E0-01,
+R-310,Spike counts how many answers are correct (needs an expected verdict for the hand-written bundle),metric,Covered,E0-01,Add an expected verdict to the hand-written bundle before any run: C-10
+R-311,"Spike findings note, half a page: what the model got wrong, asked for or hallucinated",deliverable,Covered,E0-01,
+R-312,"Spike results decide the model, confirm or break the 2,000-token budget, give the alert schema, settle ADR-001",decision,Covered,"E0-01, E0-05, E0-06, E0-08",
+R-313,"Ethics section: attacks only on the isolated testbed, no human subjects, no personal data",writing,Covered,"E1-04, E11-06",
+R-314,"Acknowledge any use of AI tools transparently, per the dissertation guide",writing,Covered,E11-12,
+R-315,Thesis states in one line that authentication is out of scope,writing,Covered,E11-05,One line in the architecture chapter
+R-316,"Resolve reference [4]: complete author list, volume and article number",writing,Covered,E11-01,
+R-317,Resolve reference [17]: end page,writing,Covered,E11-01,
+R-318,References follow the IEEE style used in the proposal,writing,Covered,E11-12,IEEE style check in the final proofread
+R-319,"Report cost per incident as a contribution none of [16], [18], [19] report",writing,Covered,E11-08,
+R-320,System name is still open,open question,Covered,E11-14,No ticket for choosing the system name
+R-321,"Name must not imply execution (rules out Guardian, Shield, Sentinel, Warden, Defender, Enforcer…)",constraint,Covered,E11-14,No ticket for choosing the system name
+R-322,"Name: no Latin or Greek; reads as an LLM system, not a startup; serious; easy to say and spell",constraint,Covered,E11-14,No ticket for choosing the system name
+R-323,"Name avoids 'AI', 'Detect', and generic Cyber/Guard combinations",constraint,Covered,E11-14,No ticket for choosing the system name
+R-324,"Do not use any name on the verified-conflict list (Auspex, Interlock, Quorum, Sightline, …)",prohibition,Covered,E11-14,No ticket for choosing the system name
+R-325,"Naming next step: write five names, conflict-check each, flag execution implication, draft the title",requirement,Covered,E11-14,No ticket for choosing the system name
+R-326,Put descriptors in the subtitle; avoid a forced backronym,writing,Covered,E11-14,No ticket for choosing the system name
+R-327,"Trademark clearance (INPI, EUIPO, USPTO, domains, GitHub/PyPI/npm) only before use beyond the thesis",decision,Covered (also enforced outside tickets),E11-14 | NEW E11-14 Out of scope,Only needed beyond the thesis
+R-328,"Material for the supervisor uses simple words, short sentences and many diagrams",constraint,Covered,E11-15,No ticket for supervisor material
+R-329,Always open supervisor material with a short overview (he may not have read the proposal),constraint,Covered,E11-15,No ticket for supervisor material
+R-330,60-second project opener prepared in English and French,deliverable,Covered,E11-15,No ticket for supervisor material
+R-331,"Three questions to raise: window size, number of scenarios, fair unsafe-recommendation measure (third has priority)",writing,Covered,E11-15,No ticket for supervisor material
+R-332,Supervisor meetings are booked for 45 minutes,constraint,Covered,E11-15,No ticket for supervisor material
+R-333,Emails to the supervisor carry no agenda; setting the agenda is his role,constraint,Covered,E11-15,No ticket for supervisor material
+R-334,Cadence: Thursday internal draft → weekend modifications → Monday final version to the supervisor,constraint,Covered,E11-15,No ticket for supervisor material
+R-335,"Humanizer pass: sentences ≤~18 words, common words, no idioms, phrasal verbs, metaphors or contractions; never merge sentences",constraint,Covered,E11-15,Humanizer pass belongs to the supervisor-pack ticket
+R-336,"Humanizer must not change technical names, project vocabulary, labels, numbers, tables, captions, glossary or title page",constraint,Covered,E11-15,Humanizer pass belongs to the supervisor-pack ticket
+R-337,"Humanizer must not change the meaning of: ""It suggests only. It never acts by itself. A human always decides.""",constraint,Covered,E11-15,Humanizer pass belongs to the supervisor-pack ticket
+R-338,Humanize via Markdown export and rebuild the .docx; never humanize the .docx directly,decision,Covered,E11-15,Humanizer pass belongs to the supervisor-pack ticket
+R-339,"Illustrated architecture document (14 pages, 11 figures, glossary) is the current version to send",deliverable,Covered (also enforced outside tickets),E11-11 | Already delivered,Exists; updates go through E11-15
+R-340,"Project Reference document (8 sections, 13 pages) exists",deliverable,Not a ticket,Already delivered,Exists; no remaining work
+R-341,The full project record is kept current as the continuation file,deliverable,Not a ticket,DoD,DoD: a changed decision updates the project record
+R-342,Distinguish academic research requirements from production engineering requirements,constraint,Not a ticket,DoR/DoD + ticket template,Process rule applied to every ticket
+R-343,Avoid unnecessary complexity and over-engineering,constraint,Not a ticket,DoR/DoD + ticket template,Process rule applied to every ticket
+R-344,Do not introduce technologies because they are popular,prohibition,Covered (also enforced outside tickets),"E0-02, E0-14 | DoD + ADR-000",No new dependency without an ADR
+R-345,"Do not force AI components, experiments or metrics irrelevant to the proposal",prohibition,Covered (also enforced outside tickets),E0-02 | DoD + ADR-000,No new dependency without an ADR
+R-346,Separate confirmed information from assumptions and recommendations,constraint,Not a ticket,DoR/DoD + ticket template,Process rule applied to every ticket
+R-347,"Work incrementally: next step, review, then move on",constraint,Not a ticket,DoR/DoD + ticket template,Process rule applied to every ticket
