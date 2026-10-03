@@ -1,0 +1,45 @@
+{
+  "bundle_id": "spike-ssh-001",
+  "window": {"start": "2026-09-14T10:15:00Z", "end": "2026-09-14T10:16:00Z"},
+  "device_id": "hp-ssh-01",
+  "sources": {
+    "honeypot": {"status": "active", "alert_count": 10},
+    "flows": {"status": "active", "alert_count": 3},
+    "mqtt": {"status": "no_alerts", "alert_count": 0}
+  },
+  "alerts": [
+    {"alert_id": "hp-0001", "source": "honeypot", "ts": "2026-09-14T10:15:04.112Z", "device_id": "hp-ssh-01",
+     "event": "session_connect", "session_id": "s-7f3a", "src_ip": "203.0.113.45", "src_port": 51022, "dst_ip": "172.20.0.10", "dst_port": 22, "protocol": "ssh"},
+    {"alert_id": "hp-0002", "source": "honeypot", "ts": "2026-09-14T10:15:04.390Z", "device_id": "hp-ssh-01",
+     "event": "client_version", "session_id": "s-7f3a", "src_ip": "203.0.113.45", "client_version": "SSH-2.0-libssh_0.9.6"},
+    {"alert_id": "hp-0003", "source": "honeypot", "ts": "2026-09-14T10:15:06.020Z", "device_id": "hp-ssh-01",
+     "event": "login_failed", "session_id": "s-7f3a", "src_ip": "203.0.113.45", "username": "root", "password": "123456"},
+    {"alert_id": "hp-0004", "source": "honeypot", "ts": "2026-09-14T10:15:08.551Z", "device_id": "hp-ssh-01",
+     "event": "login_failed", "session_id": "s-7f3a", "src_ip": "203.0.113.45", "username": "root", "password": "admin"},
+    {"alert_id": "fl-0001", "source": "flows", "ts": "2026-09-14T10:15:09.240Z", "device_id": "hp-ssh-01",
+     "flow_start": "2026-09-14T10:15:04.101Z", "duration_s": 5.139, "src_ip": "203.0.113.45", "src_port": 51022, "dst_ip": "172.20.0.10", "dst_port": 22, "protocol": "tcp",
+     "packets_fwd": 24, "packets_bwd": 22, "bytes_fwd": 3412, "bytes_bwd": 4870, "tcp_flags": "SYN,ACK,PSH,FIN", "anomaly_score": 0.91},
+    {"alert_id": "hp-0005", "source": "honeypot", "ts": "2026-09-14T10:15:21.870Z", "device_id": "hp-ssh-01",
+     "event": "session_connect", "session_id": "s-91c2", "src_ip": "203.0.113.45", "src_port": 51044, "dst_ip": "172.20.0.10", "dst_port": 22, "protocol": "ssh"},
+    {"alert_id": "hp-0006", "source": "honeypot", "ts": "2026-09-14T10:15:23.904Z", "device_id": "hp-ssh-01",
+     "event": "login_failed", "session_id": "s-91c2", "src_ip": "203.0.113.45", "username": "admin", "password": "admin"},
+    {"alert_id": "hp-0007", "source": "honeypot", "ts": "2026-09-14T10:15:26.317Z", "device_id": "hp-ssh-01",
+     "event": "login_failed", "session_id": "s-91c2", "src_ip": "203.0.113.45", "username": "pi", "password": "raspberry"},
+    {"alert_id": "fl-0002", "source": "flows", "ts": "2026-09-14T10:15:27.002Z", "device_id": "hp-ssh-01",
+     "flow_start": "2026-09-14T10:15:21.858Z", "duration_s": 5.144, "src_ip": "203.0.113.45", "src_port": 51044, "dst_ip": "172.20.0.10", "dst_port": 22, "protocol": "tcp",
+     "packets_fwd": 23, "packets_bwd": 21, "bytes_fwd": 3388, "bytes_bwd": 4826, "tcp_flags": "SYN,ACK,PSH,FIN", "anomaly_score": 0.89},
+    {"alert_id": "hp-0008", "source": "honeypot", "ts": "2026-09-14T10:15:40.215Z", "device_id": "hp-ssh-01",
+     "event": "session_connect", "session_id": "s-b05e", "src_ip": "203.0.113.45", "src_port": 51068, "dst_ip": "172.20.0.10", "dst_port": 22, "protocol": "ssh"},
+    {"alert_id": "hp-0009", "source": "honeypot", "ts": "2026-09-14T10:15:42.330Z", "device_id": "hp-ssh-01",
+     "event": "login_failed", "session_id": "s-b05e", "src_ip": "203.0.113.45", "username": "ubuntu", "password": "ubuntu"},
+    {"alert_id": "hp-0010", "source": "honeypot", "ts": "2026-09-14T10:15:44.768Z", "device_id": "hp-ssh-01",
+     "event": "login_failed", "session_id": "s-b05e", "src_ip": "203.0.113.45", "username": "root", "password": "password"},
+    {"alert_id": "fl-0003", "source": "flows", "ts": "2026-09-14T10:15:45.390Z", "device_id": "hp-ssh-01",
+     "flow_start": "2026-09-14T10:15:40.203Z", "duration_s": 5.187, "src_ip": "203.0.113.45", "src_port": 51068, "dst_ip": "172.20.0.10", "dst_port": 22, "protocol": "tcp",
+     "packets_fwd": 25, "packets_bwd": 22, "bytes_fwd": 3440, "bytes_bwd": 4902, "tcp_flags": "SYN,ACK,PSH,FIN", "anomaly_score": 0.93}
+  ],
+  "expected_verdict": {
+    "incident_type": "ssh_password_guessing",
+    "affected_device": "hp-ssh-01"
+  }
+}
