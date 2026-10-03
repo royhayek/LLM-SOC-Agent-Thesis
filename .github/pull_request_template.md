@@ -33,3 +33,7 @@
 ## How to verify
 
 <!-- The commands to run and what to expect. -->
+
+## Skills used
+
+<!-- The workflow skills run on this ticket, in order, for example: start-ticket, review-ticket, submit-ticket-pr. Write "None" if there were none. -->
