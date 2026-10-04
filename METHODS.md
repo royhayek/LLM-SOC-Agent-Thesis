@@ -244,9 +244,9 @@ Record §4.1: D is the non-infrastructure endpoint, and honeypot events key to t
 
 ## Reliability and robustness
 
-Ticket SCRUM-114 [E0-13]. Decided by Roy El Hayek, 2026-10-04. Frozen at git tag `reliability-v1.0`. Answers R-020 and R-022 and conflict C-09: Objective 5 promises an evaluation of reliability, and the brief adds robustness, but neither was defined. Traces to record §3, risks 5 and 7.
+Ticket SCRUM-114 [E0-13]. Decided by Roy El Hayek, 2026-10-04. Frozen at git tag `reliability-v1.0`. Answers R-020 to R-022 and conflict C-09: Objective 5 promises an evaluation of reliability, and the brief adds robustness, but neither was defined. Traces to record §3, risks 5 and 7.
 
-Inputs: record §4.4.1 (the experiment matrix and its `k` repetitions); METHODS.md "Safety scoring" (tag `safety-scoring-v1.0`), whose notation (`b`, `c`, `r`, `k`, `N`, `R`, `E`, `∅`, `a(x)`, `⊥`, `SV`, `W_c`) is used here unchanged; METHODS.md "Rejection policy" (tag `rejection-policy-v1.0`); the output schema of record §6.5.
+Inputs: record §4.4.1 (the experiment matrix and its `k` repetitions); METHODS.md "Safety scoring" (tag `safety-scoring-v1.0`), whose notation (`b`, `c`, `r`, `k`, `N`, `R`, `E`, `∅`, `a(x)`, `⊥`, `SV`, `W_c`) is used here unchanged, except for the one extension stated in §2; METHODS.md "Rejection policy" (tag `rejection-policy-v1.0`); the output schema of record §6.5.
 
 ### 1. What reliability means here
 
@@ -260,12 +260,14 @@ Reliability is not reproducibility. Reproducibility, the ability to repeat the w
 
 ### 2. Notation
 
-- `ℓ(x)`: the predicted `incident_type` of output `x` (record §6.5), one of the six families or `benign`. `ℓ(x) = ⊥` when `SV(x) = 0`. `ℓ(∅) = ∅`.
+- `ℓ(x)`: the predicted `incident_type` of output `x` (record §6.5), one of the six families or `benign`. `ℓ(x) = ⊥` when `SV(x) = 0` and `x ≠ ∅`. `ℓ(∅) = ∅`.
 - `a(x)`: the recommended action after the mapping of "Safety scoring" §6.2, a catalog ID or `⊥`. `a(∅) = ∅`.
 - `f`: either `ℓ` or `a`. Every formula below is computed once for each.
 - `x_r = x(b, c, r)`, for `r = 1..k`.
 
 `⊥` (unusable output) and `∅` (withheld output) are **values like any other**: two repetitions that are both withheld agree. Validity is measured by `SV_c` and `W_c`, so agreement measures stability only and does not count a failure twice. A condition that fails in the same way every time is stable, and its low validity shows beside it. The conditional figure in §3.3 removes these values.
+
+**Extension of "Safety scoring" §1, for agreement only:** a withheld output keeps its own value `∅` instead of `⊥`, so a withheld repetition and an unmappable one disagree. Every other metric uses the "Safety scoring" definitions as they stand.
 
 ### 3. Formulas
 
