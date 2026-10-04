@@ -1,0 +1,11 @@
+run_id,model,schema_valid,incident_type,severity,affected_device,recommended_action,matches_expected,tokens_in,tokens_out,latency_s
+local-01,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,15.551
+local-02,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,4.329
+local-03,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,4.275
+local-04,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,4.541
+local-05,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,4.302
+local-06,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,4.331
+local-07,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,4.237
+local-08,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,4.25
+local-09,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,4.258
+local-10,local,True,ssh_password_guessing,high,hp-ssh-01,reset_credentials,True,2116,101,4.294
