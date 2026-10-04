@@ -26,7 +26,7 @@ First draft. It was written after the E0-01 spike (`spikes/FINDINGS.md`), as rec
 
 ### Device mapping
 
-`subject_device()` follows record §4.1. The cases §4.1 does not cover are written down as ASSUMPTIONs 1–5 in METHODS.md, "Alert schema v0.1: device mapping (draft)". Cases 4 (external host to infrastructure) and 5 (device to device) are left open for E3-01.
+`subject_device()` follows record §4.1. The cases §4.1 does not cover are written down as ASSUMPTIONs 1–5 in METHODS.md, "Alert schema v0.1: device mapping (draft)". Cases 4 (external host to infrastructure) and 5 (device to device) are left open for E3-10.
 
 ### Not from the spike
 

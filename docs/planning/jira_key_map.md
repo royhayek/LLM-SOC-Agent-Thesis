@@ -70,6 +70,7 @@ Ticket references (`E0-01`) are used in every description and in `backlog_full.m
 | E3-07 | SCRUM-86 | 2 | Add golden-file tests for the reduction step |
 | E3-08 | SCRUM-99 | 2 | Assert the per-call token ceilings at build time |
 | E3-09 | SCRUM-105 | 2 | Build the frozen bundle set and record its hash |
+| E3-10 | SCRUM-128 | 2 | Decide the device mapping for traffic that §4.1 does not cover |
 
 ## EPIC-4 · Detection Layer · `SCRUM-10`
 

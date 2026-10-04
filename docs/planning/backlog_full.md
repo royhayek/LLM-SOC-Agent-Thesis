@@ -1,4 +1,4 @@
-# Full backlog — 12 epics, 111 tickets (round 2)
+# Full backlog — 12 epics, 112 tickets (round 2)
 
 Generated 1 Oct 2026 from the Step D files. Project DoD v1.0 and DoR: see DOD.md.
 
@@ -1964,7 +1964,7 @@ R-023, R-081, R-084, R-085 · Record §7, §7.1 · Proposal: Methodology (accept
 
 # Step D — EPIC-3 · Telemetry Normalization & Incident Assembly
 
-9 tickets · 26 points · Project DoD v1.0 and DoR apply to every ticket.
+10 tickets · 28 points · Project DoD v1.0 and DoR apply to every ticket.
 
 **Ticket-level exceptions to the locked epic order (C-15, C-19):**
 - E3-01 to E3-04 may be developed on the pilot capture (E1-15) before the corpus freeze. Only their final run on the frozen corpus waits for E2-09.
@@ -1972,7 +1972,7 @@ R-023, R-081, R-084, R-085 · Record §7, §7.1 · Proposal: Methodology (accept
 
 **Rule for every ticket here:** a change to the alert schema, W or the reduction after E2-09 requires a METHODS.md changelog entry (DoD change control).
 
-**Suggested execution order:** E3-01 → E3-02 ∥ E3-03 ∥ E3-04 → E3-05 → (E4-06) → E3-06 → E3-07 ∥ E3-08 → E3-09
+**Suggested execution order:** E3-01 ∥ E3-10 → E3-02 ∥ E3-03 ∥ E3-04 → E3-05 → (E4-06) → E3-06 → E3-07 ∥ E3-08 → E3-09
 
 ---
 
@@ -2028,7 +2028,7 @@ R-095, R-098, R-099 · Record §4.1, §7.1, §9 · Arch §5 · Proposal: Objecti
 
 **[E3-02] Normalize MQTT telemetry into alerts**
 **Type:** Task · **Epic:** EPIC-3 · **Priority:** High · **Points:** 3 · **Labels:** engineering, testing, needs-refinement
-**Depends on:** E3-01 · **Blocks:** E3-05, E4-04
+**Depends on:** E3-01, E3-10 · **Blocks:** E3-05, E4-04
 
 **Context**
 MQTT anomalies are one of the three telemetry sources H1 compares. A parsing bug here would silently remove MQTT evidence from every bundle and bias H1 against fusion. The record says parsers must be tested hard (§6.9).
@@ -2078,7 +2078,7 @@ R-050, R-090, R-095, R-264 · Record §4.1, §6.7, §6.9 · Proposal: Methodolog
 
 **[E3-03] Normalize network flows into alerts**
 **Type:** Task · **Epic:** EPIC-3 · **Priority:** High · **Points:** 3 · **Labels:** engineering, testing, needs-refinement
-**Depends on:** E3-01 · **Blocks:** E3-05, E4-01
+**Depends on:** E3-01, E3-10 · **Blocks:** E3-05, E4-01
 
 **Context**
 Flows are the only source present in every provisional attack family, so a flow-parsing bug touches every result. Correct device keying matters most here: a flow keyed to the broker instead of the device puts evidence in the wrong bundle.
@@ -2411,6 +2411,53 @@ None
 
 **Traceability**
 R-073, R-094, R-100 · Record §4, §4.2 · Proposal: Methodology (paired design)
+
+---
+
+**[E3-10] Decide the device mapping for traffic that §4.1 does not cover**
+**Type:** Research · **Epic:** EPIC-3 · **Priority:** High · **Points:** 2 · **Labels:** research
+**Depends on:** E0-08, E1-02 · **Blocks:** E3-02, E3-03
+
+**Context**
+Record §4.1 keys every bundle to D, the non-infrastructure endpoint, and keys honeypot events to the honeypot. Alert schema v0.1 (E0-08) found two cases the rule does not cover, and left them open as ASSUMPTIONs 4 and 5 in METHODS.md, "Alert schema v0.1: device mapping (draft)". E3-01 cannot settle them, because changing the device-mapping rule is out of its scope. The choice decides which traffic forms bundles, so it must be fixed before the normalizers run on the frozen corpus. It serves H1 and risk #1.
+
+**Goal**
+METHODS.md states, for both open cases, which device an alert is keyed to (or that it forms no bundle), with a rationale, and `subject_device()` implements it.
+
+**Scope**
+- In: case 4, traffic from an external host to an infrastructure host (for example an MQTT flood on the broker); case 5, traffic between two testbed devices (for example lateral movement); the options and their effect on bundles and labels; the decision; an appended METHODS.md section that supersedes ASSUMPTIONs 4 and 5; the change to `subject_device()` and its tests; a record §4.1 update if the rule changes.
+- Out: the other mapping cases (ASSUMPTIONs 1–3), the alert fields (E3-01), the normalizers (E3-02 to E3-04), W and tiling (§10).
+
+**Technical notes**
+- Case 4 depends on the frozen families (E1-02): it matters only if a family targets infrastructure.
+- If an alert is keyed to more than one device, bundles stop being disjoint. Check the effect on the pairing in §4.1 and on clustering.
+- The mapping stays defined once, in code (§4.1).
+- The frozen METHODS.md section is never edited. The decision is an appended section.
+
+**Acceptance criteria**
+- Given a flow from an external IP to the broker IP, when `subject_device()` is called, then it returns the result the METHODS.md section states.
+- Given a flow between two testbed device IPs, when `subject_device()` is called, then it returns the result the METHODS.md section states, and no longer raises `AmbiguousSubjectError` unless the section says so.
+- [ ] METHODS.md has an appended section that decides cases 4 and 5, with a rationale and the options considered.
+- [ ] If the rule in §4.1 changes, `thesis_project_full_record.md` §4.1 is updated.
+
+**Checklist**
+- [ ] Read the frozen families (E1-02) and list which ones produce case 4 or case 5 traffic.
+- [ ] Draft the options and their trade-offs for Roy.
+- [ ] Record Roy's decision in METHODS.md.
+- [ ] Update `subject_device()` and its tests.
+
+**Deliverables**
+METHODS.md (appended section), `thesis/schema/devices.py`, `tests/test_alert_schema.py`, record §4.1 if changed
+
+**Risks / gotchas**
+- Leaving case 4 unmapped silently drops every attack aimed at infrastructure from the corpus.
+- Keying one alert to two devices double-counts it across bundles.
+
+**Open questions**
+None blocking. The decision itself is Roy's.
+
+**Traceability**
+R-089, R-090 · Record §4.1, §10 ("Which six attack families?") · METHODS.md, "Alert schema v0.1: device mapping (draft)"
 
 
 # Step D — EPIC-4 · Detection Layer
