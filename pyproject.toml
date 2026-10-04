@@ -1,0 +1,46 @@
+[project]
+name = "thesis"
+version = "0.1.0"
+description = "LLM-based SOC agent for IoT cyberattack detection and response (MSc thesis)."
+readme = "README.md"
+authors = [{ name = "Roy El Hayek" }]
+requires-python = ">=3.12"
+dependencies = [
+    "pyyaml>=6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18",
+    "pre-commit>=4.3",
+    "pytest>=8.4",
+    "ruff>=0.13",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.19,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["spikes"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["thesis"]
+exclude = ["^spikes/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--strict-markers"]
+markers = [
+    "slow: needs local Ollama or another slow resource; excluded from CI (record §6.9)",
+]
