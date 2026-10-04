@@ -1,0 +1,94 @@
+# Benign-only IoT testbed (ticket E0-07, record §4, §6.2, §6.11, ADR-0002).
+# Start and stop it with `make up` / `make down`, which set RUN_DIR to data/raw/<run_id>.
+# Without RUN_DIR (plain `docker compose ps` and similar) it falls back to data/raw/_no_run.
+# No service publishes a port, and the only network is internal: nothing here can
+# reach the host LAN or the internet. scripts/check_isolation.sh verifies that.
+
+name: thesis-testbed
+
+x-emulator: &emulator
+  image: eclipse-mosquitto:2.0.22
+  depends_on: [broker]
+  entrypoint: ["/bin/sh", "/emulator/emulate.sh"]
+  volumes:
+    - ./testbed/emulator:/emulator:ro
+  restart: unless-stopped
+
+services:
+  broker:
+    image: eclipse-mosquitto:2.0.22
+    volumes:
+      - ./testbed/broker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    networks:
+      testbed:
+        ipv4_address: 10.77.0.2
+    restart: unless-stopped
+
+  # Shares the broker's network namespace, so it sees every MQTT connection (ADR-0002).
+  capture:
+    build: ./testbed/capture
+    image: thesis-testbed-capture:e0-07
+    network_mode: "service:broker"
+    depends_on: [broker]
+    cap_add: [NET_ADMIN, NET_RAW]
+    volumes:
+      - ${RUN_DIR:-./data/raw/_no_run}/flows:/out
+    restart: unless-stopped
+
+  # Writes every MQTT message the broker carries to the raw MQTT file.
+  mqtt-logger:
+    image: eclipse-mosquitto:2.0.22
+    depends_on: [broker]
+    command: ["sh", "-c", "exec mosquitto_sub -h broker -i mqtt-logger -t '#' -F '%I %t %p' >> /out/mqtt.log"]
+    volumes:
+      - ${RUN_DIR:-./data/raw/_no_run}/mqtt:/out
+    networks:
+      testbed:
+        ipv4_address: 10.77.0.4
+    restart: unless-stopped
+
+  honeypot:
+    image: cowrie/cowrie:3.1.0
+    environment:
+      COWRIE_TELNET_ENABLED: "no"
+    volumes:
+      - ${RUN_DIR:-./data/raw/_no_run}/honeypot:/cowrie/cowrie-git/var/log/cowrie
+    networks:
+      testbed:
+        ipv4_address: 10.77.0.10
+    restart: unless-stopped
+
+  emulator-temp:
+    <<: *emulator
+    environment: {DEVICE_ID: iot-temp-01, KIND: temperature, PERIOD: "5"}
+    networks:
+      testbed:
+        ipv4_address: 10.77.0.21
+
+  emulator-cam:
+    <<: *emulator
+    environment: {DEVICE_ID: iot-cam-01, KIND: motion, PERIOD: "7"}
+    networks:
+      testbed:
+        ipv4_address: 10.77.0.22
+
+  emulator-hum:
+    <<: *emulator
+    environment: {DEVICE_ID: iot-hum-01, KIND: humidity, PERIOD: "11"}
+    networks:
+      testbed:
+        ipv4_address: 10.77.0.23
+
+  emulator-plug:
+    <<: *emulator
+    environment: {DEVICE_ID: iot-plug-01, KIND: power, PERIOD: "13"}
+    networks:
+      testbed:
+        ipv4_address: 10.77.0.24
+
+networks:
+  testbed:
+    internal: true
+    ipam:
+      config:
+        - subnet: 10.77.0.0/24
