@@ -9,9 +9,6 @@ set -eu
 BROKER="${BROKER:-broker}"
 PERIOD="${PERIOD:-5}"
 TOPIC="iot/${DEVICE_ID}/telemetry"
-# Different random draws per device: the shell's PID is 1 in every container.
-DEVICE_SEED=$(printf '%s' "$DEVICE_ID" | cksum | cut -d' ' -f1)
-
 # Stop at once on SIGTERM (as PID 1 the shell otherwise ignores it), so `make down`
 # can stop every emulator before the MQTT logger.
 trap 'exit 0' TERM
@@ -23,8 +20,10 @@ seq_no=0
 while true; do
   seq_no=$((seq_no + 1))
   ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-  # awk gives a reading near a fixed base value, seeded per device and per reading.
-  value=$(awk -v s="$((DEVICE_SEED % 100000 * 10000 + seq_no))" -v kind="$KIND" 'BEGIN {
+  # awk gives a reading near a fixed base value. The seed is a CRC of device and reading
+  # number: BusyBox awk's first rand() rises steadily with consecutive seeds.
+  seed=$(printf '%s-%s' "$DEVICE_ID" "$seq_no" | cksum | cut -d' ' -f1)
+  value=$(awk -v s="$seed" -v kind="$KIND" 'BEGIN {
     srand(s)
     if (kind == "temperature") base = 21; else if (kind == "humidity") base = 45;
     else if (kind == "power") base = 60; else base = 1
