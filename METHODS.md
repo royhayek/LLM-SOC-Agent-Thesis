@@ -454,6 +454,8 @@ The ceilings apply to every LLM call, agentic and Baseline B, and are asserted i
 
 **Side of C-02 chosen: record §4 and §4.4 (2,000 / 2,500), not the ~3,000-token figure of §4.4.1.** Why: the measurements leave room inside the ceiling, and this side keeps the locked §4 row unchanged. Measured with the Llama 3 tokenizer: the reduced view is 486 tokens on the spike bundle, and at most 1,324 tokens on a synthetic view with every cap full (5 flow exemplars, 3 MQTT exemplars, 3 command sequences at 200 characters, 5 `other_ids` per source). The action catalog, given as ID and description, is 166 tokens. The largest calls, evidence analysis (node 1) and Baseline B, are estimated at 1,800–2,200 tokens with a full view, below the ceiling. §4.4.1's ~3,000 tokens is kept as a cost estimate only. It overstates the input, so the cost budget it supports remains conservative.
 
+Record §4.4 estimates that a reduced view "lands around 800–1,200 tokens". The spike view (486) is below that range because the bundle is small. The synthetic worst case (1,324) is about 10 % above it. The range is an estimate, not a limit: the binding limits are the per-call ceilings above.
+
 Accepted risk: node 1's output ("findings per source and cross-source observations", record §6.3) is free text and may hit the 250-token ceiling. E3-08's token report will show it. Any change goes through a changelog entry.
 
 ### 10. Reduction ratio
@@ -466,12 +468,14 @@ The spike bundle holds 13 alerts, no MQTT alerts and no command lines, so 2.78 *
 
 ### 11. Baseline A's input view
 
-Baseline A is a conventional, non-generative classifier that works at the level of a bundle. Its input is the numeric and categorical fields of the reduced view and nothing else. The numeric fields are every aggregate of §3 and every `detector.max_score` of §7. The categorical fields are each source's state in `sources` and each `detector.label`. A field absent from the view (an inactive source, an omitted key) is a missing value, never a zero. Baseline A reads no exemplar, no `other_ids` and no command text, and it has no access to raw alerts or flow records. Its sources are those of the condition's `ExperimentConfig`, as for every other condition. It is trained and tuned on the training split only. Its predicted family is mapped to an action by the severity→action lookup (E8-01). Rationale: this is the only view that is identical to the agent's (record §4.1) while still using every source. The flow detector's output enters Baseline A through `detector.max_score` and `detector.label`, so the record's "the flow classifier doubles as the ML baseline" (record §4) holds in that form.
+Baseline A is the flow classifier itself: one artifact that serves as both the flow detector and the baseline (record §4, §5, §6.2; E4-03). Like every condition, it receives only the reduced view (§1). Its per-flow scoring is the shared step that fills the `flows` block's exemplar `score`, `detector.max_score` and `detector.label` (§4, §7), and every condition receives that output alike. Baseline A's verdict for a bundle is read from the reduced view and nothing else. Its predicted class is `detector.label` of the `flows` block, which is the flow classifier's label for its top-ranked flow. When the bundle has no `flows` block (flows `no_alerts` or `not_in_config`), it predicts `benign`. The severity→action lookup (E8-01) maps that verdict to an action. Baseline A reads no other key of the view: no `other_ids`, no MQTT or honeypot block and no command text. Rationale: this keeps Baseline A's view identical to the agent's (record §4.1) and keeps it the artifact the record locks. The cost is that Baseline A uses flow evidence only, which is what it is there to measure: "Do we need an LLM at all?" (record §6.6). The label set comes from EPIC-4, what the classifier trains on is decided by E2-01, and its freeze is E4-03.
 
 ### 12. ASSUMPTIONs and dependencies
 
 - **ASSUMPTION 1. Tokenizer.** The experiment model is not yet pinned (E0-06 depends on this ticket). The counts use the Llama 3 tokenizer of the spike's model family. Llama 3.3 is assumed to share it (UNVERIFIED). If E0-06 pins a model with a different tokenizer, §9 and §10 are re-measured through a changelog entry.
 - **ASSUMPTION 2. MQTT event names.** `publish`, `connect`, `disconnect` and `auth_failure` are placeholders until alert schema v1 (E3-01) fixes the vocabulary. The renaming goes through a changelog entry; the formulas do not change.
+- **ASSUMPTION 3. `other_ids` (§5).** Neither the ticket nor the record names this mechanism. It is added so that sources reduced to aggregates keep citable evidence (record §6.4, §6.5; H1).
+- **ASSUMPTION 4. Baseline A without flows (§11).** When a bundle has no `flows` block, Baseline A predicts `benign`. The record does not cover this case.
 - **Dependency, E3-01.** alert-v0.1 `FlowDetail` has a `tcp_flags` string but no SYN or ACK counters. `syn_only_ratio` needs `src2dst_syn_packets` and `src2dst_ack_packets`, so v1 must carry them (ADR-0002). In the worked example the ratio is derived by hand from `tcp_flags`.
 - **Dependency, EPIC-4 (C-15).** Exemplar ranking and `detector` use detector scores and labels that do not exist yet. In the worked example, the flow scores are the spike bundle's hand-written `anomaly_score` values.
 - **Dependency, E3.** Every token count assumes short alert IDs such as `fl-0003`. Longer IDs would raise the view's size.
@@ -481,8 +485,8 @@ Baseline A is a conventional, non-generative classifier that works at the level 
 | Question | Chosen | Rejected |
 |---|---|---|
 | Input budget (C-02) | 2,000 target / 2,500 ceiling (record §4, §4.4) | 3,000 / 3,500 (§4.4.1; changes a locked row without a measured need); 2,000 target with a 3,000 ceiling (headroom not needed on the measured sizes) |
-| Baseline A's view | Numeric and categorical fields of the reduced view | The flow detector's label alone (ignores MQTT and honeypot, so the baseline is weak); raw flows (violates record §4.1, contaminates H4) |
-| Honeypot cap | 200 characters | 128 (cuts most dropper commands mid-URL); 256 (+75 tokens at the worst case) |
+| Baseline A's view | The flow classifier itself (record §4, §5), its verdict read from `flows.detector.label`, `benign` when there is no `flows` block | A separate bundle-level classifier over every aggregate (a second model; contradicts record §5, "one artifact, two purposes", and E4-03); raw flows (violates record §4.1, contaminates H4) |
+| Honeypot cap | 200 characters | 128 (cuts most dropper commands mid-URL; saves 84 tokens at the worst case); 256 (+75 tokens at the worst case) |
 | Honeypot sequence ranking | Most command lines | Chronological (the first sessions may be idle); detector score (depends on EPIC-4) |
 | Duration and payload statistics | min, median, max | mean and standard deviation (sensitive to outliers); median, p95, max (p95 is unstable on small windows) |
 | Citable IDs for aggregated alerts | Up to 5 `other_ids` per source | Exemplar IDs only (hides cross-source evidence, H1); a pseudo-ID per source (changes the output schema and validator of record §6.4, §6.5) |

