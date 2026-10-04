@@ -150,4 +150,32 @@ Each annex is a section frozen by its own ticket, moved verbatim into `docs/meth
 
 ## Changelog
 
-No entries.
+### 1. 2026-10-04: the six attack families (E1-02, SCRUM-22)
+
+**What.** Answers the §10 question "Which six attack families?", which §10 of this file deferred to E1-02. Decided by Roy El Hayek, 2026-10-04. The families, their targets, dataset references [6]–[9], ATT&CK techniques and visibility matrix are in `knowledge/attack_families.yaml` (tag `families-v1.0`). `incident_type` is `IncidentType` in `thesis/schema/verdict.py`: the six families plus `benign`, 7 labels, as §3.2 assumes.
+
+| Family | Covers | Subject device D | MQTT | Flows | Honeypot |
+|---|---|---|---|---|---|
+| `ssh_brute_force` | brute force | honeypot, attacked | no | yes | yes |
+| `port_scan` | scanning | honeypot, attacked | no | yes | yes |
+| `mqtt_publish_flood` | DoS | IoT device, the flooding client | yes | yes | no |
+| `mqtt_brute_force` | brute force | IoT device, the guessing client | yes | yes | no |
+| `syn_flood` | DoS | IoT device, attacked | no | yes | no |
+| `botnet` | botnet | IoT device, the bot | no | yes | no |
+
+**C-01: neither side; a third.** Record §5 asks for a 2/2/2 mix over three, two and one sources; record §3.2 shows 1/4/1. Both count traces per attack. Visibility here is per bundle: a cell is yes when the family's bundles for D contain an alert from that source. Under record §4.1 every honeypot event keys to the honeypot, which never sends MQTT (Cowrie, SSH only, ADR-0002), so no bundle can hold all three sources. **Stratification rule:** no family leaves traces in all three sources, at least four families leave traces in exactly two, at least one leaves traces in exactly one, and MQTT and the honeypot each see at least two families. The selection is 0/4/2. `tests/test_families.py::test_stratification` checks the matrix against the rule.
+
+**Consequences for frozen text.**
+- §2 (C-04) states as a limitation that H1 cannot judge the third source "for the family visible in all three". There is no such family; the limitation is replaced by a stronger one: **H1 cannot test three-way fusion**. The gain from fusion (§4.2) is measured for two-source families only, and the one-source families are its control.
+- Flows sees every family, so the flows-only condition is never blind to a family; MQTT-only and honeypot-only each see two. The stratified H1 report (§4.2) separates the two effects as planned.
+- §1's label "an episode of F against D" covers D as the source of the attack for `mqtt_publish_flood`, `mqtt_brute_force` and `botnet` (a compromised device). D is the device the episode is scheduled on, attacked or attacking. This keeps the attack traffic off the broker-as-subject case left open by Annex C ASSUMPTION 4.
+
+**Preconditions (ASSUMPTIONs).**
+1. **Capture point.** The matrix assumes flows see all traffic on the testbed network. Under Annex F ASSUMPTION 3 (broker namespace only), the honeypot families and `syn_flood` leave no flows. E1-04 decides the capture point; if it keeps the broker namespace, this entry is superseded by a new changelog entry before any attack traffic exists.
+2. **MQTT keying.** MQTT alerts key to D through D's IP (`subject_device()`), so D's own MQTT connections and publishes reach its bundle.
+3. **Broker authentication.** `mqtt_brute_force` needs authentication enabled on the broker (E1-04).
+4. **Predictions.** Every cell is a prediction. E1-14 checks it against captures; a wrong cell is fixed by a changelog entry.
+
+**Rationale.** The proposal requires DoS, scanning, brute force and botnet (two families each for DoS and brute force). Each family is guided by a dataset whose attack list was checked on 2026-10-04, except [7], whose own text could not be read and is marked UNVERIFIED in the YAML. A brute-force family in each of the honeypot and MQTT sources gives H1 one tactic seen through two different sources.
+
+**Results invalidated.** None. No agent or baseline output exists.
