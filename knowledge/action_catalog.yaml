@@ -10,16 +10,16 @@ sources:
   E1: "ENISA, Good Practice Guide for Incident Management (December 2010). https://www.enisa.europa.eu/sites/default/files/publications/Incident_Management_guide.pdf"
   E3: "ENISA, Technical Implementation Guidance on Commission Implementing Regulation (EU) 2024/2690 (NIS2 security measures), version 1.0 (June 2025)."
   A1: "ANSSI, Comprendre et anticiper les attaques DDoS (March 2015)."
-  A3: "ANSSI, Cyberattaques et remediation - Piloter la remediation, version 1.0 (December 2023)."
-  A5: "ANSSI, Attaques par rancongiciels, tous concernes, version 1.0, ANSSI-GP-077 (August 2020)."
-  A6: "ANSSI, Crise d'origine cyber, les cles d'une gestion operationnelle et strategique, version 1.0, ANSSI-PA-089 (December 2021)."
-  A7: "ANSSI, L'investigation et la qualification d'incidents : les cles de decision, version 1.0 (September 2026)."
-  C1: "CERT-FR, Les bons reflexes en cas d'intrusion sur un systeme d'information (web page, accessed 2026-10-04). https://www.cert.ssi.gouv.fr/les-bons-reflexes-en-cas-dintrusion-sur-un-systeme-dinformation/"
+  A3: "ANSSI, Cyberattaques et remédiation – Piloter la remédiation, version 1.0 (December 2023)."
+  A5: "ANSSI, Attaques par rançongiciels, tous concernés – Comment les anticiper et réagir en cas d'incident ?, version 1.0, ANSSI-GP-077 (August 2020)."
+  A6: "ANSSI, Crise d'origine cyber, les clés d'une gestion opérationnelle et stratégique, version 1.0, ANSSI-PA-089 (December 2021)."
+  A7: "ANSSI, L'investigation et la qualification d'incidents : les clés de décision, version 1.0 (September 2026)."
+  C1: "CERT-FR, Les bons réflexes en cas d'intrusion sur un système d'information (web page, accessed 2026-10-04). https://www.cert.ssi.gouv.fr/les-bons-reflexes-en-cas-dintrusion-sur-un-systeme-dinformation/"
   N3: "NIST SP 800-61r3 (April 2025), Table 3. https://doi.org/10.6028/NIST.SP.800-61r3"
   N2: "NIST SP 800-61r2 (August 2012; withdrawn 2025-04-03). https://doi.org/10.6028/NIST.SP.800-61r2"
   AT: "MITRE ATT&CK Enterprise v19.2. https://attack.mitre.org"
   CI: "CISA, Federal Government Cybersecurity Incident and Vulnerability Response Playbooks (November 2021)."
-  IR: "CERT Societe Generale, Incident Response Methodologies v2.0. https://github.com/certsocietegenerale/IRM"
+  IR: "CERT Société Générale, Incident Response Methodologies v2.0. https://github.com/certsocietegenerale/IRM"
 
 actions:
   - id: no_action
@@ -46,7 +46,7 @@ actions:
       - source: A3
         locator: "Containment phase, p. 35"
         quote: "Lorsque des actions graves imminentes ne sont pas à craindre, il peut être prudent de mettre sous surveillance un moyen de l'attaquant identifié, plutôt que de le désactiver hâtivement"
-        translation: "When serious imminent actions are not to be feared, it may be prudent to place an identified attacker resource under surveillance rather than hastily disabling it."
+        translation: "When no serious imminent action is to be feared, it may be prudent to place an identified means used by the attacker under surveillance, rather than hastily disabling it."
       - source: A7
         locator: "p. 2"
         quote: "Une supervision renforcée et dédiée à un incident permet d'enrichir la compréhension technique en apportant plus de visibilité sur les actions en cours de l'attaquant"
@@ -87,7 +87,7 @@ actions:
       - source: A5
         locator: "Adopter les bons réflexes, p. 25"
         quote: "si une adresse IP est identifiée comme étant malveillante, il sera possible de mettre en place une règle au niveau des pare-feux."
-        translation: "if an IP address is identified as malicious, a firewall rule can be put in place."
+        translation: "if an IP address is identified as malicious, it will be possible to put a rule in place at the firewalls."
       - source: AT
         locator: "M1037 Filter Network Traffic, on T1499 Endpoint Denial of Service"
         quote: "Filter boundary traffic by blocking source addresses sourcing the attack, blocking ports that are being targeted, or blocking protocols being used for transport."
@@ -132,7 +132,7 @@ actions:
       - source: A6
         locator: "Fiche 9 Endiguer l'attaque, p. 39"
         quote: "Les mesures à mettre en place pour endiguer l'attaque sont validées par la cellule stratégique si celles-ci ont des conséquences sur la continuité de l'activité (isolement, déconnexion d'applicatifs ou serveur, blocage des accès Internet, etc.)."
-        translation: "Containment measures are approved by the strategic cell if they affect business continuity (isolation, disconnecting applications or servers, blocking Internet access, etc.)."
+        translation: "The measures to contain the attack are validated by the strategic crisis cell if they affect business continuity (isolation, disconnecting applications or servers, blocking Internet access, etc.)."
       - source: N3
         locator: "RS.MI-01 C1"
         quote: "transferring a compromised endpoint to an isolated remediation network"
