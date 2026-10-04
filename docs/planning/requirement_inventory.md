@@ -287,7 +287,7 @@ Items stated in several documents appear once, with every source listed. Paramet
 | ID | Item | Source | Category |
 |---|---|---|---|
 | R-197 | Limited action space: a closed enumeration defined in advance | Record §6.4; Proposal: Methodology | requirement |
-| R-198 | Action catalog derived from NIST SP 800-61, MITRE ATT&CK mitigations and published IR playbooks, with a citation per entry | Record §3.4, §6.4; Arch §8 | requirement |
+| R-198 | Action catalog derived from French and EU official guidance first (ANSSI / CERT-FR, ENISA, CERT Société Générale playbooks), with MITRE ATT&CK mitigations and NIST SP 800-61 as supporting references, and a citation per entry | Record §3.4, §6.4; Arch §8 | requirement |
 | R-199 | Action catalog has 6–8 candidate actions to start | Record §6.5 | decision |
 | R-200 | Action catalog defined before seeing any agent output | Record §8 | constraint |
 | R-201 | Optional: a classmate double-rates 20% of the catalog as a bonus; never block on it | Record §3.4 | decision |
