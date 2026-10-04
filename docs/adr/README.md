@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-One file per decision, numbered. The template and ADR-000 are created by ticket E0-02.
+One file per decision, numbered. Start a new one by copying `template.md`; it starts as Proposed until Roy accepts it.
 
 | ADR | Decision | Ticket |
 |---|---|---|
