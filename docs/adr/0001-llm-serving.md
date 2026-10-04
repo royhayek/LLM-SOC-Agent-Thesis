@@ -15,7 +15,7 @@ The walking-skeleton spike (E0-01, `spikes/FINDINGS.md`) ran one hand-written bu
 | Local `llama3.1-8b-8k` (Llama 3.1 8B, Q4_K_M, digest 6811dcd559d9), Ollama 0.23.2 | 10/10 | 10/10 | 10/10 | 2116 / 101 | 5.44 s (4.31 s after the first run) |
 | Hosted `meta-llama/Llama-3.3-70B-Instruct-Turbo` (FP8), DeepInfra | 10/10 | 10/10 | 10/10 | 2116 / 85 | 5.32 s |
 
-The spike could not separate the two models on one easy bundle, and it noted that the hosted Turbo model reports no revision or fingerprint.
+The spike could not separate the two models on one easy bundle, and it noted that the hosted Turbo model reports no revision or fingerprint. FINDINGS.md recommended deciding the experiment model on harder pilot bundles. This ADR does not: no pilot bundles exist yet, and the ticket's scope excludes any model comparison. The model is chosen on the record's criteria instead (same model for development and experiments, open weights, budget, tokenizer already measured).
 
 ## Decision
 
@@ -32,9 +32,9 @@ The spike could not separate the two models on one easy bundle, and it noted tha
 | top_p | 0.9 |
 | max_tokens | 250 (the output ceiling frozen in METHODS.md Annex E, §9) |
 | Structured output | `response_format` with `json_schema`, as in the spike |
-| Seed | Not supported in effect. DeepInfra's chat documentation does not mention `seed`. A check on 2026-10-04 (8 calls to this model at temperature 0.6, top_p 0.9, `max_tokens` 60) found the parameter accepted without error but not honoured: 3 calls with seed 42 gave 2 different completions, and 2 calls with seed 7 gave 2. No response carried a `system_fingerprint`. |
+| Seed | Not supported in effect. DeepInfra's chat documentation does not mention `seed`. A check on 2026-10-04 (8 calls to this model at temperature 0.6, top_p 0.9, `max_tokens` 60) found the parameter accepted without error but not honoured: 3 calls with seed 42 gave 2 different completions, 2 calls with seed 7 gave 2, and 3 calls with no seed gave 3. No response carried a `system_fingerprint`. |
 
-The temperature and top_p are Meta's reference defaults for Llama 3: `temperature: float = 0.6` and `top_p: float = 0.9` in `models/llama3/generation.py` of Meta's `meta-llama/llama-models` repository. They were fixed by the vendor before any output of this project existed, so they are not chosen to make agreement informative (METHODS.md Annex D, "Reliability and robustness"). With sampling, the k = 3 repetitions carry real run-to-run variance.
+The temperature and top_p are Meta's reference defaults for Llama 3: `temperature: float = 0.6` and `top_p: float = 0.9` in `models/llama3/generation.py` of Meta's `meta-llama/llama-models` repository. The only reason for the choice is that these are the vendor's reference values, fixed before any output of this project existed. The effect on agreement played no part in it (METHODS.md Annex D, "Reliability and robustness": the temperature is not changed to make agreement informative). A consequence, not a reason, is that the k = 3 repetitions carry run-to-run variance from sampling.
 
 **What the pin covers, and what it does not.** The weights are open and identified by their upstream commit, so anyone can re-serve the same model. DeepInfra serves the model by name, in FP8, and does not certify which commit it serves. Each result row therefore records the provider, the provider model ID, the precision, the upstream commit and the run date (record §4.2, "Record per run"). Seeds are not supported in effect, so the k = 3 repetitions carry all the variance. Individual completions cannot be reproduced, only their distribution.
 
@@ -43,7 +43,7 @@ The temperature and top_p are Meta's reference defaults for Llama 3: `temperatur
 | Field | Value |
 |---|---|
 | Model | Llama 3.1 8B Instruct through Ollama, tag `llama3.1-8b-8k` (Q4_K_M, digest 6811dcd559d9), `num_ctx 8192` |
-| Relation to the experiment model | Same model, same weights (record §4.2, "same model both places"). Only the quantization differs: Q4_K_M locally, FP8 hosted. |
+| Relation to the experiment model | Same model (record §4.2, "same model both places"): Llama 3.1 8B Instruct in both places, with the same sampling. The quantization differs: Q4_K_M locally, FP8 hosted. That both builds derive from the same weights is ASSUMPTION A1. |
 | Sampling | Temperature 0.6, top_p 0.9, as in the experiment |
 
 The Llama 3 tokenizer used for the token measurements in METHODS.md Annex E, §9 and §10 (ASSUMPTION 1) is the experiment model's own tokenizer.
@@ -97,6 +97,14 @@ The cap must be active before the first hosted call of any ticket (DoR).
 - No vLLM and no self-hosting (record §4.2).
 - One base model, no model comparison (record §5).
 
+### Assumptions
+
+- **A1. Same weights.** The Ollama build (`llama3.1-8b-8k`, digest 6811dcd559d9) and DeepInfra's FP8 build are both assumed to derive from Meta's Llama 3.1 8B Instruct weights at Hugging Face commit `0e9e39f2`. Neither provider links its build to that commit. UNVERIFIED.
+- **A2. Exploratory run size.** About 10 % of bundles (25 at N = 250). The run ticket fixes the size; the cost table also gives the total for a full exploratory pass.
+- **A3. N = 250**, a placeholder until E2-02.
+- **A4. 3,000 input tokens per call**, the record §4.4.1 estimate, above the 2,500 ceiling, so the cost is overstated.
+- **A5. Concurrency.** The time estimate assumes 8 concurrent requests within DeepInfra's rate limit. UNVERIFIED.
+
 ## Alternatives considered
 
 | Option | For | Against |
@@ -104,13 +112,13 @@ The cap must be active before the first hosted call of any ticket (DoR).
 | Llama 3.3 70B Instruct Turbo on DeepInfra, with 8B for development | Stronger model; the spike already ran it; about €16 worst case | A different size and release from the development model, which needs a sanity comparison; tokenizer equality with Llama 3 unverified; FP8 with no certified commit |
 | Hugging Face Inference Endpoint (dedicated) with a commit revision | The only option that pins the exact commit, at full precision; about USD 1/h on one A10G for 8B | A managed serving stack that is close to the "no self-hosted serving" rule; endpoint operations (an endpoint left running bills by the hour); throughput unverified; a structured-output mechanism the spike did not test |
 | Together AI serverless | OpenAI-compatible | Llama 3.3 70B at USD 1.04 / 1.04 per 1M tokens comes to about €145 for 4 runs, over budget |
-| Greedy decoding (temperature 0) | Close to deterministic | Agreement would measure only serving nondeterminism, and the k = 3 repetitions would add little |
+| Greedy decoding (temperature 0) | Close to deterministic | Not the vendor's reference setting, so it would need a rationale of its own; none was found that does not refer to its effect on agreement, which Annex D rules out as a reason |
 
 ## Consequences
 
 - E6-01 implements the single client against these variables and records, in every result row, the provider, the provider model ID, the precision, the upstream commit, the sampling parameters, the seed if supported, and the date.
-- The development and experiment runs use the same weights and the same sampling parameters. Only the quantization differs.
-- The thesis states the limit of the pin: open weights identified by commit, served by a provider that does not certify the commit.
+- The development and experiment runs use the same model and the same sampling parameters. The quantization differs, and the shared weights are ASSUMPTION A1.
+- The thesis states the limit of the pin: open weights identified by commit, served by a provider that does not certify the commit. Record §4.2 (`LLM_MODEL`) and the risk table (risk 5) carry a note saying so.
 - A change of model, revision, provider or sampling parameters after the freeze goes through a METHODS.md changelog entry (DoD, change control).
 - E2-02 recomputes the cost with the final N.
 
