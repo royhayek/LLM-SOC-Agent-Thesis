@@ -54,19 +54,17 @@ The flow exemplars (top 5 by detector score) need the detector's score, not an e
 | auth attempts | `eventid` = `cowrie.login.failed`, `cowrie.login.success` | derived | count of `cowrie.login.failed` plus count of `cowrie.login.success` |
 | success / fail | `eventid` = `cowrie.login.success` / `cowrie.login.failed` | derived | the two counts separately |
 
-The honeypot exemplars (up to 3 command sequences, hard-truncated) come from `input` on `cowrie.command.input` events, grouped by `session`. `cowrie.command.failed` carries `input` for commands the emulated shell does not implement, so both events are read.
+The honeypot exemplars (up to 3 command sequences, hard-truncated) come from `input` on `cowrie.command.input` events without a `realm` attribute, grouped by `session`. Events with `realm` are lines fed to a command's stdin, not shell command lines (Cowrie `docs/OUTPUT.rst`). `cowrie.command.failed` carries `input` for commands the emulated shell does not implement, so both events are read.
 
 **MQTT.** The MQTT aggregates of §4.4 come from the broker and the emulators, not from either tool chosen here. No row is mapped.
 
 **Sample lines from each tool's documentation.**
 
-NFStream, the printed flow in the project README (v6.6.0), shortened here to the fields mapped above:
+NFStream, the printed flow from the README's "Post-mortem statistical flow features extraction" example (v6.6.0, run with `statistical_analysis=True`), shortened here to the fields mapped above. `...` marks the omitted fields:
 
 ```
-NFlow(id=0, expiration_id=0, src_ip='192.168.43.18', src_mac='30:52:cb:6c:9c:1b', src_oui='30:52:cb', src_port=52066, dst_ip='66.220.156.68', dst_mac='98:0c:82:d3:3c:7c', dst_oui='98:0c:82', dst_port=443, protocol=6, ip_version=4, vlan_id=0, tunnel_id=0, bidirectional_first_seen_ms=1472393122365, bidirectional_last_seen_ms=1472393123665, bidirectional_duration_ms=1300, bidirectional_packets=19, bidirectional_bytes=5745, src2dst_first_seen_ms=1472393122365, src2dst_last_seen_ms=1472393123408, src2dst_duration_ms=1043, src2dst_packets=9, src2dst_bytes=1345, dst2src_first_seen_ms=1472393122668, dst2src_last_seen_ms=1472393123665, dst2src_duration_ms=997, dst2src_packets=10, dst2src_bytes=4400, application_name='TLS.Facebook', ...)
+NFlow(id=0, expiration_id=0, src_ip='192.168.43.18', ..., src_port=52066, dst_ip='66.220.156.68', ..., dst_port=443, protocol=6, ip_version=4, ..., bidirectional_duration_ms=1300, bidirectional_packets=19, bidirectional_bytes=5745, ..., src2dst_packets=9, src2dst_bytes=1345, ..., dst2src_packets=10, dst2src_bytes=4400, ..., src2dst_syn_packets=1, ..., src2dst_ack_packets=8, ..., dst2src_syn_packets=1, ..., dst2src_ack_packets=10, ...)
 ```
-
-The README example runs with `statistical_analysis=False`, so it does not show the flag counters. The API reference documents them: `src2dst_syn_packets`, "Flow src2dst syn packet accumulators", and the same for ack, fin, rst, psh, urg, ece and cwr.
 
 Cowrie: **no literal SSH login or command log line found in the Cowrie 3.1.0 documentation.** `docs/OUTPUT.rst` documents each event's attributes. `docs/EVENT_PIPELINE.rst` documents the message format of command input, `"CMD: %(input)s"`, and the only literal JSON in the documentation is a VirusTotal event (`docs/virustotal/README.rst`). See Consequences.
 
@@ -97,7 +95,7 @@ Memory (C1): none of the projects publishes a memory figure for a small testbed.
 ## Consequences
 
 - E0-07 adds a Cowrie 3.1.0 container and NFStream 6.6.0 inside the capture sidecar. Whether NFStream reads the sidecar interface live or reads pcap files written by a capture tool is E0-07's choice. A separate capture tool (for example tcpdump) needs this ADR amended or a new one.
-- E0-07 pins `statistical_analysis=True` and `accounting_mode` in the sidecar config, and checks that `src2dst_syn_packets` is present on a test flow. Without it the SYN-only ratio is silently missing (ticket risk).
+- E0-07 pins `statistical_analysis=True` in the sidecar config, chooses and pins an `accounting_mode` value (0 link layer, 1 IP, 2 transport, 3 payload; the bytes aggregates depend on it), and checks that `src2dst_syn_packets` is present on a test flow. Without it the SYN-only ratio is silently missing (ticket risk).
 - E0-07 checks on a test pcap that NFStream's `src_ip` is the sender of a flow's first packet. The SYN-only formula assumes it. The API page documents packet direction but does not state this rule.
 - The flow parser (E3) maps `NFlow` to `FlowDetail`. `FlowDetail.tcp_flags` is a string in alert-v0.1, while NFStream emits per-flag counts. The SYN-only formula needs `src2dst_syn_packets` and `src2dst_ack_packets` to survive normalization, so E0-05 and the parser ticket must keep them.
 - The honeypot parser (E3) maps Cowrie `session` to `HoneypotDetail.session_id` and `input` to `command`.
