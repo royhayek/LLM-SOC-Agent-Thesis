@@ -9,3 +9,4 @@ One file per decision, numbered. The template and ADR-000 are created by ticket 
 | 0002 | Honeypot and flow-exporter software | E0-14 |
 | 0003 | Attack generation method per family | E1-04 |
 | 0004 | Frontend build tool | E10-03 |
+| 0005 | PyYAML for reading YAML files | E0-04 |

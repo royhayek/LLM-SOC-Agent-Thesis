@@ -1,0 +1,126 @@
+# Action catalog v0.1 (ticket E0-04). Recommendation-only: the agent never executes an action.
+# Derivation, sources read and the in/out reason for every candidate: docs/catalog_derivation.md
+# Frozen at git tag catalog-v0.1. Changes only through a METHODS.md changelog entry.
+
+version: "0.1"
+date: "2026-10-04"
+
+sources:
+  N3: "NIST SP 800-61r3 (April 2025), Table 3. https://doi.org/10.6028/NIST.SP.800-61r3"
+  N2: "NIST SP 800-61r2 (August 2012; withdrawn 2025-04-03). https://doi.org/10.6028/NIST.SP.800-61r2"
+  AT: "MITRE ATT&CK Enterprise v19.2. https://attack.mitre.org"
+  CI: "CISA, Federal Government Cybersecurity Incident and Vulnerability Response Playbooks (November 2021)."
+  IR: "CERT Societe Generale, Incident Response Methodologies v2.0. https://github.com/certsocietegenerale/IRM"
+
+actions:
+  - id: no_action
+    name: No action
+    description: "Recommend taking no response action, because the activity does not meet the criteria for a security incident."
+    citations:
+      - source: N3
+        locator: "DE.AE-08"
+        quote: "consider known false positives to determine whether an incident should be declared."
+      - source: N2
+        locator: "§3.2.4, p. 28"
+        quote: "Even if an indicator is accurate, it does not necessarily mean that an incident has occurred."
+
+  - id: monitor
+    name: Monitor
+    description: "Recommend continued monitoring of the source and the affected device, with no containment yet."
+    citations:
+      - source: N3
+        locator: "RS.MA-03 R3"
+        quote: "balancing the need to quickly recover from an incident with the need to observe the attacker or conduct a more thorough investigation."
+      - source: CI
+        locator: "Appendix B, step 7k, p. 31"
+        quote: "Monitor for signs of threat actor response to containment activities."
+      - source: N2
+        locator: "§3.2.2, p. 26"
+        quote: "At a minimum, the organization could monitor activity involving the target more closely."
+
+  - id: escalate_to_analyst
+    name: Escalate to a human analyst
+    description: "Recommend escalating the incident to a human analyst for investigation and a response decision."
+    citations:
+      - source: N3
+        locator: "RS.MA-04 N1"
+        quote: "Escalation generally refers to increasing resources or time frames, while elevation usually indicates involving a higher level of management in the response efforts."
+      - source: N2
+        locator: "§3.2.6, p. 33"
+        quote: "the caller should escalate the incident to a higher level, such as the incident response team manager."
+      - source: CI
+        locator: "Declare Incident, p. 10"
+        quote: "alerting agency IT leadership to the need for investigation and response."
+
+  - id: block_source
+    name: Block the source address
+    description: "Recommend blocking traffic from the attacking source address at the network boundary."
+    citations:
+      - source: AT
+        locator: "M1037 Filter Network Traffic, on T1499 Endpoint Denial of Service"
+        quote: "Filter boundary traffic by blocking source addresses sourcing the attack, blocking ports that are being targeted, or blocking protocols being used for transport."
+      - source: CI
+        locator: "Appendix B, step 7g, p. 31"
+        quote: "Perform blocking (and logging) of unauthorized accesses, malware sources, and egress traffic to known attacker Internet Protocol (IP) addresses."
+      - source: IR
+        locator: "IRM #5 Malicious Network Behaviour, Remediation, p. 7"
+        quote: "find out all communication channels used by attacker and block them on all your network boundaries."
+
+  - id: rate_limit_source
+    name: Rate-limit the source traffic
+    description: "Recommend throttling or filtering the attack traffic, at the boundary or upstream, while legitimate traffic continues."
+    citations:
+      - source: IR
+        locator: "IRM #4 DDoS, Containment, p. 7"
+        quote: "Attempt to throttle or block DDoS traffic as close to the network's \"cloud\" as possible via a router, firewall, load balancer, specialized device, etc."
+      - source: AT
+        locator: "M1037 Filter Network Traffic, on T1498 Network Denial of Service"
+        quote: "it is typically necessary to intercept the incoming traffic upstream to filter out the attack traffic from the legitimate traffic."
+      - source: N3
+        locator: "RS.MI-01 C2, pp. 32-33"
+        quote: "Consider authorizing third parties (e.g., the organization's internet service providers and cloud service providers) to automatically act to contain certain types of incidents (e.g., large-scale DDoS attacks)"
+
+  - id: isolate_device
+    name: Isolate the affected device
+    description: "Recommend isolating the affected device from the rest of the network."
+    citations:
+      - source: N3
+        locator: "RS.MI-01 C1"
+        quote: "transferring a compromised endpoint to an isolated remediation network"
+      - source: N2
+        locator: "§3.3.1, p. 35"
+        quote: "An essential part of containment is decision-making (e.g., shut down a system, disconnect it from a network, disable certain functions)."
+      - source: CI
+        locator: "Containment Activities, p. 14"
+        quote: "Isolating impacted systems and network segments from each other and/or from non-impacted systems and networks."
+
+  - id: reset_credentials
+    name: Reset credentials
+    description: "Recommend resetting the credentials of accounts targeted on the affected device, and locking accounts after repeated failed logins."
+    citations:
+      - source: N3
+        locator: "RS.MI-02 N1"
+        quote: "eradication may be necessary to eliminate persistence mechanisms and entry points, such as deleting malware, disabling breached user accounts, and identifying and mitigating all exploited vulnerabilities."
+      - source: CI
+        locator: "Eradication Activities, p. 15"
+        quote: "Resetting passwords on compromised accounts."
+      - source: AT
+        locator: "M1018 User Account Management, on T1110 Brute Force"
+        quote: "Proactively reset accounts that are known to be part of breached credentials either immediately, or after detecting bruteforce attempts."
+      - source: AT
+        locator: "M1036 Account Use Policies, on T1110 Brute Force"
+        quote: "Set account lockout policies after a certain number of failed login attempts to prevent passwords from being guessed."
+
+  - id: disable_service
+    name: Disable the exposed service
+    description: "Recommend disabling or closing the targeted service or port on the affected device."
+    citations:
+      - source: AT
+        locator: "M1042 Disable or Remove Feature or Program, on T1046 Network Service Discovery"
+        quote: "Ensure that unnecessary ports and services are closed to prevent risk of discovery and potential exploitation."
+      - source: CI
+        locator: "Containment Activities, p. 14"
+        quote: "Closing specific ports and mail servers or other relevant servers and services."
+      - source: N2
+        locator: "§3.3.1, p. 35"
+        quote: "An essential part of containment is decision-making (e.g., shut down a system, disconnect it from a network, disable certain functions)."
