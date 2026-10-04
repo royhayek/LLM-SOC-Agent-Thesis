@@ -10,3 +10,4 @@ One file per decision, numbered. Start a new one by copying `template.md`; it st
 | 0003 | Attack generation method per family | E1-04 |
 | 0004 | Frontend build tool | E10-03 |
 | 0005 | PyYAML for reading YAML files | E0-04 |
+| 0006 | Pydantic for data models | E0-08 |
