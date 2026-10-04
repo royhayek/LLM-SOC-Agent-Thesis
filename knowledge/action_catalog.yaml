@@ -1,11 +1,20 @@
 # Action catalog v0.1 (ticket E0-04). Recommendation-only: the agent never executes an action.
 # Derivation, sources read and the in/out reason for every candidate: docs/catalog_derivation.md
+# European sources are cited first. French quotes are verbatim; `translation` is the author's English rendering.
 # Frozen at git tag catalog-v0.1. Changes only through a METHODS.md changelog entry.
 
 version: "0.1"
 date: "2026-10-04"
 
 sources:
+  E1: "ENISA, Good Practice Guide for Incident Management (December 2010). https://www.enisa.europa.eu/sites/default/files/publications/Incident_Management_guide.pdf"
+  E3: "ENISA, Technical Implementation Guidance on Commission Implementing Regulation (EU) 2024/2690 (NIS2 security measures), version 1.0 (June 2025)."
+  A1: "ANSSI, Comprendre et anticiper les attaques DDoS (March 2015)."
+  A3: "ANSSI, Cyberattaques et remediation - Piloter la remediation, version 1.0 (December 2023)."
+  A5: "ANSSI, Attaques par rancongiciels, tous concernes, version 1.0, ANSSI-GP-077 (August 2020)."
+  A6: "ANSSI, Crise d'origine cyber, les cles d'une gestion operationnelle et strategique, version 1.0, ANSSI-PA-089 (December 2021)."
+  A7: "ANSSI, L'investigation et la qualification d'incidents : les cles de decision, version 1.0 (September 2026)."
+  C1: "CERT-FR, Les bons reflexes en cas d'intrusion sur un systeme d'information (web page, accessed 2026-10-04). https://www.cert.ssi.gouv.fr/les-bons-reflexes-en-cas-dintrusion-sur-un-systeme-dinformation/"
   N3: "NIST SP 800-61r3 (April 2025), Table 3. https://doi.org/10.6028/NIST.SP.800-61r3"
   N2: "NIST SP 800-61r2 (August 2012; withdrawn 2025-04-03). https://doi.org/10.6028/NIST.SP.800-61r2"
   AT: "MITRE ATT&CK Enterprise v19.2. https://attack.mitre.org"
@@ -17,6 +26,12 @@ actions:
     name: No action
     description: "Recommend taking no response action, because the activity does not meet the criteria for a security incident."
     citations:
+      - source: E1
+        locator: "§8.3, p. 46"
+        quote: "Eventually you may skip handling completely if your triage process tells you the issue is not important at all."
+      - source: E3
+        locator: "§3.4.1, guidance, p. 43"
+        quote: "Use criteria to assess whether a suspicious event is an incident or not."
       - source: N3
         locator: "DE.AE-08"
         quote: "consider known false positives to determine whether an incident should be declared."
@@ -28,48 +43,70 @@ actions:
     name: Monitor
     description: "Recommend continued monitoring of the source and the affected device, with no containment yet."
     citations:
+      - source: A3
+        locator: "Containment phase, p. 35"
+        quote: "Lorsque des actions graves imminentes ne sont pas à craindre, il peut être prudent de mettre sous surveillance un moyen de l'attaquant identifié, plutôt que de le désactiver hâtivement"
+        translation: "When serious imminent actions are not to be feared, it may be prudent to place an identified attacker resource under surveillance rather than hastily disabling it."
+      - source: A7
+        locator: "p. 2"
+        quote: "Une supervision renforcée et dédiée à un incident permet d'enrichir la compréhension technique en apportant plus de visibilité sur les actions en cours de l'attaquant"
+        translation: "Enhanced monitoring dedicated to an incident enriches technical understanding by giving more visibility of the attacker's ongoing actions."
       - source: N3
         locator: "RS.MA-03 R3"
         quote: "balancing the need to quickly recover from an incident with the need to observe the attacker or conduct a more thorough investigation."
       - source: CI
         locator: "Appendix B, step 7k, p. 31"
         quote: "Monitor for signs of threat actor response to containment activities."
-      - source: N2
-        locator: "§3.2.2, p. 26"
-        quote: "At a minimum, the organization could monitor activity involving the target more closely."
 
   - id: escalate_to_analyst
     name: Escalate to a human analyst
     description: "Recommend escalating the incident to a human analyst for investigation and a response decision."
     citations:
+      - source: E1
+        locator: "§5.5.1.1 Escalation, p. 21"
+        quote: "When an incident is serious and is not being solved quickly enough, and the CERT has exhausted the means within its own authority to handle and coordinate, the CERT must have a well-established and maintained mechanism for escalation."
+      - source: C1
+        locator: "§3 Réagir - Décider"
+        quote: "Notifier les décideurs métiers et direction de votre organisation"
+        translation: "Notify your organisation's business decision-makers and management."
       - source: N3
         locator: "RS.MA-04 N1"
         quote: "Escalation generally refers to increasing resources or time frames, while elevation usually indicates involving a higher level of management in the response efforts."
       - source: N2
         locator: "§3.2.6, p. 33"
         quote: "the caller should escalate the incident to a higher level, such as the incident response team manager."
-      - source: CI
-        locator: "Declare Incident, p. 10"
-        quote: "alerting agency IT leadership to the need for investigation and response."
 
   - id: block_source
     name: Block the source address
     description: "Recommend blocking traffic from the attacking source address at the network boundary."
     citations:
+      - source: A1
+        locator: "§3.2 Réaction face à une attaque, p. 28"
+        quote: "le blocage des adresses IP sources identifiées comme étant à l'origine de l'attaque"
+        translation: "blocking the source IP addresses identified as the origin of the attack"
+      - source: A5
+        locator: "Adopter les bons réflexes, p. 25"
+        quote: "si une adresse IP est identifiée comme étant malveillante, il sera possible de mettre en place une règle au niveau des pare-feux."
+        translation: "if an IP address is identified as malicious, a firewall rule can be put in place."
       - source: AT
         locator: "M1037 Filter Network Traffic, on T1499 Endpoint Denial of Service"
         quote: "Filter boundary traffic by blocking source addresses sourcing the attack, blocking ports that are being targeted, or blocking protocols being used for transport."
       - source: CI
         locator: "Appendix B, step 7g, p. 31"
         quote: "Perform blocking (and logging) of unauthorized accesses, malware sources, and egress traffic to known attacker Internet Protocol (IP) addresses."
-      - source: IR
-        locator: "IRM #5 Malicious Network Behaviour, Remediation, p. 7"
-        quote: "find out all communication channels used by attacker and block them on all your network boundaries."
 
   - id: rate_limit_source
     name: Rate-limit the source traffic
     description: "Recommend throttling or filtering the attack traffic, at the boundary or upstream, while legitimate traffic continues."
     citations:
+      - source: A1
+        locator: "§3.2 Réaction face à une attaque, p. 29"
+        quote: "la limitation du nombre de connexions concurrentes par adresse IP source au niveau d'un pare-feu"
+        translation: "limiting the number of concurrent connections per source IP address at a firewall"
+      - source: A1
+        locator: "§3.2 Réaction face à une attaque, p. 28"
+        quote: "si la bande passante des liens réseau fournis par les opérateurs est saturée, ceux-ci doivent être contactés afin de filtrer le trafic."
+        translation: "if the bandwidth of the network links supplied by the operators is saturated, they must be contacted to filter the traffic."
       - source: IR
         locator: "IRM #4 DDoS, Containment, p. 7"
         quote: "Attempt to throttle or block DDoS traffic as close to the network's \"cloud\" as possible via a router, firewall, load balancer, specialized device, etc."
@@ -84,12 +121,21 @@ actions:
     name: Isolate the affected device
     description: "Recommend isolating the affected device from the rest of the network."
     citations:
+      - source: A3
+        locator: "Objectifs de l'endiguement, p. 34"
+        quote: "en isolant les ressources compromises identifiées."
+        translation: "by isolating the identified compromised resources."
+      - source: A5
+        locator: "Adopter les bons réflexes, p. 24"
+        quote: "d'isoler les équipements infectés du SI en les déconnectant du réseau."
+        translation: "to isolate infected equipment from the information system by disconnecting it from the network."
+      - source: A6
+        locator: "Fiche 9 Endiguer l'attaque, p. 39"
+        quote: "Les mesures à mettre en place pour endiguer l'attaque sont validées par la cellule stratégique si celles-ci ont des conséquences sur la continuité de l'activité (isolement, déconnexion d'applicatifs ou serveur, blocage des accès Internet, etc.)."
+        translation: "Containment measures are approved by the strategic cell if they affect business continuity (isolation, disconnecting applications or servers, blocking Internet access, etc.)."
       - source: N3
         locator: "RS.MI-01 C1"
         quote: "transferring a compromised endpoint to an isolated remediation network"
-      - source: N2
-        locator: "§3.3.1, p. 35"
-        quote: "An essential part of containment is decision-making (e.g., shut down a system, disconnect it from a network, disable certain functions)."
       - source: CI
         locator: "Containment Activities, p. 14"
         quote: "Isolating impacted systems and network segments from each other and/or from non-impacted systems and networks."
@@ -98,15 +144,20 @@ actions:
     name: Reset credentials
     description: "Recommend resetting the credentials of accounts targeted on the affected device, and locking accounts after repeated failed logins."
     citations:
+      - source: A3
+        locator: "p. 62"
+        quote: "désactiver les comptes compromis"
+        translation: "disable compromised accounts"
+      - source: A5
+        locator: "Restaurer les systèmes depuis des sources saines, p. 32"
+        quote: "changer les mots de passe"
+        translation: "change the passwords"
+      - source: E3
+        locator: "§11.6.2(d), Regulation text, p. 141"
+        quote: "require the reset of authentication credentials and the blocking of users after a predefined number of unsuccessful log-in attempts;"
       - source: N3
         locator: "RS.MI-02 N1"
         quote: "eradication may be necessary to eliminate persistence mechanisms and entry points, such as deleting malware, disabling breached user accounts, and identifying and mitigating all exploited vulnerabilities."
-      - source: CI
-        locator: "Eradication Activities, p. 15"
-        quote: "Resetting passwords on compromised accounts."
-      - source: AT
-        locator: "M1018 User Account Management, on T1110 Brute Force"
-        quote: "Proactively reset accounts that are known to be part of breached credentials either immediately, or after detecting bruteforce attempts."
       - source: AT
         locator: "M1036 Account Use Policies, on T1110 Brute Force"
         quote: "Set account lockout policies after a certain number of failed login attempts to prevent passwords from being guessed."
@@ -115,12 +166,16 @@ actions:
     name: Disable the exposed service
     description: "Recommend disabling or closing the targeted service or port on the affected device."
     citations:
+      - source: E1
+        locator: "§8.4.3 Actions proposed (to the attack target), p. 52"
+        quote: "How to stop and mitigate an ongoing attack: turn off a service"
+      - source: A1
+        locator: "§3.2 Réaction face à une attaque, p. 29"
+        quote: "le blocage du type de trafic impliqué dans l'attaque, et non nécessaire au bon fonctionnement de l'entité (filtrage sur le port destination, par exemple)"
+        translation: "blocking the type of traffic involved in the attack that is not needed for the entity's operation (for example, filtering on the destination port)"
       - source: AT
         locator: "M1042 Disable or Remove Feature or Program, on T1046 Network Service Discovery"
         quote: "Ensure that unnecessary ports and services are closed to prevent risk of discovery and potential exploitation."
       - source: CI
         locator: "Containment Activities, p. 14"
         quote: "Closing specific ports and mail servers or other relevant servers and services."
-      - source: N2
-        locator: "§3.3.1, p. 35"
-        quote: "An essential part of containment is decision-making (e.g., shut down a system, disconnect it from a network, disable certain functions)."
