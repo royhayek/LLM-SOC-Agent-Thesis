@@ -24,8 +24,13 @@ First draft. It was written after the E0-01 spike (`spikes/FINDINGS.md`), as rec
 
 - **Device role and criticality** (gap 1 and recommendation 3). These describe a device, not an alert, so they are not fields of `Alert`. The device inventory (E5-01, `knowledge/devices.yaml`) holds them, and the bundle carries them as device context. Criticality is a locked parameter and is not set here.
 
+### Device mapping
+
+`subject_device()` follows record §4.1. The cases §4.1 does not cover are written down as ASSUMPTIONs 1–5 in METHODS.md, "Alert schema v0.1: device mapping (draft)". Cases 4 (external host to infrastructure) and 5 (device to device) are left open for E3-01.
+
 ### Not from the spike
 
 - **MQTT fields.** The spike bundle had no MQTT alerts (`no_alerts`), so every `MqttDetail` field is a first guess for E3-01 to check against the pilot capture.
 - **Detector score and label.** Neither is in v0.1. The detectors (EPIC-4) and the reduction policy (E0-05) decide where they live.
 - **Placeholder IDs and IPs.** The device and infrastructure IDs and IPs in `devices.py` and in the fixtures are placeholders until the testbed and the device inventory (E5-01) exist.
+- **`protocol` differs between sources.** It holds the transport protocol in flows (`tcp`) and the application protocol in honeypot events (`ssh`), so it cannot be part of the tuple that links a flow to a session. E3-01 should either align the two or link on IPs and ports only.

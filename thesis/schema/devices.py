@@ -1,6 +1,7 @@
 """The device-mapping rule, defined once (record §4.1).
 
-D is the non-infrastructure endpoint. Honeypot events key to the honeypot.
+D is the non-infrastructure endpoint. Honeypot events key to the honeypot. Cases §4.1
+does not cover are ASSUMPTIONs in METHODS.md, "Alert schema v0.1: device mapping (draft)".
 
 The IDs and IPs below are placeholders until the testbed exists. The device inventory
 (E5-01, `knowledge/devices.yaml`) replaces them; role and criticality live there, not here.
