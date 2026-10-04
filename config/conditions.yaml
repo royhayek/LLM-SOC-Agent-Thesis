@@ -1,0 +1,9 @@
+# Allowed (sources, strategy, safety) combinations, checked by thesis.config.validate_combination.
+#
+# PLACEHOLDER. The single entry below only lets the code and tests run. It is not the
+# condition matrix. Ticket E0-03 fills this file from the matrix frozen in METHODS.md;
+# after that, any change goes through a METHODS.md changelog entry.
+conditions:
+  - sources: [flows, honeypot, mqtt]
+    strategy: agentic
+    safety: enforcing
