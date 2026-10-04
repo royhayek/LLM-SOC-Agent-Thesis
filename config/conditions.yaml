@@ -1,9 +1,31 @@
 # Allowed (sources, strategy, safety) combinations, checked by thesis.config.validate_combination.
 #
-# PLACEHOLDER. The single entry below only lets the code and tests run. It is not the
-# condition matrix. Ticket E0-03 fills this file from the matrix frozen in METHODS.md;
-# after that, any change goes through a METHODS.md changelog entry.
+# The condition matrix of METHODS.md v1.0, §2: 7 conditions, in the order C1-C7.
+# Frozen at git tag methods-v1.0. Any change goes through a METHODS.md changelog entry.
 conditions:
+  # C1: the complete agent (H1, H3, H4)
   - sources: [flows, honeypot, mqtt]
     strategy: agentic
     safety: enforcing
+  # C2-C4: H1 single sources
+  - sources: [flows]
+    strategy: agentic
+    safety: enforcing
+  - sources: [mqtt]
+    strategy: agentic
+    safety: enforcing
+  - sources: [honeypot]
+    strategy: agentic
+    safety: enforcing
+  # C5: safety off (H2, H3)
+  - sources: [flows, honeypot, mqtt]
+    strategy: agentic
+    safety: logging_only
+  # C6: Baseline B (H2, H4)
+  - sources: [flows, honeypot, mqtt]
+    strategy: prompt_only
+    safety: logging_only
+  # C7: Baseline A (H4)
+  - sources: [flows, honeypot, mqtt]
+    strategy: ml_classifier
+    safety: logging_only

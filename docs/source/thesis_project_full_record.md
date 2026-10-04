@@ -92,7 +92,7 @@ Eight issues identified. Four resolved, four live.
 | #   | Risk                                                                         | Status       | Handling                                                                                |
 | --- | ---------------------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------- |
 | 1   | Incident unit undefined                                                      | **Resolved** | Fixed-window device-keyed tiling, §4.1                                                  |
-| 2   | Statistical power — every hypothesis says "significantly" but no N is stated | **LIVE**     | Target 200–400 bundles, k = 3–5 repetitions. Power calculation before corpus generation |
+| 2   | Statistical power — every hypothesis says "significantly" but no N is stated | **LIVE**     | Target 200–400 bundles, k = 3–5 repetitions (k = 3, decided 2026-10-04, METHODS.md v1.0 §2). Power calculation before corpus generation |
 | 3   | H3 is circular — the validator eliminates violations by construction         | **LIVE**     | Split the safety metric three ways, §3.1                                                |
 | 4   | H1 has a built-in confound                                                   | **LIVE**     | Stratify by attack family, §3.2                                                         |
 | 5   | LLM reproducibility                                                          | **Resolved** | Open-weights model pinned by revision                                                   |
@@ -135,7 +135,7 @@ Fix it in **scenario design**, not analysis:
 
 - Ensure a meaningful subset of attack families leave traces in at least two sources.
 - Report H1 **stratified by attack family**, separating gain-from-fusion from gain-from-having-a-source-at-all.
-- Consider pairwise conditions (MQTT+flows, flows+honeypot) rather than only single vs all three.
+- Consider pairwise conditions (MQTT+flows, flows+honeypot) rather than only single vs all three. _(Decision 2026-10-04, ticket E0-03: excluded; H1 reports the gain from fusion per family against the best single source instead. METHODS.md v1.0 §2.)_
 
 ### 3.3 Risk 7 in detail — prompt injection
 
@@ -577,11 +577,11 @@ Those numbers decide the model, confirm or break the 2,000-token budget, give yo
 
 | Question                                     | Why it matters                                                                                                                                                                     | Status                         |
 | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| Is a 60-second window the right unit?        | A slow brute-force episode spans several bundles. The choice propagates into every metric                                                                                          | Assumption, open for review    |
+| Is a 60-second window the right unit?        | A slow brute-force episode spans several bundles. The choice propagates into every metric                                                                                          | Decided 2026-10-04: kept at 60 s, limitation stated. METHODS.md v1.0 §1 (E0-03) |
 | How many scenarios for statistical validity? | All four hypotheses claim significance. Target must be fixed before the corpus is generated and frozen. McNemar for paired binary outcomes, Wilcoxon signed-rank for paired scores | Undecided                      |
 | How should contextual safety be scored?      | The validator makes the naive metric circular. §3.1 proposes a split, needs review                                                                                                 | Decided 2026-10-04: METHODS.md "Safety scoring" (E0-12) |
 | What is the validator rejection policy?      | Retry with feedback, escalate to a human, or hard fail. Each yields a different measured unsafe rate                                                                               | Decided 2026-10-04: hard fail, no retries. METHODS.md "Rejection policy" (E0-11) |
-| Are two baselines sufficient?                | A and B isolate the model and the architecture respectively. A third may be expected                                                                                               | Open                           |
+| Are two baselines sufficient?                | A and B isolate the model and the architecture respectively. A third may be expected                                                                                               | Decided 2026-10-04: two, no third. METHODS.md v1.0 §9 (E0-03) |
 | Which six attack families?                   | Must be chosen so some appear in several sources and some in only one, or H1 confirms itself trivially                                                                             | Criteria fixed, selection open |
 | Project name                                 | See §11                                                                                                                                                                            | Open                           |
 | References [4] and [17]                      | Flagged incomplete in the proposal itself                                                                                                                                          | To resolve before submission   |
