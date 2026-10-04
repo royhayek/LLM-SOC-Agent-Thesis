@@ -25,6 +25,8 @@ services:
     restart: unless-stopped
 
   # Shares the broker's network namespace, so it sees every MQTT connection (ADR-0002).
+  # tcpdump writes flows/raw.pcap; `make down` turns it into flows.jsonl (ADR-0008).
+  # No restart: a restarted tcpdump would overwrite the pcap. `make down` fails instead.
   capture:
     build: ./testbed/capture
     image: thesis-testbed-capture:e0-07
@@ -33,7 +35,7 @@ services:
     cap_add: [NET_ADMIN, NET_RAW]
     volumes:
       - ${RUN_DIR:-./data/raw/_no_run}/flows:/out
-    restart: unless-stopped
+    restart: "no"
 
   # Writes every MQTT message the broker carries to the raw MQTT file.
   mqtt-logger:

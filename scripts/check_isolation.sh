@@ -11,7 +11,17 @@
 #
 # Control: the same probe first runs on Docker's default bridge network, where the targets
 # must be reachable. A probe that cannot reach anything from there proves nothing.
+#
+# While a run is up, the full output is also saved to data/raw/<run_id>/isolation_check.log.
 set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+CURRENT_RUN="$REPO_ROOT/data/raw/.current_run"
+if [[ -f "$CURRENT_RUN" ]]; then
+  log="$REPO_ROOT/data/raw/$(cat "$CURRENT_RUN")/isolation_check.log"
+  exec > >(tee -a "$log") 2>&1
+  echo "=== $(date -u +%Y-%m-%dT%H:%M:%SZ) check_isolation.sh"
+fi
 
 PROJECT="thesis-testbed"
 PROBE_IMAGE="busybox:1.37.0"

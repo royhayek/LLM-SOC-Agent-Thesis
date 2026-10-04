@@ -326,3 +326,15 @@ Agreement measures how much the output varies between runs, so it depends on the
 | Output scored | Both `R` and `E`, headline on `E` | `E` only (hides first-attempt variation) |
 | Role in the analysis | Descriptive, per condition | Headline or hypothesis test (no hypothesis claims reliability; few possible values at `k = 3`) |
 | Robustness | Out of scope, stated as a limitation | Prompt-injection metric now (stretch-only experiment, runs beyond the matrix); perturbation tests on bundles (new runs and a new perturbation design) |
+
+## Testbed capture settings (draft)
+
+Ticket SCRUM-70 [E0-07], 2026-10-04. These are ASSUMPTIONs, not decisions. They affect what the flow source measures, so they are recorded here. Like every section, this text is frozen when its ticket merges and is never edited. A later appended section supersedes it: E0-05 (reduction policy) for ASSUMPTION 1, E1-04 for ASSUMPTION 3 and E1-05 for ASSUMPTION 5. The settings are pinned in `testbed/capture/flows.py`.
+
+- **ASSUMPTION 1. Byte accounting.** NFStream runs with `accounting_mode = 0` (link layer: byte counts include the Ethernet header), NFStream's default. ADR-0002 leaves the value to E0-07. The other values are 1 (IP layer), 2 (transport layer) and 3 (payload only). The §4.4 bytes in and bytes out aggregates depend on it.
+- **ASSUMPTION 2. Flow timeouts.** NFStream's defaults: idle timeout 120 s, active timeout 1,800 s. A connection silent for 120 s ends its flow, and a connection open for more than 1,800 s is split into several flows. NFStream reads the run's pcap after capture stops (ADR-0008), so flows still open at the end of the run are written at end of file, not lost.
+- **ASSUMPTION 3. Capture point.** The sidecar shares the broker's network namespace (ADR-0002 leaves the choice to E0-07). It sees every connection to or from the broker and nothing else: traffic to the honeypot and between devices is not captured. E1-04 revisits this before attack traffic exists.
+- **ASSUMPTION 4. Flow direction.** NFStream's `src_ip` is the sender of the first captured packet of a flow (checked by `testbed/capture/check_direction.py` on a test pcap). For a flow whose start was not captured, `src_ip` can be the responder, and that flow has `src2dst_syn_packets = 0`, so the SYN-only ratio proposed in ADR-0002 counts it as not SYN-only.
+- **ASSUMPTION 5. Benign profile.** Four simple periodic publishers (periods 5, 7, 11 and 13 s), each opening one MQTT connection per reading. E1-05 replaces them with benign profiles that include irregularities.
+
+---
