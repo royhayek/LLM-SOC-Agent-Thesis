@@ -4,7 +4,7 @@ Methods contract for the thesis "An LLM-based SOC agent for IoT cyberattack dete
 
 **Version 1.0, dated 2026-10-04.** Ticket SCRUM-24 [E0-03]. Decided by Roy El Hayek, 2026-10-04, who adopted the recommendations drafted for the ticket. Frozen at git tag `methods-v1.0`. Every later experiment is checked against this document. From now on, a change is an appended entry in the Changelog at the end; frozen text is never edited (record §3.4).
 
-This file is the core of the contract. The sections frozen by earlier tickets are annexes A–E (§11). They are part of METHODS.md v1.0, and a reference elsewhere to METHODS.md followed by a section title (for example METHODS.md "Safety scoring") means the annex with that title.
+This file is the core of the contract. The sections frozen by earlier tickets are annexes A–F (§11). They are part of METHODS.md v1.0, and a reference elsewhere to METHODS.md followed by a section title (for example METHODS.md "Safety scoring") means the annex with that title.
 
 **Spike exposure.** Action catalog v0.1 was derived before any spike output existed (`docs/catalog_derivation.md` §5). The walking-skeleton spike (E0-01) then ran 20 verdicts on one hand-built bundle that is not part of the corpus. Its findings were an input to the reduction policy (Annex E: token budget, `other_ids`), and its summary is in `docs/thesis_notes.md`, which the author of this version read. No spike output was used to define a correct, acceptable or unsafe outcome, a condition, a metric or a test.
 
@@ -169,6 +169,7 @@ Each annex is a section frozen by its own ticket, moved verbatim into `docs/meth
 | C | Alert schema v0.1: device mapping (draft) (`alert_schema_device_mapping.md`) | E0-08, no tag (draft ASSUMPTIONs; E3-10, E3-01) |
 | D | Reliability and robustness (`reliability_robustness.md`) | E0-13, `reliability-v1.0` |
 | E | Reduction policy v1.0 (`reduction_policy.md`) | E0-05, `reduction-v1.0` |
+| F | Testbed capture settings (draft) (`testbed_capture_settings.md`) | E0-07, no tag (draft ASSUMPTIONs; E1-04, E1-05) |
 
 ## 12. Options considered
 
