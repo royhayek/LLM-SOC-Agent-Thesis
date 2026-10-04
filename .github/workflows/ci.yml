@@ -1,0 +1,36 @@
+name: CI
+
+# Every branch push runs CI; pull requests show the result for their head commit.
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Fail if .env is tracked
+        run: |
+          tracked=$(git ls-files | grep -E '(^|/)\.env$' || true)
+          if [ -n "$tracked" ]; then
+            echo "::error::.env is tracked in git and may hold secrets: $tracked. Remove it with 'git rm --cached .env'."
+            exit 1
+          fi
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --locked
+
+      - name: Pre-commit (ruff, mypy strict on thesis/, file hygiene)
+        run: uv run --frozen pre-commit run --all-files --show-diff-on-failure
+
+      - name: Tests (slow tests excluded, record §6.9)
+        run: uv run --frozen pytest -m "not slow" -v
