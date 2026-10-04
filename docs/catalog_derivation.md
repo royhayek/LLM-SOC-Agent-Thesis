@@ -6,7 +6,7 @@ The catalog is a closed list of recommendation-only actions (record §6.4). Each
 
 ## 1. Sources and sections read
 
-US and international sources were retrieved on 2026-10-03, European sources on 2026-10-04. European official guidance (ENISA for the EU, ANSSI / CERT-FR for France) is cited first wherever it supports an action (record §3.4). Each quote was matched against the text of the downloaded document. French quotes are kept verbatim, with the author's English translation. The author re-checks every quote against its source before the catalog is tagged.
+US and international sources were retrieved on 2026-10-03, European sources on 2026-10-04. French and EU official guidance (ANSSI / CERT-FR, ENISA) is cited first, then CERT Société Générale, MITRE ATT&CK and NIST SP 800-61 as supporting references. CISA was read but is not cited (source decision, §3; record §3.4). Each quote was matched against the text of the downloaded document. French quotes are kept verbatim, with the author's English translation. The author re-checks every quote against its source before the catalog is tagged.
 
 | ID | Source | Edition | Sections read |
 |---|---|---|---|
@@ -25,13 +25,13 @@ US and international sources were retrieved on 2026-10-03, European sources on 2
 | N3 | NIST SP 800-61r3, *Incident Response Recommendations and Considerations for Cybersecurity Risk Management: A CSF 2.0 Community Profile*. Nelson, Rekhi, Souppaya, Scarfone. https://doi.org/10.6028/NIST.SP.800-61r3 | Rev. 3, April 2025 (current) | §3.2, Table 3 (CSF 2.0 Community Profile part 2): DE.AE-08, RS.MA, RS.MA-02, RS.MA-03, RS.MA-04, RS.AN-06, RS.AN-07, RS.CO-02, RS.MI, RS.MI-01, RS.MI-02, RC, RC.RP-04 |
 | N2 | NIST SP 800-61r2, *Computer Security Incident Handling Guide*. Cichonski, Millar, Grance, Scarfone. https://doi.org/10.6028/NIST.SP.800-61r2 | Rev. 2, August 2012. **Withdrawn 2025-04-03**, superseded by Rev. 3 | §2.3.4.4, §3.2.2, §3.2.4, §3.2.6, §3.2.7, §3.3.1, §3.3.2, §3.3.4, Table 3-5, Appendix G |
 | AT | MITRE ATT&CK Enterprise. https://attack.mitre.org | v19.2 (website version from 2026-04-28) | Techniques T1110, T1110.001, T1046, T1595, T1595.001, T1498, T1498.001, T1498.002, T1499, T1499.002, T1499.003, T1583.005, T1584.005, T1071, T1071.005. Mitigations M1018, M1027, M1030, M1031, M1032, M1035, M1036, M1037, M1042, M1051, M1056 |
-| CI | CISA, *Federal Government Cybersecurity Incident and Vulnerability Response Playbooks*. https://www.cisa.gov/resources-tools/resources/federal-government-cybersecurity-incident-and-vulnerability-response-playbooks | November 2021 (PDF re-issued August 2024) | Incident Response Playbook: Containment, Eradication, Recovery, Coordination (pp. 10–18); Appendix B checklist (pp. 27–33) |
+| CI | CISA, *Federal Government Cybersecurity Incident and Vulnerability Response Playbooks*. https://www.cisa.gov/resources-tools/resources/federal-government-cybersecurity-incident-and-vulnerability-response-playbooks | November 2021 (PDF re-issued August 2024) | Incident Response Playbook: Containment, Eradication, Recovery, Coordination (pp. 10–18); Appendix B checklist (pp. 27–33). **Read, not cited** (source decision, §3) |
 | IR | CERT Société Générale, *Incident Response Methodologies* (IRM). https://github.com/certsocietegenerale/IRM | IRM v2.0. No printed date; repository commits 2022-12 and 2023-01 | IRM #1 Worm Infection, IRM #4 DDoS, IRM #5 Malicious Network Behaviour |
 | SA | P. Kral, *The Incident Handlers Handbook*, SANS Institute. https://www.sans.org/white-papers/33901 | 2012 | Containment (p. 7), Eradication and Recovery (pp. 7–8), Identification (p. 5) |
 
 ## 2. Candidate actions
 
-Each candidate was found in at least one source. Duplicates are grouped under one candidate.
+Each candidate was found in at least one source. Duplicates are grouped under one candidate. This table records what was read, so it still shows CISA (CI) quotes; the catalog does not cite CISA (source decision, §3).
 
 | # | Candidate | Citations (source, locator: quote) | Decision | Reason |
 |---|---|---|---|---|
@@ -67,6 +67,20 @@ The catalog cites these first. Full quotes and translations are in `knowledge/ac
 
 ## 3. Selection
 
+### Source decision (2026-10-04)
+
+Decision by the author: the catalog rests on French and EU official guidance first (ANSSI, CERT-FR, ENISA), because the thesis is written and examined in France. Three non-EU sources stay as supporting references, and one is dropped:
+
+- **CERT Société Générale IRM**: kept. It is a French CERT's published playbook.
+- **MITRE ATT&CK**: kept. It is run by a non-profit and used worldwide. Other tickets depend on it: E1-02 gives each attack family an ATT&CK technique ID, and the knowledge subsystem stores ATT&CK mitigations (R-170).
+- **NIST SP 800-61**: kept as a second citation behind the European ones. It is the most widely cited incident-response reference, so an examiner will expect it.
+- **CISA playbooks**: dropped. They are US federal procedure, and every point they supported is already covered by ANSSI or ENISA.
+
+Not going EU-only: `rate_limit_source` would then rest on a single 2015 ANSSI document. A second, independent source per action is what replaces the missing second rater (record §3.4).
+
+### Action selection
+
+
 The catalog keeps 8 actions, the top of the 6–8 range (record §6.5). It was chosen against four criteria:
 
 1. **Response, not hardening.** Every action answers the incident in front of the agent. Patching (C10), segmentation (C12) and policy changes (C13) are left out.
@@ -86,7 +100,7 @@ PROVISIONAL. The families are the §3.2 candidates; E1-02 freezes the real list.
 | MQTT broker password guessing | T1110.001 Password Guessing. **Inference:** ATT&CK lists SSH but not MQTT among targeted services | `reset_credentials` (AT M1018 and M1036 on T1110) |
 | Port scan | T1046 Network Service Discovery | `disable_service` (AT M1042 on T1046), `block_source` (AT M1031 on T1046: "Use network intrusion detection/prevention systems to detect and prevent remote service scans.") |
 | SSH password guessing | T1110.001 Password Guessing ("SSH (22/TCP)" is listed among targeted services) | `reset_credentials` (AT M1018 and M1036 on T1110) |
-| Botnet traffic | T1071 / T1071.005 C2 over an application or pub/sub protocol. T1583.005 and T1584.005 offer only M1056 Pre-compromise | `isolate_device` (CI p. 14; IR #1 p. 6: "Isolate the infected area. Disconnect it from any network."), `block_source` (AT M1037 on T1071.005) |
+| Botnet traffic | T1071 / T1071.005 C2 over an application or pub/sub protocol. T1583.005 and T1584.005 offer only M1056 Pre-compromise | `isolate_device` (A5 p. 24; IR #1 p. 6: "Isolate the infected area. Disconnect it from any network."), `block_source` (AT M1037 on T1071.005) |
 | Denial of service | T1498 Network Denial of Service, T1499 Endpoint Denial of Service | `block_source`, `rate_limit_source` (AT M1037 on T1498 and T1499; N3 RS.MI-01 C2) |
 
 ## 5. Statement on spike outputs

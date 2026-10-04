@@ -1,6 +1,8 @@
 # Action catalog v0.1 (ticket E0-04). Recommendation-only: the agent never executes an action.
 # Derivation, sources read and the in/out reason for every candidate: docs/catalog_derivation.md
-# European sources are cited first. French quotes are verbatim; `translation` is the author's English rendering.
+# Source order (decision 2026-10-04): French and EU official guidance first, then CERT Societe Generale IRM,
+# MITRE ATT&CK and NIST SP 800-61 as supporting references. CISA is not cited.
+# French quotes are verbatim; `translation` is the author's English rendering.
 # Frozen at git tag catalog-v0.1. Changes only through a METHODS.md changelog entry.
 
 version: "0.1"
@@ -18,7 +20,6 @@ sources:
   N3: "NIST SP 800-61r3 (April 2025), Table 3. https://doi.org/10.6028/NIST.SP.800-61r3"
   N2: "NIST SP 800-61r2 (August 2012; withdrawn 2025-04-03). https://doi.org/10.6028/NIST.SP.800-61r2"
   AT: "MITRE ATT&CK Enterprise v19.2. https://attack.mitre.org"
-  CI: "CISA, Federal Government Cybersecurity Incident and Vulnerability Response Playbooks (November 2021)."
   IR: "CERT Société Générale, Incident Response Methodologies v2.0. https://github.com/certsocietegenerale/IRM"
 
 actions:
@@ -54,9 +55,6 @@ actions:
       - source: N3
         locator: "RS.MA-03 R3"
         quote: "balancing the need to quickly recover from an incident with the need to observe the attacker or conduct a more thorough investigation."
-      - source: CI
-        locator: "Appendix B, step 7k, p. 31"
-        quote: "Monitor for signs of threat actor response to containment activities."
 
   - id: escalate_to_analyst
     name: Escalate to a human analyst
@@ -91,9 +89,6 @@ actions:
       - source: AT
         locator: "M1037 Filter Network Traffic, on T1499 Endpoint Denial of Service"
         quote: "Filter boundary traffic by blocking source addresses sourcing the attack, blocking ports that are being targeted, or blocking protocols being used for transport."
-      - source: CI
-        locator: "Appendix B, step 7g, p. 31"
-        quote: "Perform blocking (and logging) of unauthorized accesses, malware sources, and egress traffic to known attacker Internet Protocol (IP) addresses."
 
   - id: rate_limit_source
     name: Rate-limit the source traffic
@@ -136,9 +131,6 @@ actions:
       - source: N3
         locator: "RS.MI-01 C1"
         quote: "transferring a compromised endpoint to an isolated remediation network"
-      - source: CI
-        locator: "Containment Activities, p. 14"
-        quote: "Isolating impacted systems and network segments from each other and/or from non-impacted systems and networks."
 
   - id: reset_credentials
     name: Reset credentials
@@ -155,12 +147,12 @@ actions:
       - source: E3
         locator: "§11.6.2(d), Regulation text, p. 141"
         quote: "require the reset of authentication credentials and the blocking of users after a predefined number of unsuccessful log-in attempts;"
-      - source: N3
-        locator: "RS.MI-02 N1"
-        quote: "eradication may be necessary to eliminate persistence mechanisms and entry points, such as deleting malware, disabling breached user accounts, and identifying and mitigating all exploited vulnerabilities."
       - source: AT
         locator: "M1036 Account Use Policies, on T1110 Brute Force"
         quote: "Set account lockout policies after a certain number of failed login attempts to prevent passwords from being guessed."
+      - source: N3
+        locator: "RS.MI-02 N1"
+        quote: "eradication may be necessary to eliminate persistence mechanisms and entry points, such as deleting malware, disabling breached user accounts, and identifying and mitigating all exploited vulnerabilities."
 
   - id: disable_service
     name: Disable the exposed service
@@ -176,6 +168,3 @@ actions:
       - source: AT
         locator: "M1042 Disable or Remove Feature or Program, on T1046 Network Service Discovery"
         quote: "Ensure that unnecessary ports and services are closed to prevent risk of discovery and potential exploitation."
-      - source: CI
-        locator: "Containment Activities, p. 14"
-        quote: "Closing specific ports and mail servers or other relevant servers and services."

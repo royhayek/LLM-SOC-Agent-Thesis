@@ -218,7 +218,7 @@ H3 and H4 are scored against the actions the agent may recommend. If the catalog
 A frozen catalog of 6–8 recommendation-only actions exists, each backed by at least one published citation.
 
 **Scope**
-- In: reading European official guidance (ENISA, ANSSI / CERT-FR), NIST SP 800-61, MITRE ATT&CK mitigations and published IR playbooks; the catalog YAML; a derivation note; a provisional family-to-action table. European sources are cited first where they support an entry.
+- In: reading French and EU official guidance (ANSSI / CERT-FR, ENISA, CERT Société Générale playbooks), with MITRE ATT&CK mitigations and NIST SP 800-61 as supporting references; the catalog YAML; a derivation note; a provisional family-to-action table. French and EU sources are cited first (decision 2026-10-04, record §3.4).
 - Out: per-family acceptable and unsafe sets (E1-03), scoring rules (E0-12), executable actions, reading spike outputs, classmate double-rating (optional bonus, never blocking).
 
 **Technical notes**
@@ -908,7 +908,7 @@ Every catalog action is classified as acceptable, unsafe or neutral for each fam
 **Technical notes**
 - Apply the set-building rule frozen in E0-12.
 - Sets are fixed before any experiment and identical across conditions (proposal Methodology, §3.1).
-- Sources: European official guidance (ENISA, ANSSI / CERT-FR) first, then NIST SP 800-61, ATT&CK mitigations, published IR playbooks (§3.4).
+- Sources: French and EU official guidance first (ANSSI / CERT-FR, ENISA, CERT Société Générale playbooks), with ATT&CK mitigations and NIST SP 800-61 as supporting references (decision 2026-10-04, §3.4).
 - ASSUMPTION: a "neutral" class covers actions that are neither acceptable nor unsafe for a family, so no action is forced into a wrong bucket.
 
 **Acceptance criteria**
