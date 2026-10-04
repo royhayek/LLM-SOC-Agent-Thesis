@@ -160,7 +160,7 @@ _Substitute:_ the explicit scope cuts in §5.
 **3. No second rater for the action catalog.**
 Cohen's κ is unavailable solo, and intra-rater test-retest is weak evidence.
 
-_Substitute:_ derive the acceptable and unsafe action sets from **published sources** instead of personal judgment — NIST SP 800-61 for incident handling, MITRE ATT&CK mitigations mapped to the attack families, published IR playbooks. Every entry carries a citation. This is stronger than a κ from one reluctant classmate and converts a subjective labelling problem into a documented mapping. If a classmate can double-rate 20% later, take it as a bonus; don't block on it.
+_Substitute:_ derive the acceptable and unsafe action sets from **published sources** instead of personal judgment — European official guidance first (ENISA for the EU, ANSSI / CERT-FR for France), then NIST SP 800-61 for incident handling, MITRE ATT&CK mitigations mapped to the attack families, published IR playbooks. Every entry carries a citation. _(Updated 2026-10-04, ticket E0-04: European sources added and cited first where they support an entry.)_ This is stronger than a κ from one reluctant classmate and converts a subjective labelling problem into a documented mapping. If a classmate can double-rate 20% later, take it as a bonus; don't block on it.
 
 ---
 
