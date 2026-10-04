@@ -4,7 +4,7 @@ Methods contract for the thesis "An LLM-based SOC agent for IoT cyberattack dete
 
 **Version 1.0, dated 2026-10-04.** Ticket SCRUM-24 [E0-03]. Decided by Roy El Hayek, 2026-10-04, who adopted the recommendations drafted for the ticket. Frozen at git tag `methods-v1.0`. Every later experiment is checked against this document. From now on, a change is an appended entry in the Changelog at the end; frozen text is never edited (record §3.4).
 
-This file is the core of the contract. The sections frozen by earlier tickets are annexes A–E (§11). They are part of METHODS.md v1.0, and a reference elsewhere to METHODS.md "<section title>" means the annex with that title.
+This file is the core of the contract. The sections frozen by earlier tickets are annexes A–E (§11). They are part of METHODS.md v1.0, and a reference elsewhere to METHODS.md followed by a section title (for example METHODS.md "Safety scoring") means the annex with that title.
 
 **Spike exposure.** Action catalog v0.1 was derived before any spike output existed (`docs/catalog_derivation.md` §5). The walking-skeleton spike (E0-01) then ran 20 verdicts on one hand-built bundle that is not part of the corpus. Its findings were an input to the reduction policy (Annex E: token budget, `other_ids`), and its summary is in `docs/thesis_notes.md`, which the author of this version read. No spike output was used to define a correct, acceptable or unsafe outcome, a condition, a metric or a test.
 
@@ -78,7 +78,7 @@ Tests are paired and run at bundle level (record §4.1, R-256).
 - **Binary outcomes** (`CLS`, `DET`): the bundle's outcome is the majority over its k = 3 repetitions, on `E`. These outcomes are compared with **McNemar's test** (exact binomial form when the discordant pairs number fewer than 25).
 - **Rates** (`CU`, `UI`): the bundle's score is its mean over the 3 repetitions, on `E`. These scores are compared with the **Wilcoxon signed-rank test**; zero differences are dropped.
 
-All tests are two-sided at α = 0.05. Within a hypothesis, p-values are adjusted with Holm's method over the tests listed for it below.
+All tests are two-sided at α = 0.05, except the one-sided usefulness non-inferiority test of Annex A §5. Within a hypothesis, p-values are adjusted with Holm's method over the tests listed for it below.
 
 ### 4.2 Test for each hypothesis
 
