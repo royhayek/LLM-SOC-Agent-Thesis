@@ -439,7 +439,7 @@ R-015, R-050–R-052, R-054–R-056, R-069, R-070, R-072, R-288 · Record §4, �
 
 **[E0-08] Draft alert schema v0.1 from the spike findings**
 **Type:** Task · **Epic:** EPIC-0 · **Priority:** Medium · **Points:** 3 · **Labels:** engineering, research
-**Depends on:** E0-01, E0-02 · **Blocks:** E0-05, E3-01
+**Depends on:** E0-01, E0-02 · **Blocks:** E0-05, E3-01, E3-10
 
 **Context**
 The record forbids designing the alert schema blind. The spike shows what the model actually needed (record §9). Every normalizer and the reduction depend on this format. It serves H1, because the sources must be comparable, and risk #1.
@@ -839,7 +839,7 @@ R-070, R-071 · Record §6.11 · Proposal: Methodology (ethics)
 
 **[E1-02] Select and freeze the six attack families**
 **Type:** Research · **Epic:** EPIC-1 · **Priority:** High · **Points:** 3 · **Labels:** research, freeze-before-results
-**Depends on:** None · **Blocks:** E1-03, E1-04, E1-06, E2-01, E2-02, E7-01
+**Depends on:** None · **Blocks:** E1-03, E1-04, E1-06, E2-01, E2-02, E3-10, E7-01
 
 **Context**
 The families fix the label space and H1's stratification. If every family is visible in every source, or none is, H1 confirms itself for the wrong reason (risk #4). This ticket also resolves C-01: §5 asks for a 2/2/2 mix across three, two and one sources, but the §3.2 table is 1/4/1.

@@ -26,6 +26,6 @@ Use Pydantic v2 for every data model in `thesis/`. `pyproject.toml` requires `py
 
 ## Consequences
 
-- Pydantic becomes a runtime dependency, added in commit `bb325fa` on the SCRUM-82 branch.
+- Pydantic becomes a runtime dependency, added to `pyproject.toml` and `uv.lock` by SCRUM-82 [E0-08].
 - Models are checked by mypy strict without the Pydantic mypy plugin. The plugin can be added later if a model needs it.
 - No second model or validation library is added for data that flows through the pipeline.

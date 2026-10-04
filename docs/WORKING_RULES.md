@@ -15,7 +15,7 @@ A pipeline turns three IoT telemetry streams (MQTT, network flows, honeypot logs
 | Locked decisions (§4, §5, §6) and open questions (§10) | `docs/source/thesis_project_full_record.md` |
 | Frozen methods contract | `METHODS.md` (created by ticket E0-03) |
 | Definition of Done and Definition of Ready | `docs/DOD.md` |
-| All 111 tickets, full text | `docs/planning/backlog_full.md` |
+| All 112 tickets, full text | `docs/planning/backlog_full.md` |
 | Ticket reference to Jira key | `docs/planning/jira_key_map.md` |
 | Architecture decisions | `docs/adr/` |
 | Task board | Jira project `SCRUM` on `iot-soc-thesis.atlassian.net` |
