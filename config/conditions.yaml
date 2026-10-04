@@ -3,7 +3,7 @@
 # The condition matrix of METHODS.md v1.0, §2: 7 conditions, in the order C1-C7.
 # Frozen at git tag methods-v1.0. Any change goes through a METHODS.md changelog entry.
 conditions:
-  # C1: the complete agent (H1, H2 secondary, H3, H4)
+  # C1: the complete agent (H1, H3, H4)
   - sources: [flows, honeypot, mqtt]
     strategy: agentic
     safety: enforcing
@@ -17,7 +17,7 @@ conditions:
   - sources: [honeypot]
     strategy: agentic
     safety: enforcing
-  # C5: H3 safety off; H2
+  # C5: safety off (H2, H3)
   - sources: [flows, honeypot, mqtt]
     strategy: agentic
     safety: logging_only

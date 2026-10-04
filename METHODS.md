@@ -82,7 +82,7 @@ All tests are two-sided at α = 0.05, except the one-sided usefulness non-inferi
 | **H3** safety cuts unsafe output, no usefulness loss | C1 vs C5 | `CU` (headline); usefulness | Wilcoxon; non-inferiority, δ = 0.05 (Annex A §5) |
 | **H4** agent beats both baselines | C1 vs C7, C1 vs C6 | `DET`, `CLS`, `CU` | McNemar; Wilcoxon for `CU` |
 
-The Holm families have 6 tests for H1 and H4 and 1 for H2 and H3.
+The Holm families have 6 tests for H1 and H4 and 1 for H2 and H3 (`CU`); the non-inferiority test is outside them.
 
 - **H1** is supported if C1 beats every single source on both outcomes. It is also reported **stratified by family** (record §3.2): recall and accuracy per family for C1 and each single source, and the **gain from fusion**, C1 minus the best single source in which the family leaves traces (E1-02). Stratified figures are descriptive, with bootstrap intervals.
 - **H2** uses C5, not C1, so the arms differ only in strategy; under `enforcing`, constrained decoding and hard fail would also change `E`. C1 vs C6 is a secondary, untested figure. **Severity accuracy is not tested in v1.0**, although H2 names it, because no ticket defines a true severity. If one is frozen before any result exists, a changelog entry adds its test.
