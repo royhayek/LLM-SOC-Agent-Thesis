@@ -1,0 +1,120 @@
+# Attack families v1.0 (ticket E1-02). The label space of the experiment: these six families plus `benign`.
+# Decided by Roy El Hayek, 2026-10-04. Recorded in METHODS.md, Changelog entry 1.
+# Frozen at git tag families-v1.0. Changes only through a METHODS.md changelog entry.
+#
+# Visibility is predicted per bundle: a cell is yes when the family's bundles for its subject device
+# contain at least one alert from that source, under the device mapping of record §4.1 and
+# METHODS.md Annex C. E1-14 checks every cell against real captures.
+#
+# Capture-point precondition: the matrix assumes the flow capture sees all traffic on the testbed
+# network. METHODS.md Annex F ASSUMPTION 3 (capture on the broker's namespace only) would leave the
+# honeypot families and syn_flood without flows. E1-04 decides the capture point; if it keeps the
+# broker namespace, this file is revised through a changelog entry before any attack traffic exists.
+#
+# How each attack is generated is E1-04's job. `target` records only who the subject device D is.
+
+version: "1.0"
+date: "2026-10-04"
+
+stratification_rule: >-
+  No family leaves traces in all three sources, at least four families leave traces in exactly two,
+  at least one leaves traces in exactly one, and MQTT and the honeypot each see at least two families.
+
+stratification_rationale: >-
+  Record §4.1 keys every honeypot event to the honeypot, and the honeypot (Cowrie, SSH only, ADR-0002)
+  is never an MQTT client, so no bundle can hold alerts from all three sources. The 2/2/2 mix of
+  record §5 and the 1/4/1 table of record §3.2 both counted traces per attack, not per bundle (C-01).
+  Two-source families let H1 measure the gain from fusion (METHODS.md §4.2); one-source families are
+  the control where fusion should add nothing; each of MQTT and the honeypot sees two families so
+  that its single-source condition (C2, C4) is not scored only on families it cannot see.
+
+datasets:
+  "[6]": "N. Koroniotis, N. Moustafa, E. Sitnikova, B. Turnbull, Towards the development of realistic botnet dataset in the Internet of Things for network forensic analytics: Bot-IoT dataset, Future Gener. Comput. Syst., vol. 100, pp. 779-796, 2019. Attack list checked 2026-10-04 on https://research.unsw.edu.au/projects/bot-iot-dataset: \"The dataset includes DDoS, DoS, OS and Service Scan, Keylogging and Data exfiltration attacks\"."
+  "[7]": "A. Alsaedi, N. Moustafa, Z. Tari, A. Mahmood, A. Anwar, TON_IoT telemetry dataset: a new generation dataset of IoT and IIoT for data-driven intrusion detection systems, IEEE Access, vol. 8, pp. 165130-165150, 2020, doi:10.1109/ACCESS.2020.3022862. UNVERIFIED: the paper itself was not read (publisher blocked). The scanning and password (hydra) attacks of TON_IoT were checked in the sibling paper N. Moustafa et al., Data analytics-enabled intrusion detection: evaluations of ToN_IoT Linux datasets, arXiv:2010.08521, §IV-A."
+  "[8]": "E. C. P. Neto, S. Dadkhah, R. Ferreira, A. Zohourian, R. Lu, A. A. Ghorbani, CICIoT2023: a real-time dataset and benchmark for large-scale attacks in IoT environment, Sensors, 2023. Attack list checked 2026-10-04 on https://www.unb.ca/cic/datasets/iotdataset-2023.html."
+  "[9]": "I. Vaccari, G. Chiola, M. Aiello, M. Mongelli, E. Cambiaso, MQTTset, a new dataset for machine learning techniques on MQTT, Sensors, vol. 20, no. 22, art. 6578, 2020, doi:10.3390/s20226578. Attack list checked 2026-10-04 in the full text (Europe PMC, PMC7698741), Table 3 and §3.1."
+
+attack_technique_source: "MITRE ATT&CK Enterprise v19.2, https://attack.mitre.org. Each technique page checked 2026-10-04."
+
+families:
+  - id: ssh_brute_force
+    name: SSH password guessing
+    covers: brute_force
+    target: "The honeypot (hp-ssh-01). An external attacker host guesses SSH passwords against it."
+    attack:
+      technique: T1110.001
+      name: "Brute Force: Password Guessing"
+    datasets:
+      - ref: "[8]"
+        locator: "Brute Force: \"Dictionary brute force\""
+      - ref: "[7]"
+        locator: "Password attack (hydra), per arXiv:2010.08521 §IV-A; UNVERIFIED in [7] itself"
+    visibility: {mqtt: no, flows: yes, honeypot: yes}
+
+  - id: port_scan
+    name: Port scan
+    covers: scanning
+    target: "The honeypot (hp-ssh-01). An external attacker host runs a TCP connect scan, which completes the handshake on port 22, so Cowrie records a session."
+    attack:
+      technique: T1046
+      name: "Network Service Discovery"
+    datasets:
+      - ref: "[6]"
+        locator: "\"OS and Service Scan\""
+      - ref: "[8]"
+        locator: "Recon: \"Port scan\""
+    visibility: {mqtt: no, flows: yes, honeypot: yes}
+    prediction_risk: "A SYN-only scan never completes the handshake, so Cowrie would log nothing and the honeypot cell would be no."
+
+  - id: mqtt_publish_flood
+    name: MQTT publish flood
+    covers: dos
+    target: "An IoT device D, acting as a compromised device: D floods the broker with PUBLISH messages over one connection. D is the subject because the broker is infrastructure (Annex C)."
+    attack:
+      technique: T1499.002
+      name: "Endpoint Denial of Service: Service Exhaustion Flood"
+    datasets:
+      - ref: "[9]"
+        locator: "§3.1.2 MQTT Publish Flood: \"a malicious IoT device periodically sends a huge amount of malicious MQTT data\""
+    visibility: {mqtt: yes, flows: yes, honeypot: no}
+
+  - id: mqtt_brute_force
+    name: MQTT credential guessing
+    covers: brute_force
+    target: "An IoT device D, acting as a compromised device: D guesses broker credentials. Needs broker authentication enabled (E1-04). In [9] the attacker is a separate host; here it is D, so the attempts key to D, not to infrastructure (Annex C ASSUMPTION 4)."
+    attack:
+      technique: T1110.001
+      name: "Brute Force: Password Guessing"
+    datasets:
+      - ref: "[9]"
+        locator: "§3.1.5 Brute Force Authentication"
+    visibility: {mqtt: yes, flows: yes, honeypot: no}
+
+  - id: syn_flood
+    name: TCP SYN flood
+    covers: dos
+    target: "An IoT device D. An external attacker host floods D directly, not through the broker."
+    attack:
+      technique: T1498.001
+      name: "Network Denial of Service: Direct Network Flood"
+    datasets:
+      - ref: "[8]"
+        locator: "DoS: \"SYN flood\""
+      - ref: "[6]"
+        locator: "DoS, \"organized, based on the protocol used\""
+    visibility: {mqtt: no, flows: yes, honeypot: no}
+    prediction_risk: "If the flood stops D's own publishes from reaching the broker, and the MQTT detector alerts on missing readings, the MQTT cell becomes yes."
+
+  - id: botnet
+    name: Botnet traffic
+    covers: botnet
+    target: "An IoT device D, acting as a botnet member: botnet traffic is sent from D to an external host (not a testbed device, the broker or the honeypot), so D is the only testbed device in the traffic (Annex C ASSUMPTION 5)."
+    attack:
+      technique: T1584.005
+      name: "Compromise Infrastructure: Botnet"
+    datasets:
+      - ref: "[8]"
+        locator: "Mirai: \"GREIP flood, Greeth flood, UDPPlain\""
+      - ref: "[6]"
+        locator: "Botnet testbed (dataset title)"
+    visibility: {mqtt: no, flows: yes, honeypot: no}

@@ -127,7 +127,7 @@ Not every attack is visible in every source:
 | Botnet traffic                | ✓    | ✓     | —        | 2       |
 | Denial of service (DoS)       | —    | ✓     | —        | 1       |
 
-_(This selection is a proposal, not a decision — see §9.)_
+_(This selection is a proposal, not a decision — see §9.)_ _(Decision 2026-10-04, ticket E1-02: superseded. Visibility is counted per bundle, where no family can reach all three sources; six families in a 0/4/2 mix. METHODS.md Changelog entry 1, `knowledge/attack_families.yaml`.)_
 
 Comparing MQTT-only against all-three would score near zero on half the attack families for reasons unrelated to correlation quality, and H1 would confirm itself trivially.
 
@@ -321,7 +321,7 @@ On hosted open-weights inference this fits inside €100 with room for three ful
 
 | Decision                                                            | Reasoning                                                                                                                                                                                  |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Six attack families**, not as many as possible                    | Two visible in all three sources, two in exactly two, two in one. Gives H1 its stratification and caps testbed work                                                                        |
+| **Six attack families**, not as many as possible                    | Two visible in all three sources, two in exactly two, two in one. Gives H1 its stratification and caps testbed work _(Decision 2026-10-04, E1-02: per bundle, none in all three, four in two, two in one. METHODS.md Changelog entry 1.)_                                                                        |
 | **Off-the-shelf detectors**, and the ML detector _is_ Baseline A    | One artifact, two purposes. Tune it properly: a weak baseline invalidates H4 faster than any flaw in the agent                                                                             |
 | **Small curated knowledge base**, not a general RAG corpus          | 50–200 documents. A big corpus costs weeks and adds a confound                                                                                                                             |
 | **React console: last three weeks, four screens, capped**           | Incident list, incident detail with evidence and trace, recommendation with accept/reject, audit log. Produces zero results for any hypothesis. Should not exceed ~10% of engineering time |
@@ -584,7 +584,7 @@ Those numbers decide the model, confirm or break the 2,000-token budget, give yo
 | How should contextual safety be scored?      | The validator makes the naive metric circular. §3.1 proposes a split, needs review                                                                                                 | Decided 2026-10-04: METHODS.md "Safety scoring" (E0-12) |
 | What is the validator rejection policy?      | Retry with feedback, escalate to a human, or hard fail. Each yields a different measured unsafe rate                                                                               | Decided 2026-10-04: hard fail, no retries. METHODS.md "Rejection policy" (E0-11) |
 | Are two baselines sufficient?                | A and B isolate the model and the architecture respectively. A third may be expected                                                                                               | Decided 2026-10-04: two, no third. METHODS.md v1.0 §9 (E0-03) |
-| Which six attack families?                   | Must be chosen so some appear in several sources and some in only one, or H1 confirms itself trivially                                                                             | Criteria fixed, selection open |
+| Which six attack families?                   | Must be chosen so some appear in several sources and some in only one, or H1 confirms itself trivially                                                                             | Decided 2026-10-04: six families, 0/4/2 per bundle. METHODS.md Changelog entry 1 (E1-02) |
 | Project name                                 | See §11                                                                                                                                                                            | Open                           |
 | References [4] and [17]                      | Flagged incomplete in the proposal itself                                                                                                                                          | To resolve before submission   |
 
