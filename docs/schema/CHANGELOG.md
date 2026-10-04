@@ -1,0 +1,31 @@
+# Alert schema changelog
+
+The model is `thesis/schema/alert.py`. The device-mapping rule is `thesis/schema/devices.py`.
+
+## alert-v0.1 — 2026-10-04 (SCRUM-82, E0-08)
+
+First draft. It was written after the E0-01 spike (`spikes/FINDINGS.md`), as record §9 requires. It is not frozen; E3-01 settles v1 on the pilot capture.
+
+### Structure
+
+- Every alert has a common envelope: `schema_version`, `alert_id`, `source` (`flows`, `mqtt` or `honeypot`), `ts` (timezone-aware), `subject_device`, and a typed `detail` for its source.
+- `detail` is one model per source (`FlowDetail`, `MqttDetail`, `HoneypotDetail`). No untyped payload dict is used. Unknown fields are rejected, and the detail type must match `source`.
+- Unset optional fields are omitted when an alert is serialised (`Alert.to_json()`), because every alert costs prompt tokens (FINDINGS.md, recommendation 2: about 145 tokens per alert in indented JSON).
+
+### Added because of a spike finding
+
+| Field or type | Finding in `spikes/FINDINGS.md` |
+|---|---|
+| `src_ip`, `src_port`, `dst_ip`, `dst_port` and `protocol`, with the same names in `FlowDetail` and `HoneypotDetail` | "Fields the model asked for or invented", gap 2 (links between sources), and recommendation 3. Both models ignored the flow alerts although their source ports matched the honeypot sessions. Shared names let a flow be tied to a session by its tuple. |
+| `HoneypotDetail.session_id` | Same finding. All events of one session share it, so the tuple on the `session_connect` event reaches the whole session. |
+| `SourceState` (`active`, `no_alerts`, `not_in_config`) | "Source states (input for the alert schema, E0-08)", gap 3 and recommendation 3. This is a bundle-level type. The bundle model that uses it is built in E3-05. |
+
+### Finding deferred to another ticket
+
+- **Device role and criticality** (gap 1 and recommendation 3). These describe a device, not an alert, so they are not fields of `Alert`. The device inventory (E5-01, `knowledge/devices.yaml`) holds them, and the bundle carries them as device context. Criticality is a locked parameter and is not set here.
+
+### Not from the spike
+
+- **MQTT fields.** The spike bundle had no MQTT alerts (`no_alerts`), so every `MqttDetail` field is a first guess for E3-01 to check against the pilot capture.
+- **Detector score and label.** Neither is in v0.1. The detectors (EPIC-4) and the reduction policy (E0-05) decide where they live.
+- **Placeholder IDs and IPs.** The device and infrastructure IDs and IPs in `devices.py` and in the fixtures are placeholders until the testbed and the device inventory (E5-01) exist.
