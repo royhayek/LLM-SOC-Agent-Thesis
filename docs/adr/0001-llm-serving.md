@@ -32,7 +32,7 @@ The spike could not separate the two models on one easy bundle, and it noted tha
 | top_p | 0.9 |
 | max_tokens | 250 (the output ceiling frozen in METHODS.md Annex E, §9) |
 | Structured output | `response_format` with `json_schema`, as in the spike |
-| Seed | Not supported in effect. DeepInfra's chat documentation does not mention `seed`. A check on 2026-10-04 (8 calls to this model at temperature 0.6, top_p 0.9, `max_tokens` 60) found the parameter accepted without error but not honoured: 3 calls with seed 42 gave 2 different completions, 2 calls with seed 7 gave 2, and 3 calls with no seed gave 3. No response carried a `system_fingerprint`. |
+| Seed | Not supported in effect. DeepInfra's API schema for this model documents `seed` as "Seed for random number generator. If not provided, a random seed is used. Determinism is not guaranteed." (model page, read 2026-10-04); its chat overview page does not mention it. A check on 2026-10-04 (8 calls to this model at temperature 0.6, top_p 0.9, `max_tokens` 60) found the parameter accepted without error but not honoured: 3 calls with seed 42 gave 2 different completions, 2 calls with seed 7 gave 2, and 3 calls with no seed gave 3. No response carried a `system_fingerprint`. |
 
 The temperature and top_p are Meta's reference defaults for Llama 3: `temperature: float = 0.6` and `top_p: float = 0.9` in `models/llama3/generation.py` of Meta's `meta-llama/llama-models` repository. The only reason for the choice is that these are the vendor's reference values, fixed before any output of this project existed. The effect on agreement played no part in it (METHODS.md Annex D, "Reliability and robustness": the temperature is not changed to make agreement informative). A consequence, not a reason, is that the k = 3 repetitions carry run-to-run variance from sampling.
 
@@ -125,7 +125,7 @@ The cap must be active before the first hosted call of any ticket (DoR).
 ## Sources
 
 - DeepInfra pricing, https://deepinfra.com/pricing, checked 2026-10-04.
-- DeepInfra model page, https://deepinfra.com/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo, checked 2026-10-04.
+- DeepInfra model page, https://deepinfra.com/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo, checked 2026-10-04 (precision; the `seed` description in its embedded API schema).
 - DeepInfra chat documentation, https://docs.deepinfra.com/chat/overview, checked 2026-10-04.
 - Hugging Face Hub API, `https://huggingface.co/api/models/meta-llama/Llama-3.1-8B-Instruct`, field `sha`, read 2026-10-04.
 - Meta reference sampling defaults: https://github.com/meta-llama/llama-models/blob/main/models/llama3/generation.py (repository HEAD `0e0b8c519242d5833d8c11bffc1232b77ad7f301`, read 2026-10-04); the same defaults appear in https://github.com/meta-llama/llama3/blob/main/example_chat_completion.py.
