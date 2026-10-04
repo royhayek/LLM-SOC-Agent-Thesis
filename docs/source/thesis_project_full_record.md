@@ -95,7 +95,7 @@ Eight issues identified. Four resolved, four live.
 | 2   | Statistical power — every hypothesis says "significantly" but no N is stated | **LIVE**     | Target 200–400 bundles, k = 3–5 repetitions (k = 3, decided 2026-10-04, METHODS.md v1.0 §2). Power calculation before corpus generation |
 | 3   | H3 is circular — the validator eliminates violations by construction         | **LIVE**     | Split the safety metric three ways, §3.1                                                |
 | 4   | H1 has a built-in confound                                                   | **LIVE**     | Stratify by attack family, §3.2                                                         |
-| 5   | LLM reproducibility                                                          | **Resolved** | Open-weights model pinned by revision                                                   |
+| 5   | LLM reproducibility                                                          | **Resolved** | Open-weights model pinned by revision _(ADR-0001, 2026-10-04: upstream Hugging Face commit named and recorded per row; the provider serves FP8 by name and does not certify the commit)_ |
 | 6   | ML baseline cannot produce a response, so part of H4 is ill-posed            | **Resolved** | Severity→action lookup table gives it a response                                        |
 | 7   | Prompt injection via honeypot text                                           | **LIVE**     | Strict delimiting, validation as hard gate. Experiment is stretch-only                  |
 | 8   | References [4] and [17] flagged incomplete in the proposal                   | **LIVE**     | Resolve before submission                                                               |
@@ -217,6 +217,8 @@ LLM_BASE_URL=http://localhost:11434/v1     # dev
 LLM_BASE_URL=https://<provider>/v1          # experiments
 LLM_MODEL=<pinned model name + revision>
 ```
+
+_(ADR-0001, 2026-10-04: the hosted provider serves by name, so `LLM_MODEL` holds the provider model ID, and the revision (the upstream Hugging Face commit) is recorded in every result row instead.)_
 
 **Reproducibility:** open weights pinned by revision mean anyone can re-serve the exact model and re-run the experiments, independent of whether the provider still exists. A frontier API snapshot gives neither. Say this explicitly in the methods chapter — a reproducible artifact is a real contribution and most agent papers cannot make the claim.
 
