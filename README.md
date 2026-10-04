@@ -46,7 +46,7 @@ NFStream runs with `statistical_analysis=True`, `accounting_mode=0` (link-layer 
 
 On a 16 GB machine, **stop Ollama before `make up`** (quit the Ollama app, or stop the `ollama serve` process; `ollama stop` only unloads a model). The testbed and the local model never run at the same time (record §4.2).
 
-Measured peak memory of the testbed: **50 MiB** across all eight containers (49.4 MiB, the sum of `docker stats` at the busiest of 41 samples over a 5-minute benign run on 2026-10-04, Docker Desktop 27.3.1 on an M2; the samples are in that run's `docker_stats.csv`). Cowrie takes 43 MiB; every other container stays under 2 MiB. The flow export at `make down` runs after the testbed has stopped and peaked at 71 MiB for that run's pcap. These figures exclude the Docker Desktop VM itself.
+Measured peak memory of the testbed: **50 MiB** across all eight containers (49.4 MiB, the sum of `docker stats` at the busiest of 41 samples over a 5-minute benign run on 2026-10-04, Docker Desktop 27.3.1 on an M2 Pro; the samples are in that run's `docker_stats.csv`). Cowrie takes 43 MiB; every other container stays under 2 MiB. The flow export at `make down` runs after the testbed has stopped and peaked at 71 MiB for that run's pcap. These figures exclude the Docker Desktop VM itself.
 
 ## Status
 

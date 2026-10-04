@@ -9,8 +9,10 @@ RAW_DIR := data/raw
 CURRENT := $(RAW_DIR)/.current_run
 CAPTURE_IMAGE := thesis-testbed-capture:e0-07
 # Every service that sends or receives traffic, stopped before the capture so their last
-# packets (connection closes) are in the pcap.
-SOURCES := emulator-temp emulator-cam emulator-hum emulator-plug mqtt-logger honeypot
+# packets (connection closes) are in the pcap. Emulators stop before the MQTT logger so
+# the logger receives every published message.
+EMULATORS := emulator-temp emulator-cam emulator-hum emulator-plug
+OTHER_SOURCES := mqtt-logger honeypot
 
 up:
 	@if [ -f $(CURRENT) ]; then echo "Run $$(cat $(CURRENT)) is still up. Run 'make down' first."; exit 1; fi
@@ -33,7 +35,8 @@ down:
 	if [ -z "$$(docker compose ps -q --status running capture)" ]; then \
 	  echo "ERROR: the capture container is not running, so the pcap is incomplete."; exit 1; \
 	fi; \
-	docker compose stop $(SOURCES) && \
+	docker compose stop $(EMULATORS) && \
+	docker compose stop $(OTHER_SOURCES) && \
 	docker compose stop capture && \
 	docker compose down && \
 	docker run --rm --network none -v "$$(pwd)/$(RAW_DIR)/$$run_id/flows:/out" \

@@ -8,7 +8,7 @@ name: thesis-testbed
 
 x-emulator: &emulator
   image: eclipse-mosquitto:2.0.22
-  depends_on: [broker]
+  depends_on: [broker, mqtt-logger]
   entrypoint: ["/bin/sh", "/emulator/emulate.sh"]
   volumes:
     - ./testbed/emulator:/emulator:ro
