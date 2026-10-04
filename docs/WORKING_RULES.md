@@ -81,4 +81,10 @@ Breaking one of these invalidates results. If a task seems to require breaking o
 
 ## Commands
 
-To be filled in by ticket E0-02: install, lint, type-check, test.
+| Task | Command |
+|---|---|
+| Install (and set up the git hook) | `uv sync --locked && uv run pre-commit install` |
+| Lint, format, type-check and file hygiene | `uv run pre-commit run --all-files` |
+| Type-check only | `uv run mypy` |
+| Test, as CI does | `uv run pytest -m "not slow"` |
+| Test, including `slow` (needs Ollama) | `uv run pytest` |
