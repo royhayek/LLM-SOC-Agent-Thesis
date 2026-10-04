@@ -1,6 +1,6 @@
 # ADR-0006: Pydantic for data models
 
-- Status: Proposed
+- Status: Accepted (2026-10-04)
 - Date: 2026-10-04
 - Ticket: SCRUM-82 [E0-08]
 
