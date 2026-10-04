@@ -105,7 +105,7 @@ PROVISIONAL. The families are the §3.2 candidates; E1-02 freezes the real list.
 
 ## 5. Statement on spike outputs
 
-PENDING Roy's confirmation and date.
+Confirmed by Roy El Hayek, 2026-10-04.
 
 From 2026-10-03 to 2026-10-04, while this derivation was made, no spike verdict run had taken place. `spikes/results.csv` and `spikes/logs/` did not exist, and `spikes/FINDINGS.md` was removed in commit cc5c65d before it held any results. Spike outputs were therefore not read during derivation.
 

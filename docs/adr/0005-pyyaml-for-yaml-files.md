@@ -1,6 +1,6 @@
 # ADR-0005: PyYAML for reading YAML files
 
-- Status: Proposed
+- Status: Accepted (2026-10-04)
 - Date: 2026-10-04
 - Ticket: SCRUM-31 [E0-04]
 
@@ -12,7 +12,7 @@ The catalog is a frozen, cited document (record §3.4, §6.4). It must be easy f
 
 ## Decision
 
-Proposed: use PyYAML, loading only with `yaml.safe_load`. Version 6.0.3 is installed on the development machine. The exact pin is set in the lock file when E0-02 creates `pyproject.toml`.
+Use PyYAML, loading only with `yaml.safe_load`. Version 6.0.3 is installed on the development machine. The exact pin is set in the lock file when E0-02 creates `pyproject.toml`.
 
 ## Alternatives considered
 
