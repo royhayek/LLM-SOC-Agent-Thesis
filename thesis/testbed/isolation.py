@@ -59,7 +59,10 @@ def _run_script(script: Path, timeout_s: float) -> tuple[int | None, bool]:
     try:
         return proc.wait(timeout=timeout_s), False
     except subprocess.TimeoutExpired:
-        os.killpg(proc.pid, signal.SIGKILL)
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass  # The group exited between the timeout and the kill; still a fail.
         proc.wait()
         return None, True
 
