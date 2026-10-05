@@ -179,3 +179,15 @@ Each annex is a section frozen by its own ticket, moved verbatim into `docs/meth
 **Rationale.** The proposal requires DoS, scanning, brute force and botnet (two families each for DoS and brute force). Each family is guided by a dataset whose attack list was checked on 2026-10-04, except [7], whose own text could not be read and is marked UNVERIFIED in the YAML. A brute-force family in each of the honeypot and MQTT sources gives H1 one tactic seen through two different sources.
 
 **Results invalidated.** None. No agent or baseline output exists.
+
+### 2. 2026-10-05: the scenario schedule format (E1-06, SCRUM-67)
+
+**What.** Records three rules of the schedule format and its validator (`thesis/scenario/schedule.py`) that bear on how the §1 label is derived from the schedule. No locked parameter changes. Decided by Roy El Hayek, 2026-10-05, who adopted the recommendations drafted for the ticket.
+
+1. **Episode time ranges are half-open,** `[start, start + duration)`, like the windows in §1. Two episodes that touch end to start on one device are adjacent, not overlapping. The validator rejects any overlap of non-zero duration between two episodes on the same device and allows overlap on different devices.
+2. **Times are whole seconds** from the start of the scenario: `start_offset_s` is 0 or more and `duration_s` is above 0.
+3. **Benign periods carry no labelling rule.** A benign period marks benign-only traffic in the schedule. It is not checked against episodes, and a window's label comes from episodes only (§1: otherwise `benign`).
+
+**Rationale.** Half-open ranges match the windows, so "overlaps by any non-zero duration" (§1) means the same thing for windows and for episodes. Whole seconds are finer than W = 60 s and keep the overlap test exact, with no floating-point boundary cases. Taking labels from episodes only keeps ground truth to one source, as §1 requires.
+
+**Results invalidated.** None. No agent or baseline output exists.
