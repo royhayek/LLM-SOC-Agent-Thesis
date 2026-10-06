@@ -21,3 +21,7 @@ families:
   port_scan:  # F3 (E1-10). TCP connect scan over a fixed port set.
     flows: 0.25     # one flow per probed port; a closed port may retry
     honeypot: 0.40  # Cowrie logs the completed handshake on port 22; few events, so allow more
+
+  ssh_brute_force:  # F4 (E1-11). hydra over a fixed user x password list.
+    flows: 0.30     # hydra reuses connections across tasks, so the flow count varies
+    honeypot: 0.20  # Cowrie logs each login attempt; count is close to users x passwords

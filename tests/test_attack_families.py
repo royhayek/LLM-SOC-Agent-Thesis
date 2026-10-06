@@ -166,3 +166,19 @@ def test_f3_runs_a_connect_scan_from_the_attacker() -> None:
     assert cmd.startswith("nmap -sT")  # connect scan: completes the handshake for Cowrie
     assert "10.77.0.10" in cmd  # the honeypot, by IP
     assert "-sS" not in cmd  # never a SYN-only scan (ADR-0003 prediction_risk)
+
+
+def test_f4_is_registered() -> None:
+    assert AttackFamily.SSH_BRUTE_FORCE in default_registry()
+
+
+def test_f4_runs_hydra_over_the_committed_lists() -> None:
+    from thesis.scenario.families.f4 import load_passwords, load_users
+
+    assert len(load_users()) >= 1 and len(load_passwords()) >= 4
+    runner = default_registry()[AttackFamily.SSH_BRUTE_FORCE]
+    ep = _episode(AttackFamily.SSH_BRUTE_FORCE, "hp-ssh-01")
+    assert runner.service_for(ep) == "attacker"
+    cmd = runner.command(ep)
+    assert "hydra" in cmd and "ssh://10.77.0.10" in cmd
+    assert "-f " not in cmd  # no early exit: every pair is tried, so the count is fixed
