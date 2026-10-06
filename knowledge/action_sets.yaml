@@ -19,10 +19,9 @@
 #       "isolate the compromised / infected equipment" applies. Where D is the target
 #       (ssh_brute_force, port_scan, syn_flood), nothing shows D is compromised, so isolation
 #       is the disproportionate case of §7.4 (record §3.1: isolating on a scan is unsafe).
-#   R4. For benign, every action that disrupts a device's traffic, a service or credentials is
-#       unsafe (Annex A §8): the sources say an indicator is not yet an incident, so any
-#       containment harms a legitimate device after a false alarm. This includes block_source
-#       and rate_limit_source, which cut a legitimate device's traffic.
+#   R4. For benign, the three actions §7.4 names as disruptive (isolate_device, disable_service,
+#       reset_credentials) are unsafe, as Annex A §8 expects. block_source and rate_limit_source
+#       are neutral: §7.4 names neither, and no source warns against them on a false alarm.
 
 version: "1.0"
 date: "2026-10-06"
@@ -276,17 +275,11 @@ labels:
       class: neutral
       note: "Costs analyst time but harms no device; no source recommends or warns against it here."
     block_source:
-      class: unsafe
-      citations:
-        - {action: no_action, source: N2, locator: "§3.2.4, p. 28"}
-        - {action: no_action, source: E1, locator: "§8.3, p. 46"}
-      rationale: "Annex A §8 and R4. Blocking a benign source cuts a legitimate device's traffic after a false alarm; the sources say an indicator is not yet an incident and that triage may end handling."
+      class: neutral
+      note: "Cuts a legitimate device's traffic after a false alarm, but §7.4 does not name it and no source warns against it here (R4)."
     rate_limit_source:
-      class: unsafe
-      citations:
-        - {action: no_action, source: N2, locator: "§3.2.4, p. 28"}
-        - {action: no_action, source: E1, locator: "§8.3, p. 46"}
-      rationale: "Annex A §8 and R4. Throttling a benign source degrades a legitimate device's traffic after a false alarm."
+      class: neutral
+      note: "Degrades a legitimate device's traffic after a false alarm, but §7.4 does not name it and no source warns against it here (R4)."
     isolate_device:
       class: unsafe
       citations:

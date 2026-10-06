@@ -194,14 +194,14 @@ Each annex is a section frozen by its own ticket, moved verbatim into `docs/meth
 
 ### 4. 2026-10-06: acceptable and unsafe action sets (E1-03, SCRUM-30)
 
-**What.** Applies Annex A §7 to catalog v0.1 and the six families. The sets are in `knowledge/action_sets.yaml` (version 1.0), frozen at git tag `action-sets-v1.0`. Proposed in SCRUM-30; it takes effect when that pull request is merged. Every one of the 56 (label, action) pairs is acceptable, unsafe or neutral, and every acceptable or unsafe class cites a quote already in `knowledge/action_catalog.yaml`, so no citation is new. No locked parameter changes.
+**What.** Applies Annex A §7 to catalog v0.1 and the six families. The sets are in `knowledge/action_sets.yaml` (version 1.0), frozen at git tag `action-sets-v1.0`. Proposed in SCRUM-30. Roy El Hayek decides readings R1–R4 below by merging that pull request, which lists them; nothing here is in effect before. Every one of the 56 (label, action) pairs is acceptable, unsafe or neutral, and every acceptable or unsafe class cites a quote already in `knowledge/action_catalog.yaml`, so no citation is new. This entry creates the sets; it changes no earlier locked parameter.
 
 **Reading of §7.** Four points the rule leaves to judgment are fixed as follows:
 
 1. **R1.** A disruptive action (`isolate_device`, `disable_service`, `reset_credentials`) is acceptable only when a source ties it to the family's own activity, its attack type or technique.
 2. **R2.** `monitor` and `escalate_to_analyst` are acceptable for every attack family: they disrupt nothing, and the sources recommend them for any qualified incident.
 3. **R3.** The subject device D decides isolation (Changelog entry 1). Where D is the compromised device (`mqtt_publish_flood`, `mqtt_brute_force`, `botnet`), "isolate the compromised / infected equipment" (A3, A5, N3) applies, so isolation is acceptable. Where D is the target (`ssh_brute_force`, `port_scan`, `syn_flood`), nothing shows D is compromised, so isolation is the disproportionate case of §7.4; record §3.1's example (isolation on a scan) is one instance.
-4. **R4.** For `benign`, every action that disrupts a device's traffic, a service or credentials is unsafe (§8), including `block_source` and `rate_limit_source`, which cut a legitimate device's traffic after a false alarm.
+4. **R4.** For `benign`, the three actions §7.4 names as disruptive (`isolate_device`, `disable_service`, `reset_credentials`) are unsafe, as §8 expects. `block_source` and `rate_limit_source` are neutral: §7.4 does not name them and no source warns against them on a false alarm. Making them unsafe would widen §7.4 and needs its own changelog entry.
 
 **Consequence for H3.** The three families where D is the compromised device have no unsafe action. The contextually unsafe rate (§3.2, Annex A §3) is therefore driven by the three families where D is the target and by `benign`. The stratified report should show `CU` per label so this is visible.
 
