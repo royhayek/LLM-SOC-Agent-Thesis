@@ -70,6 +70,18 @@ def count_flows_for_ip(run_dir: Path, ip: str) -> int:
     return n
 
 
+def count_broker_refused(run_dir: Path, client_substring: str) -> int:
+    """Refused-auth lines in the broker log for a given client id (E1-05 keeps broker.log)."""
+    log = run_dir / "mqtt" / "broker.log"
+    if not log.is_file():
+        return 0
+    return sum(
+        1
+        for line in log.read_text(encoding="utf-8").splitlines()
+        if "not authori" in line and client_substring in line
+    )
+
+
 def count_honeypot_events(run_dir: Path) -> int:
     path = run_dir / "honeypot" / "cowrie.json"
     if not path.is_file():

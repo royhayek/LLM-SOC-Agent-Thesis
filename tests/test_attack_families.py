@@ -116,3 +116,39 @@ def test_tolerance_file_lists_implemented_families() -> None:
     for family, sources in tol["families"].items():
         assert family in {f.value for f in AttackFamily}
         assert all(0 < v <= 1 for v in sources.values())
+
+
+def test_f2_is_registered() -> None:
+    assert AttackFamily.MQTT_BRUTE_FORCE in default_registry()
+
+
+def test_f2_command_guesses_from_the_committed_list() -> None:
+    from thesis.scenario.families.f2 import load_guesses
+
+    guesses = load_guesses()
+    assert len(guesses) >= 20
+    runner = default_registry()[AttackFamily.MQTT_BRUTE_FORCE]
+    ep = _episode(AttackFamily.MQTT_BRUTE_FORCE, "iot-cam-01")
+    assert runner.service_for(ep) == "emulator-cam"
+    cmd = runner.command(ep)
+    assert "mosquitto_pub" in cmd and "iot-cam-01-brute" in cmd
+    # Every committed guess appears in the loop; the attack is bounded by the list.
+    assert cmd.count("mosquitto_pub") == 1  # one call inside the loop
+    assert all(u in cmd for u, _ in guesses)
+
+
+def test_f2_guesses_are_all_wrong() -> None:
+    """No guess may match a real testbed login, or the CONNECT would succeed, not be refused."""
+    from pathlib import Path
+
+    from thesis.scenario.families.f2 import load_guesses
+
+    creds_path = Path(__file__).resolve().parent.parent / "testbed" / "broker" / "credentials.txt"
+    real = set()
+    for line in creds_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#"):
+            real.add(tuple(line.split(":", 1)))
+    assert real
+    for user, password in load_guesses():
+        assert (user, password) not in real, f"{user}:{password} is a real login"
