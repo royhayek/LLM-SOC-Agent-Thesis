@@ -198,6 +198,51 @@ def test_f6_runs_a_bounded_syn_flood_from_the_attacker() -> None:
     assert "10.77.0.22" in cmd  # iot-cam-01 by IP, targeted directly (not the broker)
 
 
-def test_all_six_families_except_botnet_are_registered() -> None:
-    registered = set(default_registry())
-    assert registered == {f for f in AttackFamily if f is not AttackFamily.BOTNET}
+def test_all_six_families_are_registered() -> None:
+    assert set(default_registry()) == set(AttackFamily)
+
+
+def test_f5_is_registered() -> None:
+    assert AttackFamily.BOTNET in default_registry()
+
+
+def test_f5_manifest_is_provisional_and_refuses_to_run() -> None:
+    """Until Roy provides the dataset slice and real SHA-256, F5 cannot build a command."""
+    from thesis.scenario.families.f5 import BotnetManifestError, load_manifest, verify_slice
+
+    manifest = load_manifest()
+    assert manifest["source"]["sha256"] == "UNVERIFIED-PLACEHOLDER"
+    with pytest.raises(BotnetManifestError, match="provisional"):
+        verify_slice(manifest)
+    runner = default_registry()[AttackFamily.BOTNET]
+    with pytest.raises(BotnetManifestError):
+        runner.command(_episode(AttackFamily.BOTNET, "iot-cam-01"))
+
+
+def test_f5_command_retargets_to_the_device_and_non_routable_c2(tmp_path: object) -> None:
+    """With a real local slice whose digest matches, the command retargets source to D and
+    destination to the non-routable C2, and replays at the fixed rate."""
+    import hashlib
+    from pathlib import Path as _P
+
+    from thesis.scenario.families import f5
+
+    slice_path = _P(str(tmp_path)) / "slice.pcap"
+    slice_path.write_bytes(b"not a real pcap, just for digest")
+    digest = hashlib.sha256(slice_path.read_bytes()).hexdigest()
+    manifest = {
+        "source": {"sha256": digest, "local_path": str(slice_path)},
+        "retargeting": {"dst_ip": "192.0.2.1", "replay_pps": 200},
+    }
+    # verify_slice accepts the matching digest.
+    assert f5.verify_slice(manifest) == slice_path
+
+    runner = f5.BotnetRunner()
+    import unittest.mock as mock
+
+    with mock.patch.object(f5, "load_manifest", return_value=manifest):
+        cmd = runner.command(_episode(AttackFamily.BOTNET, "iot-cam-01"))
+    assert "tcprewrite" in cmd and "tcpreplay" in cmd
+    assert "--srcipmap=0.0.0.0/0:10.77.0.22" in cmd  # source -> iot-cam-01
+    assert "--dstipmap=0.0.0.0/0:192.0.2.1" in cmd  # destination -> non-routable C2
+    assert "--pps=200" in cmd

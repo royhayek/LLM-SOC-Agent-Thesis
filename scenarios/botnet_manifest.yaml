@@ -1,0 +1,27 @@
+# Botnet replay manifest for attack family F5 (E1-12, ADR-0003).
+#
+# F5 does NOT redistribute a derived capture (ADR-0003 "Dataset licences and derived captures").
+# This manifest names a fixed slice of a published dataset and how it is retargeted; the slice
+# itself is NOT committed. To run F5, Roy places the slice at the local path in `source.local_path`
+# (git-ignored) and fills `source.sha256` with its real digest. The runner refuses to replay if
+# the file's SHA-256 does not match (so the committed, citable slice is the one that ran).
+#
+# STATUS: provisional. The dataset slice has not been obtained, so `sha256` is a placeholder and
+# F5 has not been run. Its visibility and repeatability tolerance are unset until then (E1-12).
+
+version: "0.1-provisional"
+
+source:
+  dataset: "[8] CICIoT2023"              # first choice (ADR-0003); [6] Bot-IoT is the alternative
+  dataset_url: "https://www.unb.ca/cic/datasets/iotdataset-2023.html"
+  file: "<dataset pcap file name>"        # the capture file the slice is taken from
+  packet_range: "<first..last>"           # the fixed slice, by packet index
+  sha256: "UNVERIFIED-PLACEHOLDER"        # real digest of the committed slice; set by Roy
+  local_path: "data/external/botnet_slice.pcap"  # git-ignored; where Roy puts the slice
+
+# Retargeting (tcprewrite): the bot is the compromised testbed device D (filled per episode from
+# the schedule's target_device); the command-and-control destination is a fixed non-routable
+# address that no testbed host answers, so only D is a testbed endpoint in the traffic.
+retargeting:
+  dst_ip: "192.0.2.1"                     # TEST-NET-1 (RFC 5737), non-routable, unanswered
+  replay_pps: 200                         # fixed replay rate, packets per second
