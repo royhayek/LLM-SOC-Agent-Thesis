@@ -21,13 +21,13 @@ The repository and package are named `thesis` until a system name is chosen (tic
 
 ## Testbed
 
-A benign-only, fully emulated IoT testbed in Docker Compose (`docker-compose.yml`): a Mosquitto broker, four MQTT emulators, an MQTT logger, a Cowrie SSH honeypot and a capture sidecar on the broker's network namespace (tcpdump, then NFStream; ADR-0002, ADR-0008). The only network is internal and no port is published.
+A benign-only, fully emulated IoT testbed in Docker Compose (`docker-compose.yml`): a Mosquitto broker, four MQTT emulators, an MQTT logger, a Cowrie SSH honeypot and one capture sidecar per host, each recording only the packets its host sends (tcpdump, merged with tcpslice, then NFStream; ADR-0002, ADR-0008, ADR-0009). The only network is internal and no port is published.
 
 | Command | What it does |
 |---|---|
 | `make up` | Starts the testbed. Raw logs for this run go to `data/raw/<run_id>/` |
 | `scripts/check_isolation.sh` | Checks that no container reaches 1.1.1.1, the host LAN gateway or Docker's host gateway. Exit 0 only if none does. Run it before any attack tooling. Its output is saved to the run folder |
-| `make down` | Stops the traffic sources, then the capture, then the testbed, and derives `flows.jsonl` from the run's pcap. Keeps the run's raw logs |
+| `make down` | Stops the traffic sources, then the capture sidecars, then the testbed; merges the per-host pcaps into `raw.pcap` and derives `flows.jsonl` from it. Keeps the run's raw logs |
 | `make reset` | Removes the testbed's containers, network and volumes. Raw logs on disk are kept |
 
 `<run_id>` is the UTC start time, for example `20261004T162044Z`. Each run folder holds:
@@ -35,7 +35,8 @@ A benign-only, fully emulated IoT testbed in Docker Compose (`docker-compose.yml
 | File | Source | Format |
 |---|---|---|
 | `mqtt/mqtt.log` | every message on the broker | one line per message: ISO 8601 time, topic, JSON payload |
-| `flows/raw.pcap` | tcpdump 4.99.3 on the broker's interface | every packet, full length |
+| `flows/hosts/<host>.pcap` | tcpdump 4.99.3, one sidecar per host, outbound packets only | every packet the host sends, full length |
+| `flows/raw.pcap` | tcpslice 1.5 merging `flows/hosts/*.pcap` at `make down` | every packet on the testbed network once, in time order |
 | `flows/flows.jsonl` | NFStream 6.6.0 reading `raw.pcap` at `make down` | one JSON object per flow, all `NFlow` fields |
 | `honeypot/cowrie.json` | Cowrie 3.1.0 | one JSON event per line. Empty under benign traffic, by design |
 | `isolation_check.log` | `scripts/check_isolation.sh` | the output of every isolation check run during the run |

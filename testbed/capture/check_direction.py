@@ -7,7 +7,7 @@ sidecar's settings, and checks two TCP flows:
 Also checks that src2dst_syn_packets and src2dst_ack_packets are present.
 
 Run inside the capture image:
-  docker run --rm --entrypoint python thesis-testbed-capture:e0-07 check_direction.py
+  docker run --rm --entrypoint python thesis-testbed-capture:e1-16 check_direction.py
 Exit 0 if every check holds, 1 otherwise.
 """
 

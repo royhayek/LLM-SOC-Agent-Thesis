@@ -224,3 +224,13 @@ Each annex is a section frozen by its own ticket, moved verbatim into `docs/meth
 **Open for later tickets.** Whether `mqtt/broker.log` becomes an alert source for the MQTT detector is decided by EPIC-3 and EPIC-4 (E3-01, E4-04); this entry only records that the file exists.
 
 **Results invalidated.** None. No agent or baseline output exists, and no corpus has been generated.
+
+### 6. 2026-10-06: whole-network flow capture (E1-16, SCRUM-129)
+
+**What.** Supersedes Annex F ASSUMPTION 3 (capture on the broker's network namespace only), as Annex F foresees and ADR-0003 requires. Proposed in SCRUM-129 with ADR-0009; it takes effect when Roy accepts ADR-0009 and that pull request is merged. Every host on the testbed network has its own capture sidecar, which records only the packets the host sends; `make down` merges the per-host pcaps in timestamp order (tcpslice) into `flows/raw.pcap`, and NFStream reads it as before (ADR-0008). Every packet sent on the testbed network is captured once, at its sender, on the Docker VM's single kernel clock.
+
+**Effect on the flow source.** Flows now include traffic to the honeypot, between devices and from a device to an external address, which the frozen visibility matrix (Changelog entry 1) assumes. A packet's timestamp is its time of sending rather than of receipt; a prototype measured the difference at 27 µs, far below the 60 s window (§1). Packets the Docker bridge gateway sends (IPv6 link-local only, on an internal network) are not captured.
+
+**Start-up grace.** A sidecar can only start once its host is running, so a host must not send before its sidecar captures, or the first packets of its connections are lost and NFStream records those flows reversed. The emulators and the MQTT logger, the only hosts that open connections at start-up, wait 5 s before their first packet. The capture slow test checks that every connection the broker accepts has its client's opening SYN in the capture.
+
+**Results invalidated.** None. No agent or baseline output exists, and no corpus has been generated.
