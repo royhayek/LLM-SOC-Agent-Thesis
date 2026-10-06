@@ -25,3 +25,7 @@ families:
   ssh_brute_force:  # F4 (E1-11). hydra over a fixed user x password list.
     flows: 0.30     # hydra reuses connections across tasks, so the flow count varies
     honeypot: 0.20  # Cowrie logs each login attempt; count is close to users x passwords
+
+  syn_flood:  # F6 (E1-13). hping3 --syn --flood, fixed source port, for a fixed duration.
+    flows: 0.50    # always one flow (fixed 5-tuple); loose, since the count is trivially 1
+    packets: 0.20  # SYN packets to the device: the flood volume (~238k in 5 s, ~1 % apart)
