@@ -289,11 +289,11 @@ def test_cli_exit_code_maps_validity(monkeypatch: pytest.MonkeyPatch, tmp_path: 
             episodes=(),
         )
 
-    monkeypatch.setattr(cli, "run_from_file", lambda _p: fake(True, False))
+    monkeypatch.setattr(cli, "run_from_file", lambda _p, **_k: fake(True, False))
     assert cli.main(["schedules/example_two.yaml"]) == 0
-    monkeypatch.setattr(cli, "run_from_file", lambda _p: fake(False, False))
+    monkeypatch.setattr(cli, "run_from_file", lambda _p, **_k: fake(False, False))
     assert cli.main(["schedules/example_two.yaml"]) == 1
-    monkeypatch.setattr(cli, "run_from_file", lambda _p: fake(False, True))
+    monkeypatch.setattr(cli, "run_from_file", lambda _p, **_k: fake(False, True))
     assert cli.main(["schedules/example_two.yaml"]) == 1
 
 
