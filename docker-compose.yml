@@ -92,12 +92,13 @@ services:
     depends_on: [emulator-plug]
     command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/emulator-plug.pcap"]
 
-  # Writes every MQTT message the broker carries to the raw MQTT file. Waits a few seconds
-  # so its capture sidecar is running before it opens its connection (ADR-0009).
+  # Writes every MQTT message the broker carries to the raw MQTT file. Waits 2 s so its
+  # capture sidecar is running before it opens its connection (ADR-0009); emulators wait
+  # longer before their first reading, so the logger still subscribes first.
   mqtt-logger:
     image: eclipse-mosquitto:2.0.22
     depends_on: [broker]
-    command: ["sh", "-c", "sleep 5; exec mosquitto_sub -h broker -i mqtt-logger -u mqtt-logger -P testbed-logger-pw -t '#' -F '%I %t %p' >> /out/mqtt.log"]
+    command: ["sh", "-c", "sleep 2; exec mosquitto_sub -h broker -i mqtt-logger -u mqtt-logger -P testbed-logger-pw -t '#' -F '%I %t %p' >> /out/mqtt.log"]
     volumes:
       - ${RUN_DIR:-./data/raw/_no_run}/mqtt:/out
     networks:

@@ -7,7 +7,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir nfstream==6.6.0
 
-COPY flows.py check_direction.py /app/
+COPY flows.py check_direction.py merge.sh /app/
 WORKDIR /app
 # Each capture-* service in docker-compose.yml sets its own tcpdump command (packet-buffered,
 # -U, so each pcap is complete when tcpdump stops on SIGTERM).

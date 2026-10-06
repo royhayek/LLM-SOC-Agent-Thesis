@@ -129,3 +129,33 @@ def test_benign_run_captures_every_packet_once() -> None:
         and 22 in (f["src_port"], f["dst_port"])
         for f in flows
     ), "no flow between emulator-temp and the honeypot's SSH port"
+
+
+@pytest.mark.slow
+def test_merge_skips_hosts_that_sent_nothing(tmp_path: Path) -> None:
+    """tcpslice 1.5 stops on a header-only pcap (a host that sent nothing); merge.sh must skip
+    it, and still write a valid raw.pcap when every host was silent. Needs the capture image
+    (`make up` builds it); runs with no network.
+    """
+    # idle.pcap: header only. busy.pcap: three refused TCP connects on loopback, a SYN and a
+    # RST each, so 6 packets. The image has bash but no ping.
+    script = r"""
+        set -e; mkdir -p /out/hosts; cd /out/hosts
+        timeout 2 tcpdump -i lo -c 1 -w idle.pcap 'not ip' 2>/dev/null || true
+        (sleep 0.5; for i in 1 2 3; do (exec 3<>/dev/tcp/127.0.0.1/9) 2>/dev/null || true; done) &
+        timeout 3 tcpdump -i lo -w busy.pcap 2>/dev/null || true
+        cd /app && sh merge.sh
+        tcpdump -r /out/raw.pcap 2>/dev/null | wc -l
+        rm /out/hosts/busy.pcap /out/raw.pcap && sh merge.sh
+        tcpdump -r /out/raw.pcap 2>/dev/null | wc -l
+    """
+    lines = _run(
+        [
+            "docker", "run", "--rm", "--network", "none", "-v", f"{tmp_path}:/out",
+            "--entrypoint", "bash", "thesis-testbed-capture:e1-16", "-c", script,
+        ]
+    ).stdout.splitlines()  # fmt: skip
+    assert lines[0].startswith("merged 1 per-host pcaps")  # the idle pcap is skipped
+    assert int(lines[1]) == 6
+    assert lines[2].startswith("merged 0 per-host pcaps")  # every host silent, no error
+    assert int(lines[3]) == 0  # raw.pcap is a valid, header-only pcap

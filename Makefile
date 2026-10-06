@@ -50,7 +50,7 @@ down:
 	docker compose stop $(CAPTURES) && \
 	docker compose down && \
 	docker run --rm --network none -v "$$(pwd)/$(RAW_DIR)/$$run_id/flows:/out" \
-	  --entrypoint sh $(CAPTURE_IMAGE) -c 'tcpslice -w /out/raw.pcap /out/hosts/*.pcap && python flows.py' && \
+	  --entrypoint sh $(CAPTURE_IMAGE) -c 'sh merge.sh && python flows.py' && \
 	rm -f $(CURRENT) && \
 	echo "Testbed down. Raw logs in $(RAW_DIR)/$$run_id"
 
