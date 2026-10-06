@@ -1509,6 +1509,55 @@ None
 **Traceability**
 R-053, R-054, R-072, R-128, R-147 · Record §4.2, §6.2, §7.1 · Proposal: Methodology
 
+---
+**[E1-16] Capture all testbed traffic for the flow source**
+**Type:** Task · **Epic:** EPIC-1 · **Priority:** High · **Points:** 3 · **Labels:** engineering, infra
+**Depends on:** E1-04 · **Blocks:** E1-08, E1-09, E1-10, E1-11, E1-12, E1-13, E1-14
+
+Added 2026-10-06 as the leftover work ADR-0003 (E1-04) names: "the mechanism is settled in an ADR-0008 amendment before any attack traffic is captured (leftover work, new ticket per DoD)". Jira SCRUM-129.
+
+**Context**
+ADR-0003 decided that flow capture observes all traffic on the testbed network. Today tcpdump runs in the broker's namespace only (ADR-0008, METHODS.md Annex F ASSUMPTION 3), so traffic to the honeypot, between devices and from a device to an external address is never captured, while the frozen visibility matrix predicts flows for every family.
+
+**Goal**
+The flow source sees every packet sent on the testbed network exactly once, without weakening the isolation check.
+
+**Scope**
+- In: an ADR choosing the capture mechanism (amending ADR-0008), the capture change in `docker-compose.yml`, `testbed/capture/` and the Makefile, a METHODS.md changelog entry superseding Annex F ASSUMPTION 3, a test.
+- Out: the attack families (E1-08 to E1-13), the attacker container (first family ticket that needs it), NFStream settings (ADR-0002), detectors.
+
+**Technical notes**
+- Options for the ADR: one egress-only tcpdump sidecar per host merged into one pcap; a routing capture container; capture on the Docker host's bridge (fails the isolation check).
+- Every packet must appear once, and both directions of a flow must reach NFStream in one file.
+- Timestamps must come from one clock (the Docker VM kernel).
+
+**Acceptance criteria**
+- Given a benign run, when the merged pcap is read, then no packet appears twice (same timestamp, endpoints and bytes).
+- Given a packet sent from one emulator to the honeypot, when the run ends, then `flows.jsonl` holds a flow between them.
+- Given the testbed is up, when the isolation check runs, then it passes.
+- [ ] An ADR in `docs/adr/` records the mechanism and is accepted.
+- [ ] METHODS.md has a changelog entry superseding Annex F ASSUMPTION 3.
+
+**Checklist**
+- [ ] Write the ADR.
+- [ ] Change the capture services and `make down`.
+- [ ] Write the tests.
+- [ ] Run a benign run and the isolation check.
+- [ ] Append the METHODS.md entry.
+
+**Deliverables**
+`docs/adr/0009-whole-network-flow-capture.md`, `docker-compose.yml`, `testbed/capture/`, `Makefile`, `tests/test_capture.py`
+
+**Risks / gotchas**
+- A capture point that misses one direction of a flow silently changes NFStream's features.
+- More capture containers use memory; keep the 16 GB budget (record §4.2).
+
+**Open questions**
+None. The capture point is decided by ADR-0003; this ticket chooses only the mechanism.
+
+**Traceability**
+R-057, R-064 · Record §3.2, §6.7, §6.11 · ADR-0003, ADR-0008 · Proposal: H1
+
 
 # Step D — EPIC-2 · Ground Truth & Labelled Corpus
 

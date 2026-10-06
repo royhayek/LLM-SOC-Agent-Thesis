@@ -42,6 +42,7 @@ Ticket references (`E0-01`) are used in every description and in `backlog_full.m
 | E1-13 | SCRUM-117 | 2 | Implement attack family F6 (provisional: denial of service) |
 | E1-14 | SCRUM-121 | 2 | Verify the source-visibility matrix against real captures |
 | E1-15 | SCRUM-124 | 3 | Run a pilot schedule end to end and check repeatability |
+| E1-16 | SCRUM-129 | 3 | Capture all testbed traffic for the flow source |
 
 ## EPIC-2 · Ground Truth & Labelled Corpus · `SCRUM-8`
 

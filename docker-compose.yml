@@ -6,6 +6,17 @@
 
 name: thesis-testbed
 
+# Capture sidecar settings shared by every capture-* service (ADR-0008, ADR-0009). Each one
+# builds the same image, so `docker compose up --build` never tries to pull it.
+# No restart: a restarted tcpdump would overwrite its pcap. `make down` fails instead.
+x-capture: &capture
+  build: ./testbed/capture
+  image: thesis-testbed-capture:e1-16
+  cap_add: [NET_ADMIN, NET_RAW]
+  volumes:
+    - ${RUN_DIR:-./data/raw/_no_run}/flows/hosts:/out
+  restart: "no"
+
 # Each emulator replays its seeded benign plan from data/raw/<run_id>/benign_plan/, which
 # `make up` writes from testbed/profiles/benign.yaml (E1-05). No restart: a restarted
 # emulator would replay its plan from the start and break the same-seed guarantee.
@@ -33,24 +44,60 @@ services:
         ipv4_address: 10.77.0.2
     restart: unless-stopped
 
-  # Shares the broker's network namespace, so it sees every MQTT connection (ADR-0002).
-  # tcpdump writes flows/raw.pcap; `make down` turns it into flows.jsonl (ADR-0008).
-  # No restart: a restarted tcpdump would overwrite the pcap. `make down` fails instead.
-  capture:
-    build: ./testbed/capture
-    image: thesis-testbed-capture:e0-07
+  # Flow capture (ADR-0009, amending ADR-0008's capture point). One sidecar per host that
+  # sends traffic, in that host's network namespace, records only the packets the host sends
+  # (`-Q out`), so every packet on the testbed network is captured once, at its sender.
+  # `make down` merges flows/hosts/*.pcap into flows/raw.pcap (tcpslice), then NFStream
+  # turns it into flows.jsonl. A host added to the testbed network needs its own sidecar
+  # (tests/test_capture.py checks this).
+  capture-broker:
+    <<: *capture
     network_mode: "service:broker"
     depends_on: [broker]
-    cap_add: [NET_ADMIN, NET_RAW]
-    volumes:
-      - ${RUN_DIR:-./data/raw/_no_run}/flows:/out
-    restart: "no"
+    command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/broker.pcap"]
 
-  # Writes every MQTT message the broker carries to the raw MQTT file.
+  capture-mqtt-logger:
+    <<: *capture
+    network_mode: "service:mqtt-logger"
+    depends_on: [mqtt-logger]
+    command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/mqtt-logger.pcap"]
+
+  capture-honeypot:
+    <<: *capture
+    network_mode: "service:honeypot"
+    depends_on: [honeypot]
+    command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/honeypot.pcap"]
+
+  capture-emulator-temp:
+    <<: *capture
+    network_mode: "service:emulator-temp"
+    depends_on: [emulator-temp]
+    command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/emulator-temp.pcap"]
+
+  capture-emulator-cam:
+    <<: *capture
+    network_mode: "service:emulator-cam"
+    depends_on: [emulator-cam]
+    command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/emulator-cam.pcap"]
+
+  capture-emulator-hum:
+    <<: *capture
+    network_mode: "service:emulator-hum"
+    depends_on: [emulator-hum]
+    command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/emulator-hum.pcap"]
+
+  capture-emulator-plug:
+    <<: *capture
+    network_mode: "service:emulator-plug"
+    depends_on: [emulator-plug]
+    command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/emulator-plug.pcap"]
+
+  # Writes every MQTT message the broker carries to the raw MQTT file. Waits a few seconds
+  # so its capture sidecar is running before it opens its connection (ADR-0009).
   mqtt-logger:
     image: eclipse-mosquitto:2.0.22
     depends_on: [broker]
-    command: ["sh", "-c", "exec mosquitto_sub -h broker -i mqtt-logger -u mqtt-logger -P testbed-logger-pw -t '#' -F '%I %t %p' >> /out/mqtt.log"]
+    command: ["sh", "-c", "sleep 5; exec mosquitto_sub -h broker -i mqtt-logger -u mqtt-logger -P testbed-logger-pw -t '#' -F '%I %t %p' >> /out/mqtt.log"]
     volumes:
       - ${RUN_DIR:-./data/raw/_no_run}/mqtt:/out
     networks:

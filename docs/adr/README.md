@@ -13,3 +13,4 @@ One file per decision, numbered. Start a new one by copying `template.md`; it st
 | 0006 | Pydantic for data models | E0-08 |
 | 0007 | structlog for structured JSON logging | E0-10 |
 | 0008 | Raw pcap capture with tcpdump, flows from the pcap | E0-07 |
+| 0009 | Whole-network flow capture with per-host egress sidecars | E1-16 |
