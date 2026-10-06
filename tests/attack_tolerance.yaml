@@ -13,3 +13,7 @@ families:
   mqtt_publish_flood:  # F1 (E1-08). Sent count is fixed (3000); the subscriber logs fewer.
     mqtt: 0.15   # QoS 0: the burst overruns the subscriber, so the logged count varies (2719-3000 over two runs, ~9 %); 0.15 leaves margin
     flows: 0.20  # one connection carries the whole flood; the device's flow count was 3 in both runs
+
+  mqtt_brute_force:  # F2 (E1-09). One refused CONNECT per committed guess.
+    mqtt: 0.10   # refused-auth lines in broker.log for the brute client; one per guess
+    flows: 0.20  # one short flow per guess (plus the device's benign connections)

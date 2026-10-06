@@ -9,10 +9,14 @@ Every attack runs inside the isolated testbed, behind the E1-01 gate.
 from __future__ import annotations
 
 from thesis.scenario.families.f1 import MqttPublishFloodRunner
+from thesis.scenario.families.f2 import MqttBruteForceRunner
 from thesis.scenario.runner import AttackFamilyRunner
 from thesis.scenario.schedule import AttackFamily
 
-_RUNNERS: tuple[AttackFamilyRunner, ...] = (MqttPublishFloodRunner(),)
+_RUNNERS: tuple[AttackFamilyRunner, ...] = (
+    MqttPublishFloodRunner(),
+    MqttBruteForceRunner(),
+)
 
 
 def default_registry() -> dict[AttackFamily, AttackFamilyRunner]:
