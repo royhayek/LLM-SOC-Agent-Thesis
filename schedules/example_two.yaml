@@ -1,0 +1,22 @@
+# Two-episode example schedule for the scenario runner (E1-07).
+# Format demonstration only. No attack family is implemented yet (E1-08..E1-13), so both
+# episodes are recorded as `no_runner` and the run is still valid: this exercises the
+# runner's orchestration (isolation gate, run folder, execution log) end to end.
+# Offsets and durations are whole seconds; each range is [start, start + duration).
+# Short on purpose so the run finishes quickly.
+
+episodes:
+  - id: ep-001
+    family: ssh_brute_force
+    target_device: hp-ssh-01
+    start_offset_s: 5
+    duration_s: 10
+    parameters: {}
+    seed: 1
+  - id: ep-002
+    family: mqtt_publish_flood
+    target_device: iot-temp-01  # different device, same window: allowed
+    start_offset_s: 5
+    duration_s: 10
+    parameters: {}
+    seed: 2
