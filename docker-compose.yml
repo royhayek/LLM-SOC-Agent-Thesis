@@ -92,6 +92,12 @@ services:
     depends_on: [emulator-plug]
     command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/emulator-plug.pcap"]
 
+  capture-attacker:
+    <<: *capture
+    network_mode: "service:attacker"
+    depends_on: [attacker]
+    command: ["tcpdump", "-i", "eth0", "-Q", "out", "-s", "0", "-n", "-U", "-w", "/out/attacker.pcap"]
+
   # Writes every MQTT message the broker carries to the raw MQTT file. Waits 5 s so its
   # capture sidecar is running before it opens its connection (ADR-0009). Emulators also
   # wait 5 s, then 10 s more before their first reading, so the logger subscribes first.
@@ -106,16 +112,33 @@ services:
         ipv4_address: 10.77.0.4
     restart: unless-stopped
 
+  # Cowrie listens for SSH on port 22 (ADR-0002 SSH-only; ADR-0003 targets hp-ssh-01:22). The
+  # sysctl lets the non-root cowrie user bind 22. It writes sessions to honeypot/cowrie.json.
   honeypot:
     image: cowrie/cowrie:3.1.0
     environment:
       COWRIE_TELNET_ENABLED: "no"
+      COWRIE_SSH_LISTEN_ENDPOINTS: "tcp:22:interface=0.0.0.0"
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: "0"
     volumes:
       - ${RUN_DIR:-./data/raw/_no_run}/honeypot:/cowrie/cowrie-git/var/log/cowrie
     networks:
       testbed:
         ipv4_address: 10.77.0.10
     restart: unless-stopped
+
+  # Attacker host for the external-origin families (ADR-0003, E1-10/E1-11/E1-13). Idle until an
+  # episode drives it with docker exec. On the internal network only; the E1-01 gate must pass
+  # with it present. NET_RAW/NET_ADMIN let hping3 craft the SYN flood (F6).
+  attacker:
+    build: ./testbed/attacker
+    image: thesis-testbed-attacker:e1-16
+    cap_add: [NET_ADMIN, NET_RAW]
+    networks:
+      testbed:
+        ipv4_address: 10.77.0.30
+    restart: "no"
 
   emulator-temp:
     <<: *emulator

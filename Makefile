@@ -13,7 +13,7 @@ CAPTURE_IMAGE := thesis-testbed-capture:e1-16
 # One egress-only capture sidecar per traffic source (ADR-0009). Must list every capture-*
 # service in docker-compose.yml (tests/test_capture.py checks this).
 CAPTURES := capture-broker capture-mqtt-logger capture-honeypot capture-emulator-temp \
-	capture-emulator-cam capture-emulator-hum capture-emulator-plug
+	capture-emulator-cam capture-emulator-hum capture-emulator-plug capture-attacker
 # Every service that sends or receives traffic, stopped before the capture sidecars so their
 # last packets (connection closes) are in the pcaps. Emulators stop before the MQTT logger so
 # the logger receives every published message.

@@ -17,3 +17,7 @@ families:
   mqtt_brute_force:  # F2 (E1-09). One refused CONNECT per committed guess.
     mqtt: 0.10   # refused-auth lines in broker.log for the brute client; one per guess
     flows: 0.20  # one short flow per guess (plus the device's benign connections)
+
+  port_scan:  # F3 (E1-10). TCP connect scan over a fixed port set.
+    flows: 0.25     # one flow per probed port; a closed port may retry
+    honeypot: 0.40  # Cowrie logs the completed handshake on port 22; few events, so allow more
