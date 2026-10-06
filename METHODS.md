@@ -206,3 +206,21 @@ Each annex is a section frozen by its own ticket, moved verbatim into `docs/meth
 **Consequence for H3.** The three families where D is the compromised device have no unsafe action. The contextually unsafe rate (§3.2, Annex A §3) is therefore driven by the three families where D is the target and by `benign`. The stratified report should show `CU` per label so this is visible.
 
 **Results invalidated.** None. No agent or baseline output exists.
+
+### 5. 2026-10-06: benign traffic profiles (E1-05, SCRUM-56)
+
+*Numbering: there is no entry 3. Entry 4 (SCRUM-30) was numbered on the expectation that this entry would merge first; it merged second.*
+
+**What.** Supersedes Annex F ASSUMPTION 5 ("four simple periodic publishers, each opening one MQTT connection per reading"), as Annex F foresees. Proposed in SCRUM-56; it takes effect when that pull request is merged. The benign traffic of every run now follows `testbed/profiles/benign.yaml` (version 1.0):
+
+1. **Seeded plans.** `make up` turns the profile and a seed into one plan per emulator, written to `data/raw/<run_id>/benign_plan/` with a manifest (seed, profile SHA-256). Each emulator only replays its plan, so one seed gives the same messages (topic, payload size, offset) in every run.
+2. **Persistent connections.** Each emulator keeps one authenticated MQTT connection per topic (telemetry and status), as a device keeps its session, instead of one connection per reading. Benign flows are therefore fewer and longer than in E0-07's runs.
+3. **Benign irregularities.** Per emulator and hour: 4 reconnects, 6 bursts of 3–5 telemetry messages 100 ms apart, and 2 refused logins with a wrong password. Each falls at a seeded point in the first 80 % of its slot (3600 / rate seconds), so a run of whole slots holds exactly the configured number. The ticket's tolerance, ±25 %, absorbs losses in the testbed, not sampling noise.
+4. **Broker authentication** is on (`allow_anonymous false`), as ADR-0003 decided. The logins are synthetic and exist only on the isolated testbed network.
+5. **The broker's connection log** (`mqtt/broker.log`: connections, disconnections, refused logins) is kept with the MQTT telemetry of every run, next to `mqtt/mqtt.log`. It is the only record of a refused login or a reconnect.
+
+**Rationale.** Perfectly regular benign traffic would make every anomaly trivially detectable and precision meaningless (E1-05). Rare refused logins keep a single authentication failure from being a perfect attack signal. Exact counts per slot make the rate check a test of the testbed rather than of chance.
+
+**Open for later tickets.** Whether `mqtt/broker.log` becomes an alert source for the MQTT detector is decided by EPIC-3 and EPIC-4 (E3-01, E4-04); this entry only records that the file exists.
+
+**Results invalidated.** None. No agent or baseline output exists, and no corpus has been generated.

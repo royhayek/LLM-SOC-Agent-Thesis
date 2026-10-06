@@ -6,19 +6,28 @@
 
 name: thesis-testbed
 
+# Each emulator replays its seeded benign plan from data/raw/<run_id>/benign_plan/, which
+# `make up` writes from testbed/profiles/benign.yaml (E1-05). No restart: a restarted
+# emulator would replay its plan from the start and break the same-seed guarantee.
 x-emulator: &emulator
   image: eclipse-mosquitto:2.0.22
   depends_on: [broker, mqtt-logger]
   entrypoint: ["/bin/sh", "/emulator/emulate.sh"]
   volumes:
     - ./testbed/emulator:/emulator:ro
-  restart: unless-stopped
+    - ${RUN_DIR:-./data/raw/_no_run}/benign_plan:/plan:ro
+  restart: "no"
 
 services:
+  # Authenticated (ADR-0003, E1-05). Its connection log goes to mqtt/broker.log in the run.
   broker:
     image: eclipse-mosquitto:2.0.22
+    entrypoint: ["/bin/sh", "/mosquitto/config/start.sh"]
     volumes:
       - ./testbed/broker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./testbed/broker/start.sh:/mosquitto/config/start.sh:ro
+      - ./testbed/broker/credentials.txt:/mosquitto/config/credentials.txt:ro
+      - ${RUN_DIR:-./data/raw/_no_run}/mqtt:/mosquitto/log
     networks:
       testbed:
         ipv4_address: 10.77.0.2
@@ -41,7 +50,7 @@ services:
   mqtt-logger:
     image: eclipse-mosquitto:2.0.22
     depends_on: [broker]
-    command: ["sh", "-c", "exec mosquitto_sub -h broker -i mqtt-logger -t '#' -F '%I %t %p' >> /out/mqtt.log"]
+    command: ["sh", "-c", "exec mosquitto_sub -h broker -i mqtt-logger -u mqtt-logger -P testbed-logger-pw -t '#' -F '%I %t %p' >> /out/mqtt.log"]
     volumes:
       - ${RUN_DIR:-./data/raw/_no_run}/mqtt:/out
     networks:
@@ -62,28 +71,28 @@ services:
 
   emulator-temp:
     <<: *emulator
-    environment: {DEVICE_ID: iot-temp-01, KIND: temperature, PERIOD: "5"}
+    environment: {DEVICE_ID: iot-temp-01, PASSWORD: testbed-temp-pw}
     networks:
       testbed:
         ipv4_address: 10.77.0.21
 
   emulator-cam:
     <<: *emulator
-    environment: {DEVICE_ID: iot-cam-01, KIND: motion, PERIOD: "7"}
+    environment: {DEVICE_ID: iot-cam-01, PASSWORD: testbed-cam-pw}
     networks:
       testbed:
         ipv4_address: 10.77.0.22
 
   emulator-hum:
     <<: *emulator
-    environment: {DEVICE_ID: iot-hum-01, KIND: humidity, PERIOD: "11"}
+    environment: {DEVICE_ID: iot-hum-01, PASSWORD: testbed-hum-pw}
     networks:
       testbed:
         ipv4_address: 10.77.0.23
 
   emulator-plug:
     <<: *emulator
-    environment: {DEVICE_ID: iot-plug-01, KIND: power, PERIOD: "13"}
+    environment: {DEVICE_ID: iot-plug-01, PASSWORD: testbed-plug-pw}
     networks:
       testbed:
         ipv4_address: 10.77.0.24
