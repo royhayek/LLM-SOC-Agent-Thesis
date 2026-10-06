@@ -10,6 +10,7 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
+from thesis.scenario.families import default_registry
 from thesis.scenario.runner import run_from_file
 
 
@@ -18,7 +19,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("schedule", type=Path, help="path to a scenario schedule YAML file")
     args = parser.parse_args(argv)
 
-    result = run_from_file(args.schedule)
+    result = run_from_file(args.schedule, registry=default_registry())
     print(
         f"run {result.run_id}: "
         f"{'aborted' if result.aborted else 'valid' if result.valid else 'invalid'} "
