@@ -8,9 +8,9 @@ network. Nothing new is started mid-run, so the containers the E1-01 isolation g
 are the ones that act.
 
 `ContainerAttackRunner` launches the tool with `docker exec` at the episode's start offset and,
-at its end offset, stops it for good. The tool runs under `setsid` as a process-group leader
-whose pid is written to a per-episode file; `stop()` signals that whole group, so an attack and
-any child can never outlive its episode (record §4.1 gotcha). Every family is bounded to finish
+at its end offset, stops it for good. `docker exec` gives the shell its own process group, whose
+pid is written to a per-episode file; `stop()` signals that whole group, so an attack and any
+child can never outlive its episode (record §4.1 gotcha). Every family is bounded to finish
 within its episode, so a normal run returns 0; the runner marks the run invalid on any non-zero
 exit, and the kill path is a safety net.
 """
@@ -116,11 +116,13 @@ class ContainerAttackRunner:
     def start(self, episode: Episode, run_dir: Path) -> AttackHandle:
         container = container_id(self.service_for(episode))
         pgid_file = f"/tmp/thesis-attack-{episode.id}-{uuid.uuid4().hex[:8]}.pgid"
-        # setsid makes the tool a process-group leader; $$ is written before exec, so the file
-        # holds the leader pid and stop() can signal the whole group.
-        shell = f"echo $$ > {pgid_file}; exec {self.command(episode)}"
+        # `docker exec` gives the shell its own process group (pid == pgid), so $$ is the group
+        # id: stop() signals the whole group, and the shell still returns the command's real
+        # exit code. (setsid is avoided: busybox setsid has no -w, so it would mask that code,
+        # and `exec` is avoided so a compound command like a loop runs.)
+        shell = f"echo $$ > {pgid_file}; {self.command(episode)}"
         proc = subprocess.Popen(
-            ["docker", "exec", container, "setsid", "sh", "-c", shell],
+            ["docker", "exec", container, "sh", "-c", shell],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )

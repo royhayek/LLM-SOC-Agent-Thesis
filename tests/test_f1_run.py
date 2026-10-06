@@ -19,8 +19,8 @@ DEVICE = "iot-temp-01"
 
 @pytest.mark.slow
 def test_f1_leaves_mqtt_and_flow_traces_and_repeats() -> None:
-    a = run_family_episode(FAMILY, DEVICE, duration_s=75, seed=1)
-    b = run_family_episode(FAMILY, DEVICE, duration_s=75, seed=1)
+    a = run_family_episode(FAMILY, DEVICE, duration_s=120, seed=1)
+    b = run_family_episode(FAMILY, DEVICE, duration_s=120, seed=1)
     ip = device_ip(DEVICE)
 
     mqtt_a = count_mqtt_topic(a, f"iot/{DEVICE}/flood")

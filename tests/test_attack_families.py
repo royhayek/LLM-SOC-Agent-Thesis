@@ -102,7 +102,8 @@ def test_start_launches_setsid_and_stop_signals_the_group(monkeypatch: pytest.Mo
     handle = runner.start(_episode(AttackFamily.MQTT_PUBLISH_FLOOD, "iot-temp-01"), Path("/tmp"))
     launch = calls[0]
     assert launch[:3] == ["docker", "exec", "deadbeef"]
-    assert "setsid" in launch and launch[3] == "setsid"
+    assert launch[3:5] == ["sh", "-c"]  # no setsid: it would mask the attack's exit code
+    assert "echo $$" in launch[5]  # records the process-group id for stop()
     assert handle.stop() == 0
     kill = calls[-1]
     assert kill[:3] == ["docker", "exec", "deadbeef"]
