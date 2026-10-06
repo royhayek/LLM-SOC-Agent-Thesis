@@ -1,6 +1,6 @@
 # ADR-0009: Whole-network flow capture with per-host egress sidecars
 
-- Status: Proposed
+- Status: Accepted (2026-10-06)
 - Date: 2026-10-06
 - Ticket: SCRUM-129 [E1-16]
 
@@ -35,7 +35,7 @@ container on the testbed network can observe the others' unicast traffic.
 
 ## Decision
 
-Proposed: option A below. Roy accepts or changes it.
+Option A below, accepted by Roy El Hayek on 2026-10-06 when he merged PR #23.
 
 - **One capture sidecar per testbed host that sends traffic.** Each runs the existing capture
   image in that host's network namespace (`network_mode: service:<host>`, as the broker's
