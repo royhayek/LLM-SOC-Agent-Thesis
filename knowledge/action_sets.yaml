@@ -5,7 +5,7 @@
 # METHODS.md Changelog entry 4. Changes only through a METHODS.md changelog entry.
 #
 # Every citation points to a quote already in knowledge/action_catalog.yaml, as
-# {action, source, locator}: the catalog entry that holds the quote. Those 35 quotes were
+# {action, source, locator}: the catalog entry that holds the quote. The catalog's quotes were
 # matched against the source documents by E0-04 (docs/catalog_derivation.md §1), so no
 # citation here is new. tests/test_action_sets.py checks that each one resolves.
 #
@@ -104,9 +104,9 @@ labels:
     reset_credentials:
       class: unsafe
       citations:
-        - {action: disable_service, source: AT, locator: "M1042 Disable or Remove Feature or Program, on T1046 Network Service Discovery"}
         - {action: monitor, source: A3, locator: "Containment phase, p. 35"}
-      rationale: "Proportionality (§7.4). A scan involves no credential; the family's sources call for closing unnecessary services and monitoring, a lesser response than resetting credentials."
+        - {action: block_source, source: A5, locator: "Adopter les bons réflexes, p. 25"}
+      rationale: "Proportionality (§7.4). A scan involves no credential; the family's sources call for monitoring rather than hasty disabling (A3) and for blocking the scanning source (A5), both lesser responses than resetting credentials."
 
   mqtt_publish_flood:  # D is the compromised device flooding the broker
     no_action:
