@@ -1,0 +1,84 @@
+# Benign traffic profiles for the MQTT emulators (ticket E1-05, record §4.1).
+# Replaces the four simple periodic publishers of METHODS.md Annex F ASSUMPTION 5
+# (METHODS.md Changelog entry 5). Cited by the dataset card (E2-08).
+#
+# `make up` turns this file and a seed into one plan per emulator
+# (`python -m thesis.testbed.benign plan`), written to data/raw/<run_id>/benign_plan/.
+# The emulator (testbed/emulator/emulate.sh) only replays its plan, so the same seed gives
+# the same messages at the same offsets. Times are whole seconds unless stated.
+
+version: "1.0"  # profile format version; bump on any change to this file
+seed: 20261006  # default master seed; `make up BENIGN_SEED=<n>` overrides it for one run
+tolerance: 0.25  # each irregularity count must be within ±25 % of its configured rate (E1-05)
+start_delay_s: 10  # no event before this offset, so the MQTT logger has subscribed first
+plan_duration_s: 14400  # plans cover 4 h; longer than any run. `BENIGN_DURATION_S` shortens it
+burst_spacing_ms: 100  # gap between the messages of one burst; a burst of 5 spans 0.4 s
+
+# Shared by every emulator unless an emulator overrides a field.
+defaults:
+  irregularities:
+    reconnect_per_hour: 4  # the device drops both its connections and reconnects
+    burst_per_hour: 6  # extra telemetry readings sent back to back on the first topic
+    burst_size: [3, 5]  # messages per burst, inclusive range; 3 or more so a burst is countable
+    wrong_password_per_hour: 2  # one refused CONNECT with a wrong password; kept low (E1-05 gotcha)
+
+emulators:
+  - device_id: iot-temp-01  # must match DEVICE_ID in docker-compose.yml
+    kind: temperature  # reading type, written into each telemetry payload
+    base_value: 21.0  # readings vary by ±5 % around this value
+    topics:  # one persistent connection per topic; at most two topics per emulator
+      - name: telemetry  # topic iot/<device_id>/telemetry; bursts use this first topic
+        period_s: 5  # mean gap between readings
+        jitter_s: 1  # each gap is period_s ± jitter_s, uniform in whole seconds
+        qos: 0  # MQTT QoS of every message on this topic
+        payload_bytes: [100, 160]  # payload size range in bytes, inclusive, padded to size
+      - name: status  # topic iot/<device_id>/status
+        period_s: 60  # mean gap between status messages
+        jitter_s: 10  # gap jitter
+        qos: 1  # status messages are acknowledged
+        payload_bytes: [90, 110]  # payload size range in bytes
+
+  - device_id: iot-cam-01  # must match DEVICE_ID in docker-compose.yml
+    kind: motion  # reading type
+    base_value: 1.0  # readings vary by ±5 % around this value
+    topics:  # one persistent connection per topic
+      - name: telemetry  # topic iot/<device_id>/telemetry
+        period_s: 7  # mean gap between readings
+        jitter_s: 2  # gap jitter
+        qos: 1  # MQTT QoS
+        payload_bytes: [100, 200]  # payload size range in bytes
+      - name: status  # topic iot/<device_id>/status
+        period_s: 90  # mean gap between status messages
+        jitter_s: 15  # gap jitter
+        qos: 1  # MQTT QoS
+        payload_bytes: [90, 110]  # payload size range in bytes
+
+  - device_id: iot-hum-01  # must match DEVICE_ID in docker-compose.yml
+    kind: humidity  # reading type
+    base_value: 45.0  # readings vary by ±5 % around this value
+    topics:  # one persistent connection per topic
+      - name: telemetry  # topic iot/<device_id>/telemetry
+        period_s: 11  # mean gap between readings
+        jitter_s: 2  # gap jitter
+        qos: 0  # MQTT QoS
+        payload_bytes: [100, 140]  # payload size range in bytes
+      - name: status  # topic iot/<device_id>/status
+        period_s: 120  # mean gap between status messages
+        jitter_s: 20  # gap jitter
+        qos: 0  # MQTT QoS
+        payload_bytes: [90, 110]  # payload size range in bytes
+
+  - device_id: iot-plug-01  # must match DEVICE_ID in docker-compose.yml
+    kind: power  # reading type
+    base_value: 60.0  # readings vary by ±5 % around this value
+    topics:  # one persistent connection per topic
+      - name: telemetry  # topic iot/<device_id>/telemetry
+        period_s: 13  # mean gap between readings
+        jitter_s: 3  # gap jitter
+        qos: 1  # MQTT QoS
+        payload_bytes: [100, 180]  # payload size range in bytes
+      - name: status  # topic iot/<device_id>/status
+        period_s: 60  # mean gap between status messages
+        jitter_s: 10  # gap jitter
+        qos: 2  # MQTT QoS, so all three levels appear in the testbed
+        payload_bytes: [90, 110]  # payload size range in bytes

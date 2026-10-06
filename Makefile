@@ -1,5 +1,6 @@
 # Testbed commands (ticket E0-07). Stop Ollama before `make up` on 16 GB (README, Resources).
 #   make up     start the testbed; raw logs go to data/raw/<run_id>/
+#               BENIGN_SEED=<n> and BENIGN_DURATION_S=<s> override the benign profile (E1-05)
 #   make down   stop the testbed, derive flows from the pcap, keep that run's raw logs
 #   make reset  remove the testbed's containers and volumes; raw logs on disk are kept
 
@@ -7,6 +8,7 @@
 
 RAW_DIR := data/raw
 CURRENT := $(RAW_DIR)/.current_run
+BENIGN_PROFILE := testbed/profiles/benign.yaml
 CAPTURE_IMAGE := thesis-testbed-capture:e0-07
 # Every service that sends or receives traffic, stopped before the capture so their last
 # packets (connection closes) are in the pcap. Emulators stop before the MQTT logger so
@@ -19,7 +21,10 @@ up:
 	@run_id=$$(date -u +%Y%m%dT%H%M%SZ); \
 	run_dir=$(RAW_DIR)/$$run_id; \
 	mkdir -p $$run_dir/mqtt $$run_dir/flows $$run_dir/honeypot; \
-	touch $$run_dir/mqtt/mqtt.log $$run_dir/honeypot/cowrie.json; \
+	touch $$run_dir/mqtt/mqtt.log $$run_dir/mqtt/broker.log $$run_dir/honeypot/cowrie.json; \
+	uv run --quiet python -m thesis.testbed.benign plan $(BENIGN_PROFILE) $$run_dir/benign_plan \
+	  $(if $(BENIGN_SEED),--seed $(BENIGN_SEED)) $(if $(BENIGN_DURATION_S),--duration-s $(BENIGN_DURATION_S)) \
+	  || { echo "Could not write the benign plans."; rm -rf $$run_dir; exit 1; }; \
 	chmod -R a+rwX $$run_dir; \
 	echo $$run_id > $(CURRENT); \
 	if RUN_DIR=./$$run_dir docker compose up -d --build --force-recreate --remove-orphans; then \
