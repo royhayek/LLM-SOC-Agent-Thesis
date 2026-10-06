@@ -1,0 +1,15 @@
+# Per-family repeatability tolerance (E1-08..E1-13). Two runs of one family with the same seed
+# must have raw event counts per source that differ by no more than the fraction below.
+# Each entry is set from two real runs when its family is implemented, and is used by that
+# family's repeatability test. Counts are whole numbers, so the tolerance is a fraction of the
+# first run's count (ceil), with a small absolute floor for low-count sources.
+
+version: "1.0"
+
+defaults:
+  abs_floor: 3  # ignore differences of this many events or fewer, whatever the fraction
+
+families:
+  mqtt_publish_flood:  # F1 (E1-08). Sent count is fixed (3000); the subscriber logs fewer.
+    mqtt: 0.15   # QoS 0: the burst overruns the subscriber, so the logged count varies (2719-3000 over two runs, ~9 %); 0.15 leaves margin
+    flows: 0.20  # one connection carries the whole flood; the device's flow count was 3 in both runs
