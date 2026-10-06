@@ -182,3 +182,22 @@ def test_f4_runs_hydra_over_the_committed_lists() -> None:
     cmd = runner.command(ep)
     assert "hydra" in cmd and "ssh://10.77.0.10" in cmd
     assert "-f " not in cmd  # no early exit: every pair is tried, so the count is fixed
+
+
+def test_f6_is_registered() -> None:
+    assert AttackFamily.SYN_FLOOD in default_registry()
+
+
+def test_f6_runs_a_bounded_syn_flood_from_the_attacker() -> None:
+    runner = default_registry()[AttackFamily.SYN_FLOOD]
+    ep = _episode(AttackFamily.SYN_FLOOD, "iot-cam-01")
+    assert runner.service_for(ep) == "attacker"
+    cmd = runner.command(ep)
+    assert "hping3 --syn --flood" in cmd
+    assert cmd.startswith("timeout ")  # bounded by wall clock, so it exits within the episode
+    assert "10.77.0.22" in cmd  # iot-cam-01 by IP, targeted directly (not the broker)
+
+
+def test_all_six_families_except_botnet_are_registered() -> None:
+    registered = set(default_registry())
+    assert registered == {f for f in AttackFamily if f is not AttackFamily.BOTNET}

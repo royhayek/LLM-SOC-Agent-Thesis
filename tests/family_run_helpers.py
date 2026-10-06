@@ -82,6 +82,18 @@ def count_broker_refused(run_dir: Path, client_substring: str) -> int:
     )
 
 
+def count_packets_to_port(run_dir: Path, dst_ip: str, dst_port: int) -> int:
+    """Total packets across flows to dst_ip:dst_port (both directions). Used for flood volume."""
+    total = 0
+    for line in (run_dir / "flows" / "flows.jsonl").read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        f = json.loads(line)
+        if f.get("dst_ip") == dst_ip and f.get("dst_port") == dst_port:
+            total += int(f.get("src2dst_packets", 0)) + int(f.get("dst2src_packets", 0))
+    return total
+
+
 def count_honeypot_events(run_dir: Path) -> int:
     path = run_dir / "honeypot" / "cowrie.json"
     if not path.is_file():
