@@ -1,0 +1,5 @@
+# Fixed username list for attack family F4, SSH credential guessing (E1-11, ADR-0003).
+# One username per line; comments start with #.
+root
+admin
+user
