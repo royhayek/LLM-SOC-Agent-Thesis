@@ -123,6 +123,23 @@ def test_benign_run_captures_every_packet_once() -> None:
     assert lines, "the merged pcap holds no IPv4 packet"
     assert len(lines) == len(set(lines)), "a packet was captured twice"
 
+    # Completeness at start-up: every connection the broker accepted has its client's opening
+    # SYN in the capture. A client that sends before its sidecar runs would miss one here.
+    def count(bpf: str) -> int:
+        out = _run(
+            [
+                "docker", "run", "--rm", "--network", "none", "-v", f"{flows_dir}:/out",
+                "--entrypoint", "tcpdump", "thesis-testbed-capture:e1-16",
+                "-n", "-r", "/out/raw.pcap", bpf,
+            ]
+        ).stdout  # fmt: skip
+        return len(out.splitlines())
+
+    syn = count("tcp dst port 1883 and tcp[tcpflags] & (tcp-syn|tcp-ack) == tcp-syn")
+    syn_ack = count("tcp src port 1883 and tcp[tcpflags] & (tcp-syn|tcp-ack) == (tcp-syn|tcp-ack)")
+    assert syn_ack > 0, "no MQTT connection was accepted"
+    assert syn == syn_ack, f"{syn_ack - syn} accepted MQTT connections lack the client's SYN"
+
     flows = [json.loads(line) for line in (flows_dir / "flows.jsonl").read_text().splitlines()]
     assert any(
         {f["src_ip"], f["dst_ip"]} == {"10.77.0.21", "10.77.0.10"}

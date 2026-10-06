@@ -26,6 +26,10 @@ TOPICS="/plan/${DEVICE_ID}.topics"
 # stop every emulator before the MQTT logger.
 trap 'exit 0' TERM
 
+# Capture grace (ADR-0009): this host's capture sidecar can start only after the host, so
+# wait before opening any connection, or the opening packets would not be captured.
+sleep "${CAPTURE_GRACE_S:-5}" & wait $!
+
 # Topic i writes to file descriptor i+3. Children close 3 and 4, or a connection's FIFO
 # would keep a writer after a reconnect and its reader would never see end of file.
 open_conn() {

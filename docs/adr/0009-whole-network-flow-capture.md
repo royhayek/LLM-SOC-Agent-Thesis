@@ -46,11 +46,16 @@ Proposed: option A below. Roy accepts or changes it.
   that needs it) gets its own sidecar the same way.
 - **Merge at `make down`.** After the traffic sources and the sidecars stop, `tcpslice`
   merges the per-host pcaps in timestamp order into `flows/raw.pcap`; NFStream then reads
-  `raw.pcap` exactly as in ADR-0008. The per-host pcaps stay in `flows/` as raw telemetry, so
-  the merge can be re-run.
+  `raw.pcap` exactly as in ADR-0008. The per-host pcaps stay in `flows/hosts/` as raw
+  telemetry, so the merge can be re-run. tcpslice 1.5 stops on a pcap with no packet (only
+  its 24-byte header, left by a host that sent nothing), so `testbed/capture/merge.sh` merges
+  only the pcaps that hold a packet, and copies a header-only pcap when every host was silent.
 - **tcpslice 1.5** (Debian bookworm package `tcpslice` 1.5-1), from the tcpdump project,
   added to the capture image next to tcpdump 4.99.3-1. Licence: BSD-style (UNVERIFIED, not
   checked against the project's licence file). Not linked into the `thesis` package.
+- **Start-up grace.** A sidecar can only join its host's namespace once the host runs, so a
+  host that opens connections at start-up waits 5 s first (the emulators and the MQTT logger);
+  otherwise its opening packets are lost and NFStream records the flow reversed.
 - **One clock.** Every container shares the Docker VM's kernel, so all sidecars stamp packets
   from the same clock. A packet is stamped as it leaves its sender rather than as it reaches
   the receiver.
