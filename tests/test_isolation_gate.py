@@ -128,10 +128,14 @@ def test_internal_testbed_passes_and_is_logged(testbed: str) -> None:
 
 @pytest.mark.slow
 def test_non_internal_network_refuses_the_run(testbed: str) -> None:
+    # A container with its own network: capture sidecars share another container's network
+    # namespace (ADR-0009), and Docker refuses to connect those to a second network.
     container = docker(
         "ps",
         "--filter",
         "label=com.docker.compose.project=thesis-testbed",
+        "--filter",
+        "label=com.docker.compose.service=honeypot",
         "--format",
         "{{.Names}}",
     ).split()[0]
