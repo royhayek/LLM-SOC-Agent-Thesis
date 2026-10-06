@@ -10,12 +10,14 @@ from __future__ import annotations
 
 from thesis.scenario.families.f1 import MqttPublishFloodRunner
 from thesis.scenario.families.f2 import MqttBruteForceRunner
+from thesis.scenario.families.f3 import PortScanRunner
 from thesis.scenario.runner import AttackFamilyRunner
 from thesis.scenario.schedule import AttackFamily
 
 _RUNNERS: tuple[AttackFamilyRunner, ...] = (
     MqttPublishFloodRunner(),
     MqttBruteForceRunner(),
+    PortScanRunner(),
 )
 
 

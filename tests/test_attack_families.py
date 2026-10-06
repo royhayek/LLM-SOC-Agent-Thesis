@@ -152,3 +152,17 @@ def test_f2_guesses_are_all_wrong() -> None:
     assert real
     for user, password in load_guesses():
         assert (user, password) not in real, f"{user}:{password} is a real login"
+
+
+def test_f3_is_registered() -> None:
+    assert AttackFamily.PORT_SCAN in default_registry()
+
+
+def test_f3_runs_a_connect_scan_from_the_attacker() -> None:
+    runner = default_registry()[AttackFamily.PORT_SCAN]
+    ep = _episode(AttackFamily.PORT_SCAN, "hp-ssh-01")
+    assert runner.service_for(ep) == "attacker"
+    cmd = runner.command(ep)
+    assert cmd.startswith("nmap -sT")  # connect scan: completes the handshake for Cowrie
+    assert "10.77.0.10" in cmd  # the honeypot, by IP
+    assert "-sS" not in cmd  # never a SYN-only scan (ADR-0003 prediction_risk)
