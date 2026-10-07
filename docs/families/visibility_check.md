@@ -44,7 +44,7 @@ this check must be repeated for F5 once the slice is provided, and this table up
 ## Stratification
 
 `tests/test_families.py::test_stratification` passes on the matrix (unchanged): no family leaves
-traces in all three sources, four families leave traces in exactly two, one (`syn_flood`) in
-exactly one, and MQTT and the honeypot each see at least two families. The observed results are
-consistent with the rule; the one unverified family (`botnet`) is predicted one-source (flows),
-which does not affect the rule's satisfaction.
+traces in all three sources, four families leave traces in exactly two, two (`syn_flood` and
+`botnet`) in exactly one, and MQTT and the honeypot each see at least two families. The five
+families run are all consistent with the rule; `botnet`'s one-source (flows) prediction is still
+unverified but does not affect the rule's satisfaction.
