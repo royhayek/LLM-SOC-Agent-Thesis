@@ -1,0 +1,59 @@
+# Pilot schedule (ticket E1-15): a ~20-minute mixed scenario, every implemented family once
+# plus benign periods, for the repeatability check before the corpus run.
+#
+# Botnet (F5) is omitted: it is provisional and cannot run until its dataset slice is provided
+# (E1-12, docs/families/F5.md). When F5 is implemented, add an episode here and re-run the pilot.
+#
+# Half-open [start, start + duration) windows; whole seconds. No two episodes overlap on one
+# device. F1's flood needs ~75 s, so its episode is 120 s (as in the corpus, 5-min episodes).
+
+episodes:
+  - id: ep-f1-flood
+    family: mqtt_publish_flood
+    target_device: iot-temp-01
+    start_offset_s: 120
+    duration_s: 120  # [120, 240)
+    parameters: {}
+    seed: 1
+  - id: ep-f6-synflood
+    family: syn_flood
+    target_device: iot-cam-01
+    start_offset_s: 300
+    duration_s: 60  # [300, 360); 5 s flood inside
+    parameters: {}
+    seed: 2
+  - id: ep-f3-portscan
+    family: port_scan
+    target_device: hp-ssh-01
+    start_offset_s: 420
+    duration_s: 60  # [420, 480)
+    parameters: {}
+    seed: 3
+  - id: ep-f4-sshbrute
+    family: ssh_brute_force
+    target_device: hp-ssh-01  # same device as F3, later window: adjacent, allowed
+    start_offset_s: 540
+    duration_s: 90  # [540, 630)
+    parameters: {}
+    seed: 4
+  - id: ep-f2-mqttbrute
+    family: mqtt_brute_force
+    target_device: iot-temp-01  # same device as F1, later window: allowed
+    start_offset_s: 720
+    duration_s: 60  # [720, 780)
+    parameters: {}
+    seed: 5
+
+benign_periods:
+  - id: bn-001
+    start_offset_s: 0
+    duration_s: 120
+  - id: bn-002
+    start_offset_s: 240
+    duration_s: 60
+  - id: bn-003
+    start_offset_s: 630
+    duration_s: 90
+  - id: bn-004
+    start_offset_s: 780
+    duration_s: 420  # benign tail to 1200 s (~20 min total)
