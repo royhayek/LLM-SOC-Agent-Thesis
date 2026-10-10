@@ -94,6 +94,27 @@ def count_packets_to_port(run_dir: Path, dst_ip: str, dst_port: int) -> int:
     return total
 
 
+def count_packets_to_ip(run_dir: Path, dst_ip: str) -> int:
+    """Total packets across flows whose destination is dst_ip (both directions). Used for the
+    botnet replay, whose retargeted destination is a fixed non-routable address."""
+    total = 0
+    for line in (run_dir / "flows" / "flows.jsonl").read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        f = json.loads(line)
+        if f.get("dst_ip") == dst_ip:
+            total += int(f.get("src2dst_packets", 0)) + int(f.get("dst2src_packets", 0))
+    return total
+
+
+def count_flows_to_ip(run_dir: Path, dst_ip: str) -> int:
+    return sum(
+        1
+        for line in (run_dir / "flows" / "flows.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip() and json.loads(line).get("dst_ip") == dst_ip
+    )
+
+
 def count_honeypot_events(run_dir: Path) -> int:
     path = run_dir / "honeypot" / "cowrie.json"
     if not path.is_file():

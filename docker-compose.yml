@@ -135,6 +135,10 @@ services:
     build: ./testbed/attacker
     image: thesis-testbed-attacker:e1-16
     cap_add: [NET_ADMIN, NET_RAW]
+    volumes:
+      # The botnet slice for F5 (ADR-0003), read-only. data/external is git-ignored and may be
+      # empty; F5 verifies the slice SHA-256 before replay (thesis/scenario/families/f5.py).
+      - ./data/external:/slices:ro
     networks:
       testbed:
         ipv4_address: 10.77.0.30

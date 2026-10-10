@@ -206,17 +206,27 @@ def test_f5_is_registered() -> None:
     assert AttackFamily.BOTNET in default_registry()
 
 
-def test_f5_manifest_is_provisional_and_refuses_to_run() -> None:
-    """Until Roy provides the dataset slice and real SHA-256, F5 cannot build a command."""
-    from thesis.scenario.families.f5 import BotnetManifestError, load_manifest, verify_slice
+def test_f5_manifest_is_active_with_a_real_digest() -> None:
+    """The manifest names a real slice and a real SHA-256 (not the provisional placeholder)."""
+    import re
+
+    from thesis.scenario.families.f5 import (
+        PLACEHOLDER_SHA,
+        BotnetManifestError,
+        load_manifest,
+        verify_slice,
+    )
 
     manifest = load_manifest()
-    assert manifest["source"]["sha256"] == "UNVERIFIED-PLACEHOLDER"
-    with pytest.raises(BotnetManifestError, match="provisional"):
-        verify_slice(manifest)
-    runner = default_registry()[AttackFamily.BOTNET]
-    with pytest.raises(BotnetManifestError):
-        runner.command(_episode(AttackFamily.BOTNET, "iot-cam-01"))
+    sha = manifest["source"]["sha256"]
+    assert sha != PLACEHOLDER_SHA
+    assert re.fullmatch(r"[0-9a-f]{64}", sha), sha
+    # The slice is git-ignored, so it is present locally but absent in CI. verify_slice must
+    # either accept it (present, digest matches) or report it missing — never "provisional".
+    try:
+        assert verify_slice(manifest).name == Path(manifest["source"]["local_path"]).name
+    except BotnetManifestError as exc:
+        assert "not found" in str(exc), exc
 
 
 def test_f5_command_retargets_to_the_device_and_non_routable_c2(tmp_path: object) -> None:

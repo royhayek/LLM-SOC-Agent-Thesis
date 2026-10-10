@@ -21,7 +21,7 @@ listed below.
 | `mqtt_publish_flood` | yes / yes / no | yes / yes / no | 3000, 4, 0 | 20261007T185219Z | ✓ |
 | `mqtt_brute_force` | yes / yes / no | yes / yes / no | 25, 27, 0 | 20261007T185517Z | ✓ |
 | `syn_flood` | no / yes / no | no / yes / no | 0, 3, 0 | 20261007T190030Z | ✓ |
-| `botnet` | no / yes / no | **not run** | — | — | pending (E1-12 provisional) |
+| `botnet` | no / yes / no | no / yes / no | 0, 37 flows / 9955 pkts, 0 | 20261010T090047Z | ✓ |
 
 Notes on the counts:
 
@@ -37,14 +37,13 @@ Notes on the counts:
 None among the five families run. Every observed cell equals the frozen prediction, so
 `knowledge/attack_families.yaml` is **unchanged** and no METHODS.md changelog entry is needed.
 
-`botnet` (F5) is not yet run: it replays a dataset slice that has not been obtained (E1-12 is
-provisional, `docs/families/F5.md`). Its predicted visibility (flows only) is **unverified**;
-this check must be repeated for F5 once the slice is provided, and this table updated.
+All six families now match the frozen prediction. `botnet` (F5) was verified on 2026-10-10 once
+its CICIoT2023 Mirai slice was provided (E1-12): it leaves traces in flows only (37 flows / ~9,955
+packets to the non-routable C2), matching its one-source prediction.
 
 ## Stratification
 
 `tests/test_families.py::test_stratification` passes on the matrix (unchanged): no family leaves
 traces in all three sources, four families leave traces in exactly two, two (`syn_flood` and
-`botnet`) in exactly one, and MQTT and the honeypot each see at least two families. The five
-families run are all consistent with the rule; `botnet`'s one-source (flows) prediction is still
-unverified but does not affect the rule's satisfaction.
+`botnet`) in exactly one, and MQTT and the honeypot each see at least two families. All six
+families are consistent with the rule; `botnet` is the second one-source (flows) family, verified.

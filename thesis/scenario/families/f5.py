@@ -76,10 +76,11 @@ class BotnetRunner(ContainerAttackRunner):
         d_ip = SERVICE_IP[DEVICE_SERVICE[episode.target_device]]
         dst = manifest["retargeting"]["dst_ip"]
         pps = int(episode.parameters.get("replay_pps", manifest["retargeting"]["replay_pps"]))
-        container_slice = "/tmp/botnet_slice.pcap"  # the slice is mounted here in the container
+        # data/external is mounted read-only at /slices in the attacker container (compose).
+        container_slice = f"/slices/{Path(manifest['source']['local_path']).name}"
         retargeted = "/tmp/botnet_retargeted.pcap"
-        # Rewrite the source to D and the destination to the non-routable C2, then replay from
-        # the attacker container at a fixed rate. The slice is mounted read-only into the container.
+        # Rewrite the source to D and the destination to the non-routable C2 (outer IP header only;
+        # keying is by IP, record §4.1), then replay from the attacker container at a fixed rate.
         return (
             f"tcprewrite --infile={container_slice} --outfile={retargeted} "
             f"--dstipmap=0.0.0.0/0:{dst} --srcipmap=0.0.0.0/0:{d_ip} --fixcsum && "
