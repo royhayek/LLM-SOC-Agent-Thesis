@@ -1,8 +1,7 @@
 # Pilot schedule (ticket E1-15): a ~20-minute mixed scenario, every implemented family once
 # plus benign periods, for the repeatability check before the corpus run.
 #
-# Botnet (F5) is omitted: it is provisional and cannot run until its dataset slice is provided
-# (E1-12, docs/families/F5.md). When F5 is implemented, add an episode here and re-run the pilot.
+# All six families, including botnet (F5), whose CICIoT2023 slice is now available (E1-12).
 #
 # Half-open [start, start + duration) windows; whole seconds. No two episodes overlap on one
 # device. F1's flood needs ~75 s, so its episode is 120 s (as in the corpus, 5-min episodes).
@@ -43,6 +42,13 @@ episodes:
     duration_s: 60  # [720, 780)
     parameters: {}
     seed: 5
+  - id: ep-f5-botnet
+    family: botnet
+    target_device: iot-cam-01  # same device as F6, later window: allowed
+    start_offset_s: 900
+    duration_s: 90  # [900, 990); ~50 s replay inside
+    parameters: {}
+    seed: 6
 
 benign_periods:
   - id: bn-001
