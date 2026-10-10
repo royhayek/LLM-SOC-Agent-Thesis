@@ -99,7 +99,7 @@ Bundles of one episode are not independent (record §4.1). **The resampling unit
 
 ## 5. Target N
 
-**The number is not fixed here. E2-02 adds it in METHODS.md v1.1** (tag `methods-v1.1`), before the corpus is generated.
+**Frozen (E2-02, v1.1, tag `methods-v1.1`): `N_eval` = 480 evaluation bundles** — 300 attack (50 per family × 6) + 180 benign — plus 206 Baseline A training bundles (E2-01), for a total corpus of 686. The binding test is the H1/H4 McNemar family; the full derivation, assumptions and sensitivity are in `docs/power/power_calculation.md` (changelog entry 8).
 
 **Method.** For each test of §4.2, compute the bundle count giving power 0.8 under its assumed effect, multiply by the design effect `1 + (m − 1)ρ`, and take the largest result. Raise N until every family has the positive bundles the stratified H1 report needs, then split it into per-family, benign and training counts.
 
@@ -272,5 +272,49 @@ too large.
 **ASSUMPTIONS.** The 30 % training share is a chosen value, not derived; E2-02 may adjust it if
 the resulting corpus is too large for the time budget. Feature engineering and hyperparameter
 search for Baseline A are E4 (out of scope here).
+
+**Results invalidated.** None. No agent or baseline output exists.
+
+### 8. 2026-10-10: target N fixed by the power calculation (E2-02, SCRUM-25), v1.1
+
+**What.** Fixes the corpus size before any bundle is generated (record §3 risk #2; §10 "How many
+scenarios for statistical validity?"). Full derivation in `docs/power/power_calculation.md`,
+reproduced by `docs/power/power_calculation.py`. Tagged `methods-v1.1`.
+
+**Method (unchanged from §5).** Each test of §4.2 is sized for power 0.80 at α = 0.05 (Holm bounded
+conservatively by the Bonferroni α / family-size), multiplied by the clustering design effect
+`D = 1 + (m − 1)ρ`; the largest result sets `N_eval`, then raised to meet the per-family H1 floor
+and split into per-family, benign and training counts.
+
+**Frozen counts.**
+
+| Quantity | Count |
+|---|---|
+| Evaluation bundles `N_eval` | **480** (300 attack = 50/family × 6; 180 benign) |
+| Minimum positive bundles per family (stratified H1) | 30 floor; 50 delivered |
+| Expected bundles per episode `m` | 3 |
+| Clustering design effect `D` | 2.00 (ρ = 0.5) |
+| Baseline A training bundles (E2-01) | 206 (≈ 30/70 × N_eval, disjoint, no LLM calls) |
+| **Total corpus** | **686** |
+
+**Binding test.** H1/H4 McNemar (DET, CLS) at α = 0.05/6: 239 independent → 479 clustered. Every
+other test needs fewer (H2 McNemar 309; H4 Wilcoxon CU 406; H3 Wilcoxon CU 263; H3 non-inferiority
+198). N_eval = 480 powers them all.
+
+**Effect sizes (ASSUMPTIONS, §2 of the power doc).** Paired-binary minimum detectable effect:
+discordant probabilities p_win = 0.15, p_lose = 0.05 (marginal δ = 0.10, p_d = 0.20, OR 3.0).
+CU rate: standardized paired effect d_z = 0.25. Usefulness non-inferiority: σ_d = 0.20 at the
+frozen margin δ = 0.05. Clustering: m = 3, ρ = 0.5. No pilot discordance data exists and no
+published baseline figure is quoted (sources not re-read), so this is a minimum-**meaningful**-effect
+design, not an assumed true effect.
+
+**Cost (ADR-0001 recomputed).** 70,320 LLM calls over 3 full runs + 1 exploratory run ≈ 211 M in /
+17.6 M out ≈ **USD 4.92 / EUR 4.39** at the E0-06 unit prices — well within the EUR 100 budget. The
+DeepInfra spending cap is raised from USD 5 to USD 20 for guard-rail headroom (ADR-0001).
+
+**Sensitivity.** N_eval is most sensitive to δ and ρ (power doc §8): δ = 0.08 would need ~750
+bundles, δ = 0.12 ~330. The usefulness non-inferiority N is sensitive to σ_d: if C1 and C5 disagree
+on usefulness far more than assumed (σ_d > 0.35) it exceeds 480, to be re-opened via a changelog
+entry if the exploratory run shows this.
 
 **Results invalidated.** None. No agent or baseline output exists.

@@ -64,7 +64,7 @@ LLM_API_KEY=<secret, never logged>
 
 ### Cost
 
-Matrix (record §4.4.1, METHODS.md §2): N bundles × 16 LLM calls × k = 3 repetitions. N = 250 is a placeholder until E2-02 (§10, "How many scenarios are needed for statistical validity?").
+Matrix (record §4.4.1, METHODS.md §2): N bundles × 16 LLM calls × k = 3 repetitions. `N_eval` = 480 evaluation bundles, fixed by the power calculation E2-02 (METHODS.md v1.1 changelog entry 8, `docs/power/power_calculation.md`). LLM calls run on evaluation bundles only; Baseline A's 206 training bundles (E2-01) carry no LLM calls.
 
 - Input tokens per call: 3,000. This is the record §4.4.1 estimate, kept as a conservative cost figure; the hard ceiling in METHODS.md Annex E, §9 is 2,500.
 - Output tokens per call: 250, the ceiling in METHODS.md Annex E, §9.
@@ -73,22 +73,22 @@ Prices (DeepInfra pricing page, standard tier, checked 2026-10-04): USD 0.02 per
 
 | Run | Bundles | Calls | Input tokens | Output tokens | Price in / out (USD per 1M, checked 2026-10-04) | Cost (USD) | Cost (EUR) |
 |---|---|---|---|---|---|---|---|
-| Exploratory (about 10 % of bundles) | 25 | 1,200 | 3.6M | 0.3M | 0.02 / 0.04 | 0.08 | 0.07 |
-| Full run 1 | 250 | 12,000 | 36M | 3M | 0.02 / 0.04 | 0.84 | 0.75 |
-| Full run 2 | 250 | 12,000 | 36M | 3M | 0.02 / 0.04 | 0.84 | 0.75 |
-| Full run 3 | 250 | 12,000 | 36M | 3M | 0.02 / 0.04 | 0.84 | 0.75 |
-| **Total** | | **37,200** | **111.6M** | **9.3M** | | **2.60** | **2.32** |
+| Exploratory (about 5 % of bundles) | 25 | 1,200 | 3.6M | 0.3M | 0.02 / 0.04 | 0.08 | 0.07 |
+| Full run 1 | 480 | 23,040 | 69.1M | 5.8M | 0.02 / 0.04 | 1.61 | 1.44 |
+| Full run 2 | 480 | 23,040 | 69.1M | 5.8M | 0.02 / 0.04 | 1.61 | 1.44 |
+| Full run 3 | 480 | 23,040 | 69.1M | 5.8M | 0.02 / 0.04 | 1.61 | 1.44 |
+| **Total** | | **70,320** | **211.0M** | **17.6M** | | **4.92** | **4.39** |
 
-If the exploratory run is a full pass instead, the total is 48,000 calls and €2.99. The cost scales linearly with N: at N = 1,000 the worst case is still about €12. Both are well under €100.
+If the exploratory run is a full pass instead, the total is 92,160 calls and about €5.6. The cost scales linearly with N: at N = 1,000 the worst case is still about €9. Both are well under €100.
 
 ### Time
 
-The spike measured 5.32 s per hosted call (70B) and 4.31 s per local 8B call. Hosted 8B latency was not measured. At about 5 s per call, a full run of 12,000 calls takes about 17 h one call at a time, or about 2 h with 8 concurrent requests, if the provider's rate limit allows it (UNVERIFIED). Locally, the same run would take about 14 h of continuous inference on the 16 GB M2. This is why the experiments run hosted (record §4.2).
+The spike measured 5.32 s per hosted call (70B) and 4.31 s per local 8B call. Hosted 8B latency was not measured. At about 5 s per call, a full run of 23,040 calls takes about 32 h one call at a time, or about 4 h with 8 concurrent requests, if the provider's rate limit allows it (UNVERIFIED). Locally, the same run would take about 27 h of continuous inference on the 16 GB M2. This is why the experiments run hosted (record §4.2).
 
 ### Spending cap
 
-- Amount: USD 5 (about €4.45 at the rate above), set on the DeepInfra account. Active, confirmed by Roy El Hayek on 2026-10-04.
-- The worst-case plan (USD 3.36) is under the cap. If E2-02 raises N so that the plan exceeds USD 5, the cap is raised in the same change, never removed.
+- Amount: USD 20 (about €17.8 at the rate above), raised from USD 5 by E2-02 on 2026-10-10. The earlier USD 5 cap was set for the N = 250 placeholder; with N_eval = 480 the projected spend is USD 4.92, which left no guard-rail margin under USD 5, so the cap is raised to restore headroom. Still far under the €100 budget. (The original USD 5 cap was confirmed by Roy El Hayek on 2026-10-04; raising it to USD 20 on the DeepInfra account is a manual step.)
+- The projected spend (USD 4.92, 3 full runs + exploratory) is well under the cap. If N rises further so the plan exceeds USD 20, the cap is raised in the same change, never removed.
 
 The cap must be active before the first hosted call of any ticket (DoR).
 
@@ -100,8 +100,8 @@ The cap must be active before the first hosted call of any ticket (DoR).
 ### Assumptions
 
 - **A1. Same weights.** The Ollama build (`llama3.1-8b-8k`, digest 6811dcd559d9) and DeepInfra's FP8 build are both assumed to derive from Meta's Llama 3.1 8B Instruct weights at Hugging Face commit `0e9e39f2`. Neither provider links its build to that commit. UNVERIFIED.
-- **A2. Exploratory run size.** About 10 % of bundles (25 at N = 250). The run ticket fixes the size; the cost table also gives the total for a full exploratory pass.
-- **A3. N = 250**, a placeholder until E2-02.
+- **A2. Exploratory run size.** 25 bundles (about 5 % of N_eval = 480). The run ticket fixes the size; the cost text also gives the total for a full exploratory pass.
+- **A3. N_eval = 480**, fixed by E2-02 (was a placeholder of 250). Training bundles (206, E2-01) carry no LLM calls.
 - **A4. 3,000 input tokens per call**, the record §4.4.1 estimate, above the 2,500 ceiling, so the cost is overstated.
 - **A5. Concurrency.** The time estimate assumes 8 concurrent requests within DeepInfra's rate limit. UNVERIFIED.
 
@@ -120,7 +120,7 @@ The cap must be active before the first hosted call of any ticket (DoR).
 - The development and experiment runs use the same model and the same sampling parameters. The quantization differs, and the shared weights are ASSUMPTION A1.
 - The thesis states the limit of the pin: open weights identified by commit, served by a provider that does not certify the commit. Record §4.2 (`LLM_MODEL`) and the risk table (risk 5) carry a note saying so.
 - A change of model, revision, provider or sampling parameters after the freeze goes through a METHODS.md changelog entry (DoD, change control).
-- E2-02 recomputes the cost with the final N.
+- E2-02 recomputed the cost with the final N (N_eval = 480): projected USD 4.92 / EUR 4.39 over 3 full runs plus an exploratory run, and the spending cap was raised from USD 5 to USD 20.
 
 ## Sources
 
