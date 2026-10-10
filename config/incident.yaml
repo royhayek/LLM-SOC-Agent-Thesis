@@ -1,0 +1,4 @@
+# Incident unit parameters (METHODS.md §1). Read by the code so W is not hardcoded (E2-04).
+# Frozen at METHODS.md v1.0: W = 60 s, half-open windows. Changes only through a METHODS.md
+# changelog entry.
+window_seconds: 60
