@@ -234,3 +234,43 @@ Each annex is a section frozen by its own ticket, moved verbatim into `docs/meth
 **Start-up grace.** A sidecar can only start once its host is running, so a host must not send before its sidecar captures, or the first packets of its connections are lost and NFStream records those flows reversed. The emulators and the MQTT logger, the only hosts that open connections at start-up, wait 5 s before their first packet. The capture slow test checks that every connection the broker accepts has its client's opening SYN in the capture.
 
 **Results invalidated.** None. No agent or baseline output exists, and no corpus has been generated.
+
+### 7. 2026-10-10: Baseline A trains on a testbed split (E2-01, SCRUM-20)
+
+**What.** Fixes what Baseline A (the flow ML classifier, condition C7) trains on, before any
+corpus is generated. Decided by Roy El Hayek, 2026-10-10, who adopted the recommendation drafted
+for the ticket (`briefs/E2-01.local.md`). Closes C-14 ("trained on the same telemetry").
+
+**Decision: option (a) — train on a testbed split.** Baseline A is trained on a held-out part of
+the generated corpus and evaluated on the rest, so it sees the same telemetry as the agent
+(record §6.6; proposal Methodology).
+
+1. **Split unit: the attack episode** (and, for benign, the benign block of §4.3), never the
+   bundle. Bundles from one episode are not independent (record §4.1), so a bundle-level split
+   would put part of an episode in training and part in evaluation and inflate Baseline A
+   (risk: a bundle-level leak). No episode appears in both sets.
+2. **Training share: 30 % of episodes per family** (a stratified 70/30 evaluation/training split
+   per family and for benign), so every family is represented in training. The split is drawn
+   from a **fixed, logged seed before generation**, and recorded with the corpus.
+3. **Same reduced view.** Baseline A reads only the `flows` block of the reduced view (§2,
+   Annex E §11), the view fixed by E0-05; this decision does not change the view.
+
+**Extra bundles for E2-02.** The power calculation sizes the **evaluation** bundle count N_eval
+(§5). Training adds, on top of that, the bundles of the training episodes: with a 70/30 episode
+split, training bundles ≈ (30/70) × N_eval ≈ **0.43 × N_eval** extra, so the corpus generated is
+≈ **(10/7) × N_eval ≈ 1.43 × N_eval** bundles. E2-02 uses N_eval for power and then scales the
+schedule by 10/7 to cover training; E2-03 checks the resulting wall-clock (the training share
+makes the corpus bigger, so re-check E2-05's time).
+
+**Rationale.** Option (a) matches the proposal's "same telemetry" and avoids the domain-shift
+confound of training on an external dataset (option b), which an examiner "will attack first"
+(record §6.6). The only risk, label leakage, is removed by the episode-level, seed-fixed,
+pre-generation split. The 30 % share keeps the evaluation set the larger one while giving a
+simple classifier enough to tune; it is a judgement, revisable in E2-02 if N makes the corpus
+too large.
+
+**ASSUMPTIONS.** The 30 % training share is a chosen value, not derived; E2-02 may adjust it if
+the resulting corpus is too large for the time budget. Feature engineering and hyperparameter
+search for Baseline A are E4 (out of scope here).
+
+**Results invalidated.** None. No agent or baseline output exists.
