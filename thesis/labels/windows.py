@@ -11,8 +11,9 @@ overlap at most one episode per device (the schedule never overlaps two episodes
 and the corpus schedule spaces episodes so none share a window); a window overlapping two
 distinct episodes is a schedule error and raises, rather than silently mislabelling.
 
-The Parquet writer (`data/labels/<run_id>.parquet`) is added once ADR-0010 (the Parquet library)
-is accepted; this module currently produces the labels in memory.
+`label_run()` ties a run's execution log and window grid together and writes the labels to
+`data/labels/<run_id>.parquet` (Parquet, ADR-0010, pyarrow), with columns device, window_start,
+label, episode_id. Rows are sorted (device, window_start) so a re-run gives an identical table.
 """
 
 from __future__ import annotations
@@ -25,12 +26,15 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Final, NamedTuple
 
+import pyarrow as pa  # type: ignore[import-untyped]
+import pyarrow.parquet as pq  # type: ignore[import-untyped]
 import yaml  # type: ignore[import-untyped]
 
 from thesis.schema.verdict import IncidentType
 
 REPO_ROOT: Final = Path(__file__).resolve().parent.parent.parent
 INCIDENT_CONFIG: Final = REPO_ROOT / "config" / "incident.yaml"
+LABELS_DIR: Final = REPO_ROOT / "data" / "labels"
 BENIGN: Final = IncidentType.BENIGN.value
 _FAMILIES: Final = {t.value for t in IncidentType}
 
@@ -133,3 +137,56 @@ def read_executed_episodes(execution_log: Path) -> list[ExecutedEpisode]:
             )
         )
     return episodes
+
+
+_SCHEMA: Final = pa.schema(
+    [
+        ("device", pa.string()),
+        ("window_start", pa.timestamp("us", tz="UTC")),
+        ("label", pa.string()),
+        ("episode_id", pa.string()),
+    ]
+)
+
+
+def write_labels(labels: Iterable[WindowLabel], path: Path) -> None:
+    """Write labels to Parquet (ADR-0010), sorted by (device, window_start) for reproducibility."""
+    rows = sorted(labels, key=lambda w: (w.device, w.window_start))
+    table = pa.table(
+        {
+            "device": [w.device for w in rows],
+            "window_start": [w.window_start for w in rows],
+            "label": [w.label for w in rows],
+            "episode_id": [w.episode_id for w in rows],
+        },
+        schema=_SCHEMA,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pq.write_table(table, path)
+
+
+def read_labels(path: Path) -> list[WindowLabel]:
+    rows = pq.read_table(path).to_pylist()
+    return [WindowLabel(r["device"], r["window_start"], r["label"], r["episode_id"]) for r in rows]
+
+
+def labels_path(run_id: str, labels_dir: Path = LABELS_DIR) -> Path:
+    return labels_dir / f"{run_id}.parquet"
+
+
+def label_run(
+    execution_log: Path,
+    t0: datetime,
+    end: datetime,
+    devices: Iterable[str],
+    window_s: int,
+    out_path: Path,
+) -> list[WindowLabel]:
+    """Label a run end to end: read its executed episodes, label the grid, write the Parquet.
+
+    `t0`, `end` and `devices` describe the run's capture span and device set (settled against
+    bundle assembly in E3-05); they are passed in so this stays a pure, testable mapping.
+    """
+    labels = label_windows(read_executed_episodes(execution_log), t0, end, devices, window_s)
+    write_labels(labels, out_path)
+    return labels

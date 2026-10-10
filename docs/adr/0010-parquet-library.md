@@ -1,6 +1,6 @@
 # ADR-0010: Parquet library
 
-- Status: Proposed
+- Status: Accepted (2026-10-10)
 - Date: 2026-10-10
 - Ticket: SCRUM-40 [E2-04]
 
@@ -28,7 +28,7 @@ a different epic and is **out of scope here**. This ADR fixes only the Parquet r
 
 ## Decision
 
-Proposed: **pyarrow** (Apache Arrow's Python bindings). Roy accepts or changes it.
+**pyarrow** (Apache Arrow's Python bindings), accepted by Roy El Hayek on 2026-10-10 (delegated: proceed with the recommended library).
 
 - Write with `pyarrow.Table.from_pydict(...)` + `pyarrow.parquet.write_table(...)`; read with
   `pyarrow.parquet.read_table(...)`. No pandas is pulled in: the thesis code builds tables from

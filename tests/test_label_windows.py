@@ -154,3 +154,50 @@ def test_module_has_no_function_taking_a_label() -> None:
     for name, fn in inspect.getmembers(win, inspect.isfunction):
         params = set(inspect.signature(fn).parameters)
         assert "label" not in params, f"{name} accepts a label"
+
+
+def test_write_then_read_labels_round_trips(tmp_path: object) -> None:
+    from pathlib import Path
+
+    from thesis.labels.windows import read_labels, write_labels
+
+    labels = _labels([_ep(70, 110, family="port_scan", id_="ep-x")], end=180)
+    out = Path(str(tmp_path)) / "run.parquet"
+    write_labels(labels, out)
+    assert read_labels(out) == sorted(labels, key=lambda w: (w.device, w.window_start))
+
+
+def test_write_labels_is_deterministic(tmp_path: object) -> None:
+    from pathlib import Path
+
+    from thesis.labels.windows import write_labels
+
+    labels = _labels([_ep(70, 110, id_="ep-x")], end=180)
+    a, b = Path(str(tmp_path)) / "a.parquet", Path(str(tmp_path)) / "b.parquet"
+    write_labels(labels, a)
+    write_labels(list(reversed(labels)), b)  # unsorted input, same logical rows
+    assert a.read_bytes() == b.read_bytes()  # sorted before writing, so bytes match
+
+
+def test_label_run_reads_the_log_and_writes_parquet(tmp_path: object) -> None:
+    import json
+    from pathlib import Path
+
+    from thesis.labels.windows import label_run, read_labels
+
+    rows = [
+        {
+            "event": "episode",
+            "id": "ep-a",
+            "family": "syn_flood",
+            "target_device": "iot-cam-01",
+            "actual_start_utc": "2026-01-01T00:01:10+00:00",
+            "actual_end_utc": "2026-01-01T00:01:40+00:00",
+        },
+    ]
+    log = Path(str(tmp_path)) / "execution_log.jsonl"
+    log.write_text("\n".join(json.dumps(r) for r in rows), encoding="utf-8")
+    out = Path(str(tmp_path)) / "run.parquet"
+    labels = label_run(log, T0, _at(180), ["iot-cam-01"], W, out)
+    assert read_labels(out) == labels
+    assert [w.label for w in labels] == [BENIGN, "syn_flood", BENIGN]  # episode in window 1
