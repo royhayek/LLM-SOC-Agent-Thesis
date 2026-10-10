@@ -1,15 +1,16 @@
 """Attack family F5: botnet traffic (E1-12; ADR-0003).
 
-PROVISIONAL. F5 replays a fixed slice of a published botnet capture (CICIoT2023 [8], or Bot-IoT
-[6]), retargeted so the bot is the compromised testbed device D and the command-and-control
+F5 replays a fixed slice of a published botnet capture (CICIoT2023 [8] Mirai GREeth flood),
+retargeted so the bot is the compromised testbed device D and the command-and-control
 destination is a fixed non-routable address no testbed host answers. The capture slice is not
-redistributed: `scenarios/botnet_manifest.yaml` names it and its SHA-256, and Roy places the
-slice at the manifest's local path (ADR-0003). The runner verifies the digest, retargets with
-`tcprewrite`, and replays with `tcpreplay` from the attacker container (source rewritten to D).
-Expected sources: flows only.
+redistributed: `scenarios/botnet_manifest.yaml` names it and its SHA-256, and the slice is
+placed at the manifest's local path (ADR-0003), mounted read-only into the attacker container
+at `/slices`. The runner verifies the digest, retargets with `tcprewrite`, and replays with
+`tcpreplay` from the attacker container (source rewritten to D). Expected sources: flows only.
 
-Until the slice is provided and the manifest's SHA-256 is set, F5 cannot run, so its visibility
-and repeatability tolerance are unset (its slow test skips). This family is not yet done.
+The slice is git-ignored, so it is present on the machine that ran F5 but absent in CI: the
+runner (and the slow test, `test_f5_run.py`) raise/skip with `BotnetManifestError` when the
+slice is missing or its digest does not match the manifest.
 """
 
 from __future__ import annotations
@@ -34,7 +35,7 @@ PLACEHOLDER_SHA: Final = "UNVERIFIED-PLACEHOLDER"
 
 
 class BotnetManifestError(RuntimeError):
-    """The manifest is still provisional, or the local slice is missing or does not match."""
+    """The manifest SHA-256 is unset, or the local slice is missing or does not match."""
 
 
 def load_manifest(path: Path = MANIFEST) -> dict[str, Any]:
@@ -72,7 +73,7 @@ class BotnetRunner(ContainerAttackRunner):
 
     def command(self, episode: Episode) -> str:
         manifest = load_manifest()
-        verify_slice(manifest)  # refuses to build a command for a provisional/mismatched slice
+        verify_slice(manifest)  # refuses to build a command for a missing or mismatched slice
         d_ip = SERVICE_IP[DEVICE_SERVICE[episode.target_device]]
         dst = manifest["retargeting"]["dst_ip"]
         pps = int(episode.parameters.get("replay_pps", manifest["retargeting"]["replay_pps"]))

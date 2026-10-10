@@ -43,6 +43,7 @@ Ticket references (`E0-01`) are used in every description and in `backlog_full.m
 | E1-14 | SCRUM-121 | 2 | Verify the source-visibility matrix against real captures |
 | E1-15 | SCRUM-124 | 3 | Run a pilot schedule end to end and check repeatability |
 | E1-16 | SCRUM-129 | 3 | Capture all testbed traffic for the flow source |
+| E1-17 | SCRUM-130 | 1 | Re-run the pilot with all six families (add F5) |
 
 ## EPIC-2 · Ground Truth & Labelled Corpus · `SCRUM-8`
 
