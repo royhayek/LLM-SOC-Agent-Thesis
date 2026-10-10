@@ -1558,6 +1558,39 @@ None. The capture point is decided by ADR-0003; this ticket chooses only the mec
 **Traceability**
 R-057, R-064 · Record §3.2, §6.7, §6.11 · ADR-0003, ADR-0008 · Proposal: H1
 
+---
+**[E1-17] Re-run the pilot with all six families (add F5)**
+**Type:** Task · **Epic:** EPIC-1 · **Priority:** Medium · **Points:** 1 · **Labels:** testing, infra
+**Depends on:** E1-12, E1-15 · **Blocks:** —
+
+Added 2026-10-10 as leftover work from E1-12 (DoD: leftover work becomes a new ticket). Jira SCRUM-130.
+
+**Context**
+F5 (botnet) is implemented and verified standalone (E1-12), but the pilot (E1-15, `schedules/pilot.yaml`, `docs/pilot/repeatability.md`) still covers only five families. A one-run 6-family pilot already passed (all six episodes exit 0, run `20261010T090507Z`); the two-run repeatability re-run was blocked when the host moved onto an iPhone hotspot (172.20.10.0/24), which the isolation-gate control cannot reach from Docker, so run 2 was correctly aborted.
+
+**Goal**
+`schedules/pilot.yaml` includes an F5 episode, and `docs/pilot/repeatability.md` reports two reproducible runs across all six families, with peak memory.
+
+**Scope**
+- In: add an F5 episode to `schedules/pilot.yaml` (iot-cam-01, ~90 s), run the pilot twice from `make reset` on a stable network, update `docs/pilot/repeatability.md`.
+- Out: any change to the families themselves (E1-08 to E1-13), the corpus run (E2-05).
+
+**Acceptance criteria**
+- [ ] `schedules/pilot.yaml` has an F5 episode and no same-device overlaps.
+- [ ] `docs/pilot/repeatability.md`'s table includes F5, both runs valid, all counts within tolerance.
+
+**Technical notes**
+- Run on a stable Wi-Fi (not an iPhone hotspot), or the isolation-gate control probe cannot reach the LAN gateway and the run aborts. `caffeinate -is`, Ollama stopped.
+
+**Risks / gotchas**
+- The hotspot-gateway-unreachable abort is an environment issue, not a testbed fault.
+
+**Open questions**
+None.
+
+**Traceability**
+R-053, R-054 · Record §4.2 · Proposal: Methodology
+
 
 # Step D — EPIC-2 · Ground Truth & Labelled Corpus
 

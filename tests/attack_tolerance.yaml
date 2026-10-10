@@ -29,3 +29,7 @@ families:
   syn_flood:  # F6 (E1-13). hping3 --syn --flood, fixed source port, for a fixed duration.
     flows: 0.50    # always one flow (fixed 5-tuple); loose, since the count is trivially 1
     packets: 0.20  # SYN packets to the device: the flood volume (~238k in 5 s, ~1 % apart)
+
+  botnet:  # F5 (E1-12). Replay of a fixed CICIoT2023 Mirai slice, retargeted to the non-routable C2.
+    flows: 0.25     # flows to the C2 (one GRE flow plus a few stray-protocol packets)
+    packets: 0.05   # packets to the C2: the replayed slice is fixed (~10k), so near-exact
