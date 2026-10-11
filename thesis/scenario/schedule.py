@@ -30,6 +30,18 @@ class AttackFamily(StrEnum):
     BOTNET = IncidentType.BOTNET.value
 
 
+class Split(StrEnum):
+    """Which half of the corpus split an item belongs to (E2-01, METHODS.md Changelog entry 7).
+
+    The split is by episode (and by benign block), fixed by a seed before generation, so no
+    episode is ever both trained on and evaluated. `None` means the item predates the split
+    (the pilot and example schedules), which stays valid.
+    """
+
+    TRAIN = "train"
+    EVAL = "eval"
+
+
 class _Strict(BaseModel):
     # Unknown fields are rejected so a misspelt field fails loudly instead of being ignored.
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -40,6 +52,8 @@ class _Timed(_Strict):
     # Strict, so a YAML `true` is refused instead of becoming 1.
     start_offset_s: int = Field(ge=0, strict=True)  # seconds from the start of the scenario
     duration_s: int = Field(gt=0, strict=True)
+    # The corpus split (E2-01). Optional, so schedules written before E2-03 stay valid.
+    split: Split | None = None
 
     @property
     def end_offset_s(self) -> int:

@@ -1,0 +1,35 @@
+# Corpus schedule targets (E2-03, SCRUM-32). The counts are frozen by the power calculation
+# (METHODS.md v1.1, E2-02) and the split by E2-01; they are read here, never hardcoded in code.
+# The generator (`python -m thesis.scenario.generate`) turns these into schedules/corpus-v1.0.0.yaml.
+
+window_seconds: 60            # bundle window, mirrors config/incident.yaml (METHODS.md §1)
+
+# The six frozen families (E1-02), in a fixed order so generation is deterministic.
+families: [ssh_brute_force, port_scan, mqtt_publish_flood, mqtt_brute_force, syn_flood, botnet]
+
+# Per-family evaluation bundle target and benign target (METHODS.md v1.1: 300 attack = 50/family
+# x 6, plus 180 benign). The design delivers at least these; the per-family floor for stratified
+# H1 is 30 (power_calculation.md §5), so 50 clears it.
+eval_bundles_per_family: 50
+benign_eval_bundles: 180
+train_share: 0.30             # E2-01: 30 % of episodes (and benign blocks) per family are training
+benign_margin: 0.25           # extra benign over target, for empty windows dropped at assembly
+
+# ASSUMPTION (E2-03): episode durations vary within each family so length is not a cue, and are
+# 60 s aligned so each episode covers exactly duration/60 windows (2-4 bundles, averaging m = 3).
+episode_durations_s: [120, 180, 240]
+gap_s: 60                     # idle gap between consecutive episodes on one device
+
+# Device assignment. The honeypot families can only reach the single honeypot; the other four
+# spread round-robin over the IoT emulators so no device is overloaded (ASSUMPTION E2-03).
+devices:
+  ssh_brute_force: [hp-ssh-01]
+  port_scan: [hp-ssh-01]
+  mqtt_publish_flood: [iot-temp-01, iot-hum-01, iot-plug-01, iot-cam-01]
+  mqtt_brute_force: [iot-temp-01, iot-hum-01, iot-plug-01, iot-cam-01]
+  syn_flood: [iot-cam-01, iot-temp-01, iot-hum-01, iot-plug-01]
+  botnet: [iot-cam-01, iot-temp-01, iot-hum-01, iot-plug-01]
+
+# Devices that publish benign MQTT continuously, so every benign-block window yields one benign
+# bundle per device (E1-05). Benign bundles are counted only from the explicit benign blocks.
+mqtt_devices: [iot-temp-01, iot-hum-01, iot-plug-01, iot-cam-01]
