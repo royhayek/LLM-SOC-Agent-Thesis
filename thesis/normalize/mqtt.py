@@ -15,30 +15,14 @@ from __future__ import annotations
 
 import json
 import re
-from collections import Counter
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
-from thesis.normalize.store import ALERTS_DIR, write_alerts
+from thesis.normalize.store import ALERTS_DIR, NormalizeResult, write_alerts
 from thesis.schema.alert import Alert, MqttDetail, Source
 
 _DEVICE = re.compile(r"^(iot-[a-z]+-\d+)(?:-.*)?$")
-
-
-@dataclass
-class NormalizeResult:
-    run_id: str
-    alerts: int = 0
-    skipped: int = 0
-    skip_reasons: Counter[str] = field(default_factory=Counter)
-    parquet_path: Path | None = None
-    skip_log_path: Path | None = None
-
-    @property
-    def lines(self) -> int:
-        return self.alerts + self.skipped
 
 
 def _parse_ts(raw: str) -> datetime:
