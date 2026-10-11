@@ -318,3 +318,23 @@ on usefulness far more than assumed (σ_d > 0.35) it exceeds 480, to be re-opene
 entry if the exploratory run shows this.
 
 **Results invalidated.** None. No agent or baseline output exists.
+
+### 9. 2026-10-11: schedule format gains a `split` field (E2-03, SCRUM-32)
+
+**What.** Extends the frozen schedule format of entry 2 with one optional field, implementing the
+episode-level split already decided in entry 7 (E2-01). Each episode and benign block may carry
+`split: train | eval` (`thesis/scenario/schedule.py`, the `Split` enum). The field is optional and
+defaults to absent, so every schedule written before this entry (the pilot and the examples) stays
+valid and unchanged.
+
+**Why.** E2-01 (entry 7) fixed that Baseline A trains on a testbed split taken at the episode level
+(and the benign block). E2-03 generates the corpus schedule and must record, per episode and per
+benign block, which half it belongs to; the field carries that label so the split is fixed in the
+schedule, before any run, rather than reconstructed later.
+
+**Rationale.** An optional field changes no existing schedule and no locked parameter from entry 2
+(half-open ranges, whole seconds, labels from episodes only all still hold). The corpus generator
+(`python -m thesis.scenario.generate`, E2-03) sets it on every item; the E1-06 validator is
+unchanged.
+
+**Results invalidated.** None. No agent or baseline output exists.
