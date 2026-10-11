@@ -1,0 +1,786 @@
+{
+  "corpus": "corpus-v1.0.0-rc",
+  "file_count": 156,
+  "files": [
+    {
+      "path": "data/labels/20261011T113713Z.parquet",
+      "sha256": "456be9b5ac9cf3b91611cdb784477f35445e25a164a72eaea3b6d197ed79e9eb",
+      "size": 2186
+    },
+    {
+      "path": "data/labels/20261011T121439Z.parquet",
+      "sha256": "df4b2d9b6f5be06aebca50b73240eb06e55636befbd6e1910d3e3da7e3727395",
+      "size": 2295
+    },
+    {
+      "path": "data/labels/20261011T124838Z.parquet",
+      "sha256": "917addf196c590179a511a2e6680ee9cdd83fdf791cd1dce3aacb24a10da0a9c",
+      "size": 2213
+    },
+    {
+      "path": "data/labels/20261011T131944Z.parquet",
+      "sha256": "f2ee6eb7cd8ae7de945f14b9c920de5ca0a6e2c57e659f8e8dac8f7adc78546e",
+      "size": 2185
+    },
+    {
+      "path": "data/labels/20261011T135141Z.parquet",
+      "sha256": "951bb3c9be682cfe65b985e006e9fe0a4913bae3a5c78ef7cd16faa7714661f3",
+      "size": 2174
+    },
+    {
+      "path": "data/labels/20261011T142351Z.parquet",
+      "sha256": "7a65a9c6df22c2f79ea9b0778f5e926bed4c548903d473c725d80f1631a012c6",
+      "size": 2005
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/benign_plan/iot-cam-01.plan",
+      "sha256": "40ae249a4b08e733b43e7fc796aa52ece6496882ceee858c9ac856481af0a609",
+      "size": 371801
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/benign_plan/iot-cam-01.topics",
+      "sha256": "086d5ba642ec2a49b7962a355dcda720c331d1261d76abe74e2ca20f46211a82",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/benign_plan/iot-hum-01.plan",
+      "sha256": "82db744ce1a2b7d588819e789ccf2dbc4a7273eeeebf62a6810bad8605da564d",
+      "size": 202814
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/benign_plan/iot-hum-01.topics",
+      "sha256": "026de67a47e2b3baf3a0b0a8bdd51196fecb4e4972291e9d59ae9c0d0232a4f1",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/benign_plan/iot-plug-01.plan",
+      "sha256": "2e1a504e1dc31ba338d62defd5357817340e90f5529f02312c36c8c56b06896a",
+      "size": 214237
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/benign_plan/iot-plug-01.topics",
+      "sha256": "2171275c2c14cd56a1962a3204177e5d994a791953ee378e64de1303ff639a2f",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/benign_plan/iot-temp-01.plan",
+      "sha256": "a83cd63b6355722395cacc703ae042820abac5bdaf76c112c936c4b0e0a71e84",
+      "size": 461640
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/benign_plan/iot-temp-01.topics",
+      "sha256": "efec5d1ac847866c65330d6b5e487936f443abc8f7b4b23edfaafc71d79fb72d",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/benign_plan/manifest.json",
+      "sha256": "c993202348d8970b2f86fa5774e5760c4b485fe8031625764ce7558de71a790e",
+      "size": 182
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/execution_log.jsonl",
+      "sha256": "53543c46311174ca8780f1c17e0b1dd58114dba6502c56cfaffbd6a0d32908df",
+      "size": 8961
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/flows.jsonl",
+      "sha256": "bb0c44e9aa26b41de715554bdea766eabef9baf3f97dba282700d30e3780e462",
+      "size": 648401
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/hosts/attacker.pcap",
+      "sha256": "8a838369787f545474277af24e018f8bb8a33609ff77cac4eaf58e1bd205c0a1",
+      "size": 37139348
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/hosts/broker.pcap",
+      "sha256": "ea112a2ef86be97449efbe0a1712caea74a5761d212ca920be1bf5d1f8de2b3f",
+      "size": 5851405
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/hosts/emulator-cam.pcap",
+      "sha256": "035a3a86be15911bafadeddccc724a068f238d54e4d705eb3a1bc1d4e2c4c9da",
+      "size": 5183949
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/hosts/emulator-hum.pcap",
+      "sha256": "f52cae91ee796c294141b561dbf6a0667722a2b1252c3232901d3b289f159d9b",
+      "size": 5121335
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/hosts/emulator-plug.pcap",
+      "sha256": "389acae7cdd1122c4b0c5b1aa21294fe34b8350e808760a3fbdbbbdbc9a158a6",
+      "size": 10494198
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/hosts/emulator-temp.pcap",
+      "sha256": "a778186a344c031560a60e476a27b93a4125049f6cace12e6bd5793b3b7e8680",
+      "size": 5191543
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/hosts/honeypot.pcap",
+      "sha256": "918732d34fd641fc5b94f759dc6dac063f33c9666757fa38d3cdb44e5deecefb",
+      "size": 78864
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/hosts/mqtt-logger.pcap",
+      "sha256": "a0d2a8ef16cb17db0a5413e254fe58ecd722226e4ecad82fe02cd316fb2d1f22",
+      "size": 1096771
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/flows/raw.pcap",
+      "sha256": "95e7a188bcebd8dcc538b9f8b042bd85780c0d2bba728a569088d68c170c9e22",
+      "size": 70137767
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/honeypot/cowrie.json",
+      "sha256": "03b5f19d215e33b09f4d9410710d638bc4bd128c82250c72fc3cb1d6f0909469",
+      "size": 110985
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/isolation_check.log",
+      "sha256": "6dccc2e073c75c1a92583275bb14ad78c243626806075d80f0b7efdbaf456abb",
+      "size": 3177
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/mqtt/broker.log",
+      "sha256": "3174f9b118764e378beac33a695b009062fdcf8d87937e2d0b834efbca99cd42",
+      "size": 23536
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/mqtt/mqtt.log",
+      "sha256": "279f03e4bb0551bf98b2ffde0753b1a42521935b4ca6c6926ad26dae28ecc3c0",
+      "size": 3882170
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T113713Z/schedule.yaml",
+      "sha256": "858e305f608cd9b1d74be2c0af56e4279820209f1fd79074e907bcb96722a6ba",
+      "size": 4177
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/benign_plan/iot-cam-01.plan",
+      "sha256": "40ae249a4b08e733b43e7fc796aa52ece6496882ceee858c9ac856481af0a609",
+      "size": 371801
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/benign_plan/iot-cam-01.topics",
+      "sha256": "086d5ba642ec2a49b7962a355dcda720c331d1261d76abe74e2ca20f46211a82",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/benign_plan/iot-hum-01.plan",
+      "sha256": "82db744ce1a2b7d588819e789ccf2dbc4a7273eeeebf62a6810bad8605da564d",
+      "size": 202814
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/benign_plan/iot-hum-01.topics",
+      "sha256": "026de67a47e2b3baf3a0b0a8bdd51196fecb4e4972291e9d59ae9c0d0232a4f1",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/benign_plan/iot-plug-01.plan",
+      "sha256": "2e1a504e1dc31ba338d62defd5357817340e90f5529f02312c36c8c56b06896a",
+      "size": 214237
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/benign_plan/iot-plug-01.topics",
+      "sha256": "2171275c2c14cd56a1962a3204177e5d994a791953ee378e64de1303ff639a2f",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/benign_plan/iot-temp-01.plan",
+      "sha256": "a83cd63b6355722395cacc703ae042820abac5bdaf76c112c936c4b0e0a71e84",
+      "size": 461640
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/benign_plan/iot-temp-01.topics",
+      "sha256": "efec5d1ac847866c65330d6b5e487936f443abc8f7b4b23edfaafc71d79fb72d",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/benign_plan/manifest.json",
+      "sha256": "c993202348d8970b2f86fa5774e5760c4b485fe8031625764ce7558de71a790e",
+      "size": 182
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/execution_log.jsonl",
+      "sha256": "5b41984761f47a52ae969a2e36eefae5559a99cc0cc1d93e1fe5f18b9da73786",
+      "size": 8961
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/flows.jsonl",
+      "sha256": "41f7e31d275a0d558497cd74a00a2c4e7aa1a6261b94db6862a93cb1e9f121c5",
+      "size": 644551
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/hosts/attacker.pcap",
+      "sha256": "f9ea4fd27041ebfd18f650be4df3c2b0d0f51b536fd9527dfb49966eb41bdaed",
+      "size": 37903200
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/hosts/broker.pcap",
+      "sha256": "7f51cec25d2134fc84d148e97ecbc5bcf0f14e41a04249da180ad24d01b83816",
+      "size": 5811476
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/hosts/emulator-cam.pcap",
+      "sha256": "982a09c9164f9d3a07f9d9872050f13a8256e1edc7c170d6be3e418690db679e",
+      "size": 6700533
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/hosts/emulator-hum.pcap",
+      "sha256": "81dd8bb455da3a0970098cb5dd227cf2e46a5ef5563e48337a6a78186dbcd65e",
+      "size": 6708643
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/hosts/emulator-plug.pcap",
+      "sha256": "33f276bf1e1dc983f84579c785ed11ec72baf94c82aadebc7d9722780d564d15",
+      "size": 9272524
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/hosts/emulator-temp.pcap",
+      "sha256": "873a8872f3c0eeb91781e293f9ec4f82d336f87c30d917c80cee91a00fdd7473",
+      "size": 6771346
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/hosts/honeypot.pcap",
+      "sha256": "a1c8480956c582e385035890232be52ff57fa2fce17fd819e256e434c4a33046",
+      "size": 78782
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/hosts/mqtt-logger.pcap",
+      "sha256": "732565bc0a5c6ca82f62665419276b4971670da3c8b58e03968e17f94b719976",
+      "size": 1089451
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/flows/raw.pcap",
+      "sha256": "c2999a534dfdba40a0bdb9392278725a1a0af87afaac7f03cb6d3687e8c4b3e1",
+      "size": 74330157
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/honeypot/cowrie.json",
+      "sha256": "86ac0e558b566260e891730a453f0f394f11a1ab82357467d6cdd2f045b77f49",
+      "size": 110977
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/isolation_check.log",
+      "sha256": "78253f116460026b47732a377e0a8e4b3f44515ade2bfc9f8fa43b612a1bd17e",
+      "size": 3177
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/mqtt/broker.log",
+      "sha256": "313a61913f9c00e27d7e3e1e5f10f559d9707980524f5a948fd9f70dc0339b99",
+      "size": 23536
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/mqtt/mqtt.log",
+      "sha256": "34e16a7d4f641f725c8345882572e30cc3911a90aeb1601cee09d8d38f62c5df",
+      "size": 3859798
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T121439Z/schedule.yaml",
+      "sha256": "698d237b1e35f28fc5b27d1f1ddadf8d1e6c4112b33f0c114a29236d6d1f4835",
+      "size": 4178
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/benign_plan/iot-cam-01.plan",
+      "sha256": "40ae249a4b08e733b43e7fc796aa52ece6496882ceee858c9ac856481af0a609",
+      "size": 371801
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/benign_plan/iot-cam-01.topics",
+      "sha256": "086d5ba642ec2a49b7962a355dcda720c331d1261d76abe74e2ca20f46211a82",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/benign_plan/iot-hum-01.plan",
+      "sha256": "82db744ce1a2b7d588819e789ccf2dbc4a7273eeeebf62a6810bad8605da564d",
+      "size": 202814
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/benign_plan/iot-hum-01.topics",
+      "sha256": "026de67a47e2b3baf3a0b0a8bdd51196fecb4e4972291e9d59ae9c0d0232a4f1",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/benign_plan/iot-plug-01.plan",
+      "sha256": "2e1a504e1dc31ba338d62defd5357817340e90f5529f02312c36c8c56b06896a",
+      "size": 214237
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/benign_plan/iot-plug-01.topics",
+      "sha256": "2171275c2c14cd56a1962a3204177e5d994a791953ee378e64de1303ff639a2f",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/benign_plan/iot-temp-01.plan",
+      "sha256": "a83cd63b6355722395cacc703ae042820abac5bdaf76c112c936c4b0e0a71e84",
+      "size": 461640
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/benign_plan/iot-temp-01.topics",
+      "sha256": "efec5d1ac847866c65330d6b5e487936f443abc8f7b4b23edfaafc71d79fb72d",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/benign_plan/manifest.json",
+      "sha256": "c993202348d8970b2f86fa5774e5760c4b485fe8031625764ce7558de71a790e",
+      "size": 182
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/execution_log.jsonl",
+      "sha256": "ab96bd3f94b49b1050927162bdd2ac5f75677ea391e54fb6ebf49daf3c87fba0",
+      "size": 8613
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/flows.jsonl",
+      "sha256": "b76e68c2d5c2a7fca2db99c33c32afa5d426936d6b8aeff8cbfb0719e993752b",
+      "size": 611713
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/hosts/attacker.pcap",
+      "sha256": "d5fac0db8eda9b686a76fa8d38a3f818a57fcc7a44f9b768c6765230c6f665b4",
+      "size": 45864098
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/hosts/broker.pcap",
+      "sha256": "d8b5c4c009cfccd71c98453d7b2e1d2ac5778ceb9df635dab49996a5e734007b",
+      "size": 5771930
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/hosts/emulator-cam.pcap",
+      "sha256": "8fcb7d6c13447dd4cc5d9edb97891c6d03d82fff5743c069f9912d0fc3ead089",
+      "size": 10574919
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/hosts/emulator-hum.pcap",
+      "sha256": "fb60d7f65934322e93e0d2b4a68197b0dc396b48e239991cfc8cfa80f5f00819",
+      "size": 8613364
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/hosts/emulator-plug.pcap",
+      "sha256": "480bbd04a26d43fcc0b0fc7ceafcd68f0f7920593e0586b33647bfd55cfef643",
+      "size": 8695995
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/hosts/emulator-temp.pcap",
+      "sha256": "2ce03262e59b8c142a4e4da9a6207556ba747fb22f097befda18328cda2b3f95",
+      "size": 5933244
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/hosts/honeypot.pcap",
+      "sha256": "3704b16233ba4e7ee82f51bf63f71b9765c002665f659fc6801d8550a2c2c190",
+      "size": 78098
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/hosts/mqtt-logger.pcap",
+      "sha256": "7bb70639758d50bd44d8f24bfd9c4dfa1c9acaf850b900d477ad45ff8fd62264",
+      "size": 1079339
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/flows/raw.pcap",
+      "sha256": "88246c5d6683466f62536505227279b7ad42d895e11ea89c400ae2558bb9e9d9",
+      "size": 86604415
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/honeypot/cowrie.json",
+      "sha256": "8df4f972895c4fcb9bf5322c6c578d26670b94f88a6e36a1f440c879114228a4",
+      "size": 110302
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/isolation_check.log",
+      "sha256": "7488586a30e3e52f1c035d4ec86671db755d95d68890f7c257231775996493da",
+      "size": 3177
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/mqtt/broker.log",
+      "sha256": "fdc4ca8a12452640e4747d70eb69a8ad7f350aeb1203884bb0a5f93c1654b0d1",
+      "size": 22765
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/mqtt/mqtt.log",
+      "sha256": "279b9d16b702f39210e65998b4b65f99a4483ff5ba3c26c74c62908392741302",
+      "size": 3841294
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T124838Z/schedule.yaml",
+      "sha256": "580470c49fcd4eea67f31afa233f6076e420fc3fcec6a868d4841962e5dc0a5b",
+      "size": 4015
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/benign_plan/iot-cam-01.plan",
+      "sha256": "40ae249a4b08e733b43e7fc796aa52ece6496882ceee858c9ac856481af0a609",
+      "size": 371801
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/benign_plan/iot-cam-01.topics",
+      "sha256": "086d5ba642ec2a49b7962a355dcda720c331d1261d76abe74e2ca20f46211a82",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/benign_plan/iot-hum-01.plan",
+      "sha256": "82db744ce1a2b7d588819e789ccf2dbc4a7273eeeebf62a6810bad8605da564d",
+      "size": 202814
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/benign_plan/iot-hum-01.topics",
+      "sha256": "026de67a47e2b3baf3a0b0a8bdd51196fecb4e4972291e9d59ae9c0d0232a4f1",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/benign_plan/iot-plug-01.plan",
+      "sha256": "2e1a504e1dc31ba338d62defd5357817340e90f5529f02312c36c8c56b06896a",
+      "size": 214237
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/benign_plan/iot-plug-01.topics",
+      "sha256": "2171275c2c14cd56a1962a3204177e5d994a791953ee378e64de1303ff639a2f",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/benign_plan/iot-temp-01.plan",
+      "sha256": "a83cd63b6355722395cacc703ae042820abac5bdaf76c112c936c4b0e0a71e84",
+      "size": 461640
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/benign_plan/iot-temp-01.topics",
+      "sha256": "efec5d1ac847866c65330d6b5e487936f443abc8f7b4b23edfaafc71d79fb72d",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/benign_plan/manifest.json",
+      "sha256": "c993202348d8970b2f86fa5774e5760c4b485fe8031625764ce7558de71a790e",
+      "size": 182
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/execution_log.jsonl",
+      "sha256": "878b744a81e5b7e0225494b7efc6fe585e103129d1cd5843abbbc513b7c779ee",
+      "size": 8620
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/flows.jsonl",
+      "sha256": "0cc7b53aa30c3a18143530e69442afe4002a73ad4fb34cceae976689a23a4b9d",
+      "size": 620692
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/hosts/attacker.pcap",
+      "sha256": "422eae6d902bf50a60c8f73ea015cea928bfecc170a718ec3ba4c9ea71755e8c",
+      "size": 39304198
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/hosts/broker.pcap",
+      "sha256": "7b4e2dcd812c571017b474729215310576633be73bdee34ceb754bff79866b51",
+      "size": 5786378
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/hosts/emulator-cam.pcap",
+      "sha256": "1e4525d5855e9d7b864167e7f2cd5abf6fc72e699a7440aae0adc3c35faad5f3",
+      "size": 6183566
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/hosts/emulator-hum.pcap",
+      "sha256": "68dacb3fd38ff2c12f899ae0c909038fd8d8dc543e956ae0d594b477f5e84acc",
+      "size": 9505887
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/hosts/emulator-plug.pcap",
+      "sha256": "0ad2f96e354fdf5f2614244f1b79a12ee2a9cf1fbad86a813e5123a69fc10911",
+      "size": 2773346
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/hosts/emulator-temp.pcap",
+      "sha256": "87febd4b99fd74289f9cb1b52a70f9c63cb7783d66f11dbb1b4c12335838d716",
+      "size": 6573827
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/hosts/honeypot.pcap",
+      "sha256": "083702836a03274efde8a4b893584ddbfe645d174996c0bc4972d482075c5757",
+      "size": 78016
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/hosts/mqtt-logger.pcap",
+      "sha256": "fe0c16f097ed22d1107b1ee136f0620c964589f91341774ca1fc60bdeac71d5a",
+      "size": 1082917
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/flows/raw.pcap",
+      "sha256": "c40b88f2ab2e2204dfda394886b7d3d55f2121f036d77072c1c35063b9d0adf9",
+      "size": 71277373
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/honeypot/cowrie.json",
+      "sha256": "d1df71487f23b1838b508d6ebefc89e80aa9a38b911cf10051ea02bed4e88f6a",
+      "size": 110298
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/isolation_check.log",
+      "sha256": "fd33956d36201385b1634cbb60a3bad578fe794b8f59d0f26840959e9eb0c1ff",
+      "size": 3177
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/mqtt/broker.log",
+      "sha256": "833ca56b8170aada205fe315ee82f6e77a48230cdf6d2b63ae9e4a2fc27d4363",
+      "size": 23390
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/mqtt/mqtt.log",
+      "sha256": "4223e6218a4833cd6aa8e4b14438433a00f7c31f7a3009cd3160b7db7bcf0bee",
+      "size": 3846694
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T131944Z/schedule.yaml",
+      "sha256": "80f1b7041856f5a5d4ba1a7e2f915741cff4f9dc983961ca783919ba72710369",
+      "size": 3951
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/benign_plan/iot-cam-01.plan",
+      "sha256": "40ae249a4b08e733b43e7fc796aa52ece6496882ceee858c9ac856481af0a609",
+      "size": 371801
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/benign_plan/iot-cam-01.topics",
+      "sha256": "086d5ba642ec2a49b7962a355dcda720c331d1261d76abe74e2ca20f46211a82",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/benign_plan/iot-hum-01.plan",
+      "sha256": "82db744ce1a2b7d588819e789ccf2dbc4a7273eeeebf62a6810bad8605da564d",
+      "size": 202814
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/benign_plan/iot-hum-01.topics",
+      "sha256": "026de67a47e2b3baf3a0b0a8bdd51196fecb4e4972291e9d59ae9c0d0232a4f1",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/benign_plan/iot-plug-01.plan",
+      "sha256": "2e1a504e1dc31ba338d62defd5357817340e90f5529f02312c36c8c56b06896a",
+      "size": 214237
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/benign_plan/iot-plug-01.topics",
+      "sha256": "2171275c2c14cd56a1962a3204177e5d994a791953ee378e64de1303ff639a2f",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/benign_plan/iot-temp-01.plan",
+      "sha256": "a83cd63b6355722395cacc703ae042820abac5bdaf76c112c936c4b0e0a71e84",
+      "size": 461640
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/benign_plan/iot-temp-01.topics",
+      "sha256": "efec5d1ac847866c65330d6b5e487936f443abc8f7b4b23edfaafc71d79fb72d",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/benign_plan/manifest.json",
+      "sha256": "c993202348d8970b2f86fa5774e5760c4b485fe8031625764ce7558de71a790e",
+      "size": 182
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/execution_log.jsonl",
+      "sha256": "b54585b56cb98723cbb0b88a5f6bd4975833650a72850e0922e168d9c5f8fb4c",
+      "size": 8626
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/flows.jsonl",
+      "sha256": "4377dac589a8c32a1a7a744917a4247a16f562c281fa6a0549b53558b39e4a7f",
+      "size": 622487
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/hosts/attacker.pcap",
+      "sha256": "b10d919eb9ef273371141bbbc146f7764c138ce0e66aa885a59c829062bd9f1d",
+      "size": 38921258
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/hosts/broker.pcap",
+      "sha256": "1875f0cee926c34c94eabaad77c6872eb37ef6fcdbf718d48f599f0a828131a0",
+      "size": 5773270
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/hosts/emulator-cam.pcap",
+      "sha256": "7d74cd11b5df01c87df5895fd6f32a8e450fd11d99d699f3f08b928357ee59b9",
+      "size": 10070294
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/hosts/emulator-hum.pcap",
+      "sha256": "1b084c2ef7a60b77a00d47ba1fc0f5b13fd7e34be02f04aec1dcee5a5048005f",
+      "size": 6959569
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/hosts/emulator-plug.pcap",
+      "sha256": "20e80dbb596750b99a7b2d1cae09ca62e260110be88c9ae257cc5666f6540533",
+      "size": 6913642
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/hosts/emulator-temp.pcap",
+      "sha256": "7070eb4d9efc3b559c53c68a8e05e8bb872335eaafea486cb3a4a55493c06c8c",
+      "size": 6893329
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/hosts/honeypot.pcap",
+      "sha256": "02d6c1fc10dc94ee6e5622f63bf7799ff0a741e5caeabc4d690c501401686ba0",
+      "size": 78016
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/hosts/mqtt-logger.pcap",
+      "sha256": "0deba02db2f70583a081fbe0473b112a97431a8529810fbede617a95c4eb9c82",
+      "size": 1065033
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/flows/raw.pcap",
+      "sha256": "b43c2f6ccf5d4a88f73b3145a64d6ae2b78a586f929c58565784add613654170",
+      "size": 76660247
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/honeypot/cowrie.json",
+      "sha256": "2d66ff4eddb18ea7c1ea84a40fe734b1245b4c5edf1a6c1e93cc7a112e1dfdf8",
+      "size": 110300
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/isolation_check.log",
+      "sha256": "df54726706693f5054c6a14f922ff65379c7dd8dd0691c0ad899c4022fe633a6",
+      "size": 3177
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/mqtt/broker.log",
+      "sha256": "468f5b7ce925e1704e6e9cad749cc6470af56c31c9ab73bd63d9f4b4b9ba3a18",
+      "size": 23390
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/mqtt/mqtt.log",
+      "sha256": "d9f5f97464fd8a99424c69707686f8a0c54caccaf21cf1cc60a9febc23714518",
+      "size": 3848738
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T135141Z/schedule.yaml",
+      "sha256": "9c41d2fda6e5185c518287b29f2059056730314a3ee15e14e2c0de81c8f4d6b9",
+      "size": 3969
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/benign_plan/iot-cam-01.plan",
+      "sha256": "40ae249a4b08e733b43e7fc796aa52ece6496882ceee858c9ac856481af0a609",
+      "size": 371801
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/benign_plan/iot-cam-01.topics",
+      "sha256": "086d5ba642ec2a49b7962a355dcda720c331d1261d76abe74e2ca20f46211a82",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/benign_plan/iot-hum-01.plan",
+      "sha256": "82db744ce1a2b7d588819e789ccf2dbc4a7273eeeebf62a6810bad8605da564d",
+      "size": 202814
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/benign_plan/iot-hum-01.topics",
+      "sha256": "026de67a47e2b3baf3a0b0a8bdd51196fecb4e4972291e9d59ae9c0d0232a4f1",
+      "size": 55
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/benign_plan/iot-plug-01.plan",
+      "sha256": "2e1a504e1dc31ba338d62defd5357817340e90f5529f02312c36c8c56b06896a",
+      "size": 214237
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/benign_plan/iot-plug-01.topics",
+      "sha256": "2171275c2c14cd56a1962a3204177e5d994a791953ee378e64de1303ff639a2f",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/benign_plan/iot-temp-01.plan",
+      "sha256": "a83cd63b6355722395cacc703ae042820abac5bdaf76c112c936c4b0e0a71e84",
+      "size": 461640
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/benign_plan/iot-temp-01.topics",
+      "sha256": "efec5d1ac847866c65330d6b5e487936f443abc8f7b4b23edfaafc71d79fb72d",
+      "size": 57
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/benign_plan/manifest.json",
+      "sha256": "c993202348d8970b2f86fa5774e5760c4b485fe8031625764ce7558de71a790e",
+      "size": 182
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/execution_log.jsonl",
+      "sha256": "e8a4fe9911b1c70debee77d7c61682ba02deea9908ac8ecc271e28e71a8e59cb",
+      "size": 7236
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/flows.jsonl",
+      "sha256": "66173ae9464ea680655e1d942302b428ad84d84e75844292ca42b5b0f3600579",
+      "size": 597795
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/hosts/attacker.pcap",
+      "sha256": "9d9b5890a64f85e0fe492fd0a02ef7cfc837667b0a8baa385a51c9ef9b13a219",
+      "size": 32551720
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/hosts/broker.pcap",
+      "sha256": "69fbe3f9ed94bfd59a436993f85dd0085a87bebe22e55d3d46a3b96cae83c395",
+      "size": 4425809
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/hosts/emulator-cam.pcap",
+      "sha256": "24e884d50d7ee23127935f57fd62a3e24a3d4400ed444497c16c456a353da8f5",
+      "size": 8462028
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/hosts/emulator-hum.pcap",
+      "sha256": "3214e74772dd6582212a3a359b65ebd774c72f94b350508572338cc7286be273",
+      "size": 1159252
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/hosts/emulator-plug.pcap",
+      "sha256": "659284007b7888ae56911e193a4969f33c967b3c87493fcbc3541bc1a271a2b2",
+      "size": 1177293
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/hosts/emulator-temp.pcap",
+      "sha256": "c84f1d9c14a977b84ce5fbd70cc8a089d0d27e39219a196226d8f7b6bc429f2d",
+      "size": 1216746
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/hosts/honeypot.pcap",
+      "sha256": "9581c0d7f7ab1672b2f4ddf6dc2563667096778587948738ead86b055ae8ba4f",
+      "size": 77770
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/hosts/mqtt-logger.pcap",
+      "sha256": "103f11e2b433a7160ab64156f09f9f2045e1cae7e697a90b3fe8f154de7fe047",
+      "size": 830405
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/flows/raw.pcap",
+      "sha256": "d09a965b582eb1b9a8622b5bf77ff14e3fd0d56d77859e6fcb162f9b44f71a38",
+      "size": 49900855
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/honeypot/cowrie.json",
+      "sha256": "2073c7d1e591179ec12e41de99e2569b21b58d1492563ed418a945e727465d97",
+      "size": 110292
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/isolation_check.log",
+      "sha256": "54d47ffffde29d1304fd23228972bbfdd5e74a0a2bf55bf480d520fb1f3738f7",
+      "size": 3177
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/mqtt/broker.log",
+      "sha256": "41e162a7858d25a8805d327d471760a2d24a8eefbaa377a82aaff28ab982f976",
+      "size": 22520
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/mqtt/mqtt.log",
+      "sha256": "6f1506a7ee553a11d83d6c7a8546538b0e518c2ec2bd55bc050e9ebde97b7874",
+      "size": 2925690
+    },
+    {
+      "path": "data/raw/corpus-v1.0.0-rc/20261011T142351Z/schedule.yaml",
+      "sha256": "137b75616acacbfa2a9cb3b23aeb6c0254b5106d7bed8a1c87d63f0c30c6b8cc",
+      "size": 3326
+    }
+  ]
+}
