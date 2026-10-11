@@ -1,7 +1,8 @@
-"""Alert schema v0.1: the one normalized format every source is turned into (Arch §5).
+"""Alert schema v1: the one normalized format every source is turned into (Arch §5).
 
-Shaped by the E0-01 spike (`spikes/FINDINGS.md`); see `docs/schema/CHANGELOG.md`.
-Draft only: v1 is settled on the pilot capture by E3-01.
+Drafted as v0.1 from the E0-01 spike (`spikes/FINDINGS.md`) and settled as v1 on the pilot and
+corpus captures by E3-01; see `docs/schema/CHANGELOG.md` and `docs/schema/v1_field_check.md`.
+Every field the frozen reduction policy (E0-05, Annex E) names is present or derivable here.
 """
 
 from __future__ import annotations
@@ -11,7 +12,7 @@ from typing import Final, Literal, Self
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, model_validator
 
-SCHEMA_VERSION: Final = "alert-v0.1"
+SCHEMA_VERSION: Final = "alert-v1"
 
 
 class Source(StrEnum):
@@ -50,13 +51,20 @@ class FlowDetail(_Strict):
     bytes_fwd: int
     bytes_bwd: int
     tcp_flags: str | None = None
+    # Initiator SYN/ACK packet counts (NFStream src2dst_syn_packets / src2dst_ack_packets), needed
+    # for the reduction's syn_only_ratio (Annex E §3). Optional: non-TCP flows have none.
+    syn_count_fwd: int | None = None
+    ack_count_fwd: int | None = None
 
 
 class MqttDetail(_Strict):
     event: str
-    client_id: str
-    src_ip: str
-    dst_ip: str
+    # Optional (v1): a publish seen on the broker's subscriber log carries only its topic and
+    # payload, no client id or addresses; those are known only for connect/disconnect/auth events
+    # from the broker log. The subject device is mapped from the topic, not these fields.
+    client_id: str | None = None
+    src_ip: str | None = None
+    dst_ip: str | None = None
     src_port: int | None = None
     dst_port: int | None = None
     topic: str | None = None
@@ -86,12 +94,17 @@ _DETAIL_FOR_SOURCE: dict[Source, type[_Strict]] = {
 
 
 class Alert(_Strict):
-    schema_version: Literal["alert-v0.1"] = SCHEMA_VERSION
+    schema_version: Literal["alert-v1"] = SCHEMA_VERSION
     alert_id: str
     source: Source
     ts: AwareDatetime
     subject_device: str
     detail: FlowDetail | MqttDetail | HoneypotDetail
+    # Written by the detectors (EPIC-4), read by the reduction policy (Annex E §4, §7) to rank
+    # exemplars and fill each source's `detector` block. Optional: absent until a detector scores
+    # the alert, so v1 is complete for the reduction without EPIC-4 changing the schema.
+    detector_score: float | None = None
+    detector_label: str | None = None
 
     @model_validator(mode="after")
     def _detail_matches_source(self) -> Self:

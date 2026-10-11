@@ -35,7 +35,7 @@ def test_example_round_trips_to_identical_json(source: Source) -> None:
 
 
 def test_schema_version() -> None:
-    assert SCHEMA_VERSION == "alert-v0.1"
+    assert SCHEMA_VERSION == "alert-v1"
     assert Alert.model_validate_json(fixture_text(Source.FLOWS)).schema_version == SCHEMA_VERSION
 
 
@@ -88,3 +88,29 @@ def test_infrastructure_list() -> None:
     assert {"gateway", "mqtt-broker", "capture-sidecar"} <= set(INFRASTRUCTURE.values())
     assert set(INFRASTRUCTURE).isdisjoint(DEVICES)
     assert HONEYPOT_ID in DEVICES.values()
+
+
+def test_mqtt_publish_without_client_or_addresses_is_valid() -> None:
+    # v1: a publish seen on the subscriber log has only topic + payload (E3-01).
+    alert = Alert.model_validate(
+        {
+            "alert_id": "mq-9",
+            "source": "mqtt",
+            "ts": "2026-09-14T10:15:12.500000Z",
+            "subject_device": "iot-temp-01",
+            "detail": {"event": "publish", "topic": "iot/iot-temp-01/flood", "payload_bytes": 48},
+        }
+    )
+    assert alert.detail.client_id is None  # type: ignore[union-attr]
+
+
+def test_detector_fields_default_none_and_are_omitted() -> None:
+    alert = Alert.model_validate_json(fixture_text(Source.HONEYPOT))
+    assert alert.detector_score is None and alert.detector_label is None
+    assert "detector_score" not in alert.to_json()  # exclude_none keeps the view cheap
+
+
+def test_flow_syn_ack_counts_round_trip() -> None:
+    alert = Alert.model_validate_json(fixture_text(Source.FLOWS))
+    assert alert.detail.syn_count_fwd == 1 and alert.detail.ack_count_fwd == 0  # type: ignore[union-attr]
+    assert alert.detector_score == 0.97
