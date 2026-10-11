@@ -146,6 +146,33 @@ Each annex is a section frozen by its own ticket, moved verbatim into `docs/meth
 | E | Reduction policy v1.0 (`reduction_policy.md`) | E0-05, `reduction-v1.0` |
 | F | Testbed capture settings (draft) (`testbed_capture_settings.md`) | E0-07, no tag (draft) |
 
+## 12. Corpus v1.0.0 freeze (E2-09)
+
+The labelled corpus is frozen at git tag **`corpus-v1.0.0`**, generated under this document at
+version **v1.1** (`methods-v1.1`). The raw telemetry is read-only under
+`data/raw/corpus-v1.0.0/`, with labels in `data/labels/`; the two together are fixed by the
+manifest `data/corpus-manifest.json`, SHA-256
+**`535c9239d97de1de8ea24df380c91773c3d28246a3d3d0b62f4ca87df8c50647`**
+(`data/corpus-manifest.sha256`). `python -m thesis.corpus.manifest verify` proves the data is
+unchanged; the integrity report (`docs/corpus/integrity_report.md`, E2-07) passed all five checks
+before the freeze. The dataset card is `docs/dataset_card.md`. Honeypot windows are all attacks
+and are handled as in §8.
+
+**Change policy after the freeze (C-13).** What a later change forces depends on where it sits
+relative to the raw telemetry:
+
+- A change to the **alert schema, the reduction, or the window W** re-runs normalization, incident
+  assembly and every result **from this same raw corpus** — the raw telemetry is unchanged, so the
+  corpus is not regenerated. Such a change needs a METHODS.md changelog entry and re-runs the
+  affected conditions (DoD change control).
+- A change to the **raw capture format or the set of captured sources** invalidates the raw
+  telemetry, so it **regenerates the corpus as v2.0.0** (a new schedule run, a new tag and a new
+  manifest), recorded with its own changelog entry.
+
+Rationale: the raw pcaps and logs are the ground-truth instrument; the schema, reduction and W are
+transforms re-derived from them, so only a change to what raw data is captured can invalidate the
+corpus itself.
+
 ---
 
 ## Changelog
@@ -336,5 +363,22 @@ schedule, before any run, rather than reconstructed later.
 (half-open ranges, whole seconds, labels from episodes only all still hold). The corpus generator
 (`python -m thesis.scenario.generate`, E2-03) sets it on every item; the E1-06 validator is
 unchanged.
+
+**Results invalidated.** None. No agent or baseline output exists.
+
+### 10. 2026-10-11: corpus v1.0.0 frozen (E2-09, SCRUM-92)
+
+**What.** Freezes the labelled corpus as the measurement instrument (record §7.1), the
+critical-path gate after which agent and baseline outputs may be generated. Every
+freeze-before-results decision (the action catalog and sets, the safety scoring, the rejection
+policy, the reliability metrics, the six families, the reduction, Baseline A's training split and
+the target N) was closed before this freeze.
+
+**Freeze.** Git tag `corpus-v1.0.0`; raw telemetry read-only under `data/raw/corpus-v1.0.0/`;
+manifest SHA-256 `535c9239d97de1de8ea24df380c91773c3d28246a3d3d0b62f4ca87df8c50647`; generated
+under METHODS.md v1.1. See §12 for the full record and the C-13 change policy.
+
+**C-13 resolved.** The post-freeze change policy is the split in §12: schema / reduction / W
+changes re-derive from the same raw corpus; a raw-capture change regenerates the corpus as v2.0.0.
 
 **Results invalidated.** None. No agent or baseline output exists.

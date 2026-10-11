@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-CORPUS_DIRS = (Path("data/raw/corpus-v1.0.0-rc"), Path("data/labels"))
+CORPUS_DIRS = (Path("data/raw/corpus-v1.0.0"), Path("data/labels"))
 MANIFEST_PATH = Path("data/corpus-manifest.json")
 SHA_PATH = Path("data/corpus-manifest.sha256")
 _CHUNK = 1 << 20  # 1 MiB streaming read
@@ -58,7 +58,7 @@ def build_manifest(dirs: tuple[Path, ...], root: Path) -> dict[str, object]:
         }
         for rel in iter_corpus_files(dirs, root)
     ]
-    return {"corpus": "corpus-v1.0.0-rc", "file_count": len(files), "files": files}
+    return {"corpus": "corpus-v1.0.0", "file_count": len(files), "files": files}
 
 
 def _dump(manifest: dict[str, object]) -> str:
