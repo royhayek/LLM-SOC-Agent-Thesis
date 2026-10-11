@@ -2,6 +2,26 @@
 
 The model is `thesis/schema/alert.py`. The device-mapping rule is `thesis/schema/devices.py`.
 
+## alert-v1 — 2026-10-11 (SCRUM-21, E3-01)
+
+Settled on the pilot and corpus captures. Checked field-by-field against the frozen reduction
+policy (Annex E) in `docs/schema/v1_field_check.md`: every field the reduction names is populated
+or derivable. Done after the corpus freeze (E2-09), so recorded as a METHODS.md changelog entry
+(entry 11); the alert schema is a transform over the raw corpus, so this re-derives bundles and
+results from the same raw data and does not regenerate the corpus (C-13).
+
+### Field changes from v0.1, with reason
+
+| Field | Change | Reason |
+|---|---|---|
+| `FlowDetail.syn_count_fwd`, `FlowDetail.ack_count_fwd` | **added** (optional ints) | The reduction's `syn_only_ratio` (Annex E §3) needs the initiator SYN/ACK packet counts [`src2dst_syn_packets`, `src2dst_ack_packets`]. v0.1 had only `tcp_flags` (a flag string), which cannot give them. |
+| `MqttDetail.client_id`, `MqttDetail.src_ip`, `MqttDetail.dst_ip` | **made optional** | A publish seen on the broker's subscriber log carries only its topic and payload; no client id or addresses. v0.1 required them, which the real MQTT capture cannot satisfy. The subject device is mapped from the topic. |
+| `Alert.detector_score`, `Alert.detector_label` | **added** (optional) | The reduction (Annex E §4, §7) ranks exemplars by the detector's alert score and fills each `detector` block from it. v0.1 deferred where these live; v1 puts them on the envelope (optional), written by the detectors (EPIC-4) and read by the reduction, so v1 is complete for the reduction without EPIC-4 changing the schema. |
+
+No field was removed; source-specific payload fields stay optional (corpus data may show fields the
+pilot did not). `protocol` still differs between sources (transport in flows, application in the
+honeypot); the flow↔session link uses IP and port only (Annex E §4), so the two need not align.
+
 ## alert-v0.1 — 2026-10-04 (SCRUM-82, E0-08)
 
 First draft. It was written after the E0-01 spike (`spikes/FINDINGS.md`), as record §9 requires. It is not frozen; E3-01 settles v1 on the pilot capture.

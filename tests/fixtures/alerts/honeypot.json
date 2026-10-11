@@ -1,1 +1,1 @@
-{"schema_version":"alert-v0.1","alert_id":"hp-0001","source":"honeypot","ts":"2026-09-14T10:15:04.112000Z","subject_device":"hp-ssh-01","detail":{"event":"session_connect","session_id":"s-7f3a","src_ip":"203.0.113.45","src_port":51022,"dst_ip":"172.20.0.10","dst_port":22,"protocol":"ssh"}}
+{"schema_version":"alert-v1","alert_id":"hp-0001","source":"honeypot","ts":"2026-09-14T10:15:04.112000Z","subject_device":"hp-ssh-01","detail":{"event":"session_connect","session_id":"s-7f3a","src_ip":"203.0.113.45","src_port":51022,"dst_ip":"172.20.0.10","dst_port":22,"protocol":"ssh"}}

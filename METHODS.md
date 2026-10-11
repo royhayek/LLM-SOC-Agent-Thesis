@@ -382,3 +382,23 @@ under METHODS.md v1.1. See §12 for the full record and the C-13 change policy.
 changes re-derive from the same raw corpus; a raw-capture change regenerates the corpus as v2.0.0.
 
 **Results invalidated.** None. No agent or baseline output exists.
+
+### 11. 2026-10-11: alert schema v1 (E3-01, SCRUM-21), post-freeze
+
+**What.** Finalizes the normalized alert format as `alert-v1` (`thesis/schema/alert.py`), settled on
+the pilot and corpus captures, with a field-by-field check against the reduction policy in
+`docs/schema/v1_field_check.md`. Full field diff in `docs/schema/CHANGELOG.md`.
+
+**Why a changelog entry.** This lands after the corpus freeze (E2-09), so the change is recorded
+here per the freeze AC and the §12 change policy. The alert schema is a transform over the raw
+telemetry (C-13): v1 re-derives bundles and results from the **same** raw corpus; it does **not**
+regenerate the corpus, and the corpus tag and manifest are unchanged.
+
+**Changes from v0.1.** `FlowDetail` gains `syn_count_fwd`/`ack_count_fwd` (initiator SYN/ACK counts
+for `syn_only_ratio`, Annex E §3); `MqttDetail` makes `client_id`/`src_ip`/`dst_ip` optional (a
+subscriber-log publish has none); the `Alert` envelope gains optional `detector_score`/
+`detector_label` (written by EPIC-4 detectors, read by the reduction, Annex E §4/§7). No field
+removed; the device-mapping rule (§4.1) is unchanged.
+
+**Results invalidated.** None. No agent or baseline output exists; no bundles have been assembled
+yet (E3-05 onward).
