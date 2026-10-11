@@ -173,6 +173,37 @@ Rationale: the raw pcaps and logs are the ground-truth instrument; the schema, r
 transforms re-derived from them, so only a change to what raw data is captured can invalidate the
 corpus itself.
 
+## 13. Device mapping: cases 4 and 5 (E3-10)
+
+Supersedes ASSUMPTIONs 4 and 5 of "Alert schema v0.1: device mapping (draft)" (Annex C, frozen and
+unedited). The §4.1 rule is unchanged — D is the non-infrastructure endpoint and honeypot events
+key to the honeypot; this section only fixes the two cases §4.1 left open, and
+`subject_device()` (`thesis/schema/devices.py`) implements it.
+
+**Decision.** Both open cases map to **no subject device, so the alert forms no bundle**; the
+normalizer skips it with a counted reason (ASSUMPTION 3). Neither case changes which real attacks
+are captured, because no frozen family (E1-02) produces either as the incident subject.
+
+- **Case 4 — external host to infrastructure** (e.g. a flood reaching the broker): no subject,
+  no bundle. The broker, gateway and capture sidecar are infrastructure, never an incident
+  subject (ASSUMPTION 2). Every frozen family is keyed to an IoT device or the honeypot: the MQTT
+  families key to the device by its topic and its device-to-broker flow, and their MQTT-layer
+  alerts (publish, auth_failure) carry the device; so a bare external-to-broker flow is a relay
+  artefact, not a dropped attack.
+- **Case 5 — device to device** (lateral movement): no subject, no bundle; `subject_device()`
+  returns `None` and **no longer raises**. No frozen family or benign profile produces
+  device-to-device traffic. Picking one device would be arbitrary and risk mislabelling; keying to
+  both would break the disjoint, device-keyed bundles of §4.1 and double-count the alert across
+  bundles. Skipping with a counted reason keeps any unexpected such traffic visible.
+
+**Options considered.** (a) key to one endpoint — rejected: arbitrary, and mislabels the window.
+(b) key to both — rejected: bundles stop being disjoint (§4.1) and clustering double-counts.
+(c) no subject, skip and count — **chosen**: safe, disjoint, drops nothing real, and surfaces the
+unexpected. If a future family adds traffic to infrastructure or lateral movement, §4.1 and this
+section are revisited and the corpus is regenerated as a new version (§12).
+
+**Record.** §4.1's rule is unchanged, so `thesis_project_full_record.md` §4.1 needs no update.
+
 ---
 
 ## Changelog
@@ -402,3 +433,19 @@ removed; the device-mapping rule (§4.1) is unchanged.
 
 **Results invalidated.** None. No agent or baseline output exists; no bundles have been assembled
 yet (E3-05 onward).
+
+### 12. 2026-10-11: device mapping cases 4 and 5 decided (E3-10, SCRUM-128), post-freeze
+
+**What.** Settles the two device-mapping cases §4.1 left open (Annex C ASSUMPTIONs 4 and 5): both
+external-to-infrastructure and device-to-device traffic map to **no subject device, no bundle**.
+Full decision, options and rationale in §13. `subject_device()` returns `None` for both and no
+longer raises for device-to-device.
+
+**Why a changelog entry.** Lands after the corpus freeze (E2-09). The device mapping is applied at
+normalization (E3-02..E3-04), a transform over the raw corpus (C-13), so this re-derives from the
+same raw telemetry and does not regenerate it. In practice it changes nothing: no frozen family or
+benign profile produces case-4 or case-5 traffic, so no corpus bundle is affected.
+
+**Record.** §4.1's rule is unchanged, so `thesis_project_full_record.md` §4.1 is not updated.
+
+**Results invalidated.** None. No agent or baseline output exists; no bundles assembled yet.
