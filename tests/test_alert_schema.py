@@ -13,7 +13,6 @@ from thesis.schema.devices import (
     DEVICES,
     HONEYPOT_ID,
     INFRASTRUCTURE,
-    AmbiguousSubjectError,
     subject_device,
 )
 
@@ -79,9 +78,14 @@ def test_infrastructure_only_flow_has_no_subject() -> None:
     assert subject_device(Source.FLOWS, "172.20.0.1", BROKER_IP) is None
 
 
-def test_device_to_device_flow_is_ambiguous() -> None:
-    with pytest.raises(AmbiguousSubjectError):
-        subject_device(Source.FLOWS, IOT_IP, "172.20.0.22")
+def test_external_to_infrastructure_flow_has_no_subject() -> None:
+    # Case 4 (E3-10): an external host to an infrastructure host forms no bundle.
+    assert subject_device(Source.FLOWS, "203.0.113.45", BROKER_IP) is None
+
+
+def test_device_to_device_flow_has_no_subject() -> None:
+    # Case 5 (E3-10): device-to-device traffic forms no bundle (no longer raises).
+    assert subject_device(Source.FLOWS, IOT_IP, "172.20.0.22") is None
 
 
 def test_infrastructure_list() -> None:

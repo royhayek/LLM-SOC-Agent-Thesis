@@ -35,18 +35,20 @@ DEVICES = MappingProxyType(
 )
 
 
-class AmbiguousSubjectError(ValueError):
-    """Both endpoints are testbed devices; §4.1 does not say which one is D."""
-
-
 def subject_device(source: Source, src_ip: str, dst_ip: str | None) -> str | None:
-    """Return the ID of the device an alert is about, or None if no testbed device is involved.
+    """Return the ID of the device an alert is about, or None if the alert forms no bundle.
 
-    None covers infrastructure-to-infrastructure traffic and traffic with no known device.
+    None covers the cases §4.1 does not key to a device (METHODS.md "Device mapping: cases 4 and
+    5 (E3-10)"): traffic with no testbed device, external-to-infrastructure traffic (case 4), and
+    device-to-device traffic (case 5). The normalizer skips a None-subject alert with a counted
+    reason. Honeypot events always key to the honeypot (§4.1).
     """
     if source is Source.HONEYPOT:
         return HONEYPOT_ID
     candidates = {DEVICES[ip] for ip in (src_ip, dst_ip) if ip is not None and ip in DEVICES}
+    # Case 5 (device to device): no frozen family produces lateral movement, so rather than pick
+    # one device (arbitrary, risks mislabelling) or key to both (breaks disjoint bundles), the
+    # alert forms no bundle. Unexpected such traffic stays visible as a counted skip reason.
     if len(candidates) > 1:
-        raise AmbiguousSubjectError(f"{src_ip} -> {dst_ip}: both endpoints are devices")
+        return None
     return candidates.pop() if candidates else None
