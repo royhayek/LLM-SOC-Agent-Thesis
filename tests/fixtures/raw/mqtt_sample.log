@@ -1,0 +1,6 @@
+2026-10-11T11:37:55+0000 iot/iot-temp-01/telemetry {"device_id":"iot-temp-01","kind":"temperature","seq":1,"value":20.6}
+2026-10-11T11:37:56+0000 iot/iot-temp-01/flood {"x":1}
+2026-10-11T11:37:57+0000 iot/iot-cam-01/status {"online":true}
+2026-10-11T11:37:58+0000 status/only/two
+this is a malformed line with no topic-payload split
+2026-10-11T11:37:59+0000 sensors/unknown-thing/telemetry {"v":1}

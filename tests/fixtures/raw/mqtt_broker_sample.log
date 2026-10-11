@@ -1,0 +1,5 @@
+2026-10-11T11:37:35: mosquitto version 2.0.22 starting
+2026-10-11T11:37:41: New client connected from 10.77.0.21:40112 as iot-temp-01-t1 (p2, c1, k60).
+2026-10-11T11:41:22: Client iot-temp-01-brute disconnected, not authorised.
+2026-10-11T11:42:00: Client iot-temp-01-t1 disconnected.
+2026-10-11T11:43:00: New client connected from 10.77.0.4:38820 as mqtt-logger (p2, c1, k60).
