@@ -7,7 +7,9 @@ for the bundler (E3-05) to group by device and window without parsing every row.
 
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pyarrow as pa  # type: ignore[import-untyped]
@@ -17,6 +19,26 @@ from thesis.schema.alert import Alert
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ALERTS_DIR = REPO_ROOT / "data" / "alerts"
+
+
+@dataclass
+class NormalizeResult:
+    """Outcome of normalizing one run's source, shared by the MQTT, flow and honeypot normalizers.
+
+    The invariant `alerts + skipped == lines` is the guard against silent dropping (§6.9).
+    """
+
+    run_id: str
+    alerts: int = 0
+    skipped: int = 0
+    skip_reasons: Counter[str] = field(default_factory=Counter)
+    parquet_path: Path | None = None
+    skip_log_path: Path | None = None
+
+    @property
+    def lines(self) -> int:
+        return self.alerts + self.skipped
+
 
 _SCHEMA = pa.schema(
     [
