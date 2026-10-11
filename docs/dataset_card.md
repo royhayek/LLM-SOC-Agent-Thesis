@@ -117,10 +117,12 @@ target N_eval = 480 (300 attack + 180 benign) with margin, as designed (E2-02).
 
 ## 9. Version and manifest hash
 
-- **Corpus:** `corpus-v1.0.0-rc` (release candidate; frozen as v1.0.0 by E2-09).
-- **Files:** 156 (raw telemetry under `data/raw/corpus-v1.0.0-rc/` and labels under
-  `data/labels/`).
+- **Corpus:** `corpus-v1.0.0` — frozen at git tag `corpus-v1.0.0` (E2-09), read-only on disk.
+- **Files:** 156 (raw telemetry under `data/raw/corpus-v1.0.0/` and labels under `data/labels/`).
 - **Manifest:** `data/corpus-manifest.json`, SHA-256
-  `869637b64cc5ad46a3bc7eadd8fba159602964d7112ba36946707b39783a88d8`
+  `535c9239d97de1de8ea24df380c91773c3d28246a3d3d0b62f4ca87df8c50647`
   (`data/corpus-manifest.sha256`). `python -m thesis.corpus.manifest verify` proves the data is
   unchanged; `python -m thesis.corpus.check` revalidates integrity (5/5 checks pass).
+- **Change policy:** any change to the alert schema, the reduction or W re-derives bundles and
+  results from this same raw corpus; a change to the raw capture format or sources creates
+  corpus v2.0.0 (METHODS.md "Change policy after the freeze").
