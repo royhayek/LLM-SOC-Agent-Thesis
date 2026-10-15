@@ -105,6 +105,7 @@ class Alert(_Strict):
     # the alert, so v1 is complete for the reduction without EPIC-4 changing the schema.
     detector_score: float | None = None
     detector_label: str | None = None
+    detector_name: str | None = None  # which detector scored it (E4-06); set at annotation time
 
     @model_validator(mode="after")
     def _detail_matches_source(self) -> Self:
