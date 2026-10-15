@@ -89,6 +89,7 @@ class RunResult:
     repetition: int
     strategy: str
     payload: object  # GraphTrace | Verdict | None — persisted by E9-02
+    failure: str | None = None  # category of an absorbed per-item failure, else None (diagnostic)
 
 
 def load_conditions(provenance: Provenance, path: Path = CONDITIONS_PATH) -> list[ExperimentConfig]:
@@ -144,15 +145,33 @@ def run_one(
     return RunResult(bundle.bundle_id, ch, repetition, config.strategy.value, payload)
 
 
-def _failed_result(item: RunItem) -> RunResult:
-    """A result for an item whose run failed at the client (after retries) or exceeded the output
-    ceiling. `payload=None` makes it an unusable verdict downstream: scored wrong, never dropped."""
+_FAILURE_CATEGORY: tuple[tuple[type[Exception], str], ...] = (
+    (TokenCeilingError, "ceiling"),
+    (EvidenceParseError, "node1_parse"),
+    (ClassifyParseError, "node2_parse"),
+    (RecommendParseError, "node3_parse"),
+    (LLMError, "call_error"),
+)
+
+
+def _failure_category(error: Exception) -> str:
+    for exc_type, name in _FAILURE_CATEGORY:
+        if isinstance(error, exc_type):
+            return name
+    return "other"
+
+
+def _failed_result(item: RunItem, error: Exception) -> RunResult:
+    """A result for an item whose run failed at the client (after retries), exceeded the output
+    ceiling, or produced a node output that did not conform. `payload=None` makes it an unusable
+    verdict downstream: scored wrong, never dropped. `failure` records the category (diagnostic)."""
     return RunResult(
         item.bundle.bundle_id,
         config_hash(item.config),
         item.repetition,
         item.config.strategy.value,
         None,
+        failure=_failure_category(error),
     )
 
 
@@ -202,7 +221,7 @@ def run_matrix(
                     repetition=it.repetition,
                     error=str(error),
                 )
-                result = _failed_result(it)
+                result = _failed_result(it, error)
             sink(result)
             ledger.mark(it.key())
     finally:
