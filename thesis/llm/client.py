@@ -16,8 +16,9 @@ import os
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Any, cast
 
-from openai import APIConnectionError, APIStatusError, APITimeoutError, OpenAI, RateLimitError
+from openai import APIConnectionError, APIStatusError, APITimeoutError, OpenAI, RateLimitError, omit
 from openai.types.chat import ChatCompletion
 
 from thesis.obs.logging import log_llm_call
@@ -92,9 +93,21 @@ class LLMClient:
             **overrides,  # type: ignore[arg-type]
         )
 
-    def _create_once(self, prompt: str) -> ChatCompletion:
+    def _response_format(self, json_schema: dict[str, object] | None) -> dict[str, object] | None:
+        # Constrained decoding (§6.4): the schema is the output constraint when safety is enforcing.
+        if json_schema is None:
+            return None
+        return {
+            "type": "json_schema",
+            "json_schema": {"name": "verdict", "schema": json_schema, "strict": True},
+        }
+
+    def _create_once(
+        self, prompt: str, response_format: dict[str, object] | None
+    ) -> ChatCompletion:
         # Ollama truncates silently at its default context, so num_ctx goes in extra_body (§4.3).
         extra_body = {"options": {"num_ctx": OLLAMA_NUM_CTX}} if _is_local(self.base_url) else None
+        rf: object = omit if response_format is None else response_format
         return self._client.chat.completions.create(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
@@ -102,13 +115,16 @@ class LLMClient:
             temperature=self.temperature,
             top_p=self.top_p,
             extra_body=extra_body,
+            response_format=cast("Any", rf),
         )
 
-    def _create_with_retry(self, prompt: str) -> ChatCompletion:
+    def _create_with_retry(
+        self, prompt: str, response_format: dict[str, object] | None
+    ) -> ChatCompletion:
         last: Exception | None = None
         for attempt in range(1, self.max_attempts + 1):
             try:
-                return self._create_once(prompt)
+                return self._create_once(prompt, response_format)
             except (RateLimitError, APIConnectionError, APITimeoutError, APIStatusError) as error:
                 last = error
                 if attempt == self.max_attempts or not _retryable(error):
@@ -117,11 +133,21 @@ class LLMClient:
         raise LLMError(f"LLM call failed after {self.max_attempts} attempt(s): {last}") from last
 
     def complete(
-        self, prompt: str, *, node: str, bundle_id: str, config_hash: str, repetition: int
+        self,
+        prompt: str,
+        *,
+        node: str,
+        bundle_id: str,
+        config_hash: str,
+        repetition: int,
+        json_schema: dict[str, object] | None = None,
     ) -> str:
-        """Send one prompt, enforce the output ceiling, log the call, and return the completion."""
+        """Send one prompt, enforce the output ceiling, log the call, and return the completion.
+
+        Pass `json_schema` (e.g. `verdict_json_schema()`) to constrain decoding to it (§6.4).
+        """
         started = time.monotonic()
-        response = self._create_with_retry(prompt)
+        response = self._create_with_retry(prompt, self._response_format(json_schema))
         latency_ms = (time.monotonic() - started) * 1000.0
 
         completion = response.choices[0].message.content or ""
