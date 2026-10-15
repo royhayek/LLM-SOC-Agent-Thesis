@@ -15,3 +15,4 @@ One file per decision, numbered. Start a new one by copying `template.md`; it st
 | 0008 | Raw pcap capture with tcpdump, flows from the pcap | E0-07 |
 | 0009 | Whole-network flow capture with per-host egress sidecars | E1-16 |
 | 0010 | Parquet library | E2-04 |
+| 0011 | Tokenizer for the per-call token budget | E3-08 |
