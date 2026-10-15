@@ -468,3 +468,10 @@ exists**, so it cannot be retuned after seeing the agent. Model `models/flow_cla
 episodes (never the evaluation split): macro-F1 0.865, per-class metrics in
 `docs/detectors/flow_eval.md`. Any later change to Baseline A needs a changelog entry and a full
 rerun. Results invalidated: none; no agent or baseline output exists on evaluation bundles.
+
+### 15. 2026-10-15: detector fields completed on alerts (E4-06, SCRUM-68)
+
+`Alert` gains an optional `detector_name` (alongside `detector_score`/`detector_label` from E3-01);
+`thesis/detect/annotate.py` runs the three detectors over the normalized alerts and writes annotated
+alerts to `data/alerts_annotated/<source>/<run_id>.parquet`, with a completeness check. A transform
+over the raw corpus (C-13): re-derives, does not regenerate. Results invalidated: none.
