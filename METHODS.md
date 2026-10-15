@@ -521,3 +521,20 @@ k is a locked parameter: a later change needs a changelog entry and re-runs the 
 conditions. The embedding index is `all-MiniLM-L6-v2` pinned at revision `1110a243…` (E5-03). A
 transform/configuration change, not raw corpus; re-derives, does not regenerate (C-13). Results
 invalidated: none; no agent output exists.
+
+### 18. 2026-10-15: structured output realized as json_object (E6-09, SCRUM-131, ADR-0012)
+
+**What.** The pinned experiment model on DeepInfra rejects a `json_schema` response format and
+accepts `json_object` (E6-08). Decided by Roy El Hayek, 2026-10-15 (ADR-0012, Option A): the single
+client sends `response_format` of type `json_object` wherever structured output is requested, on
+**every provider, development and experiment alike**. "Constrained decoding against `Verdict`" in
+`safety_scoring` §6.1 is therefore realized as a `json_object` (valid-JSON) constraint, not a
+schema-constrained decode. `Verdict` conformance is enforced by each node's Pydantic parse and by
+the validator gate on `E` (E7-02), not by the decoder. The `enforcing` / `logging_only` difference
+on the recommendation node becomes json_object vs free-text. `MEM` "1 by construction under
+`enforcing`" (§3.2) is unaffected: it is guaranteed by the validator, not the decoder. Expected
+effect on the contextually unsafe rate is, if anything, smaller than with a schema-constrained
+decode, and is reported as a finding; E9-08 measures the real raw-invalid and rejection rates, which
+are then locked. No frozen parameter changes (the rejection policy and `max_retries` are untouched);
+the §6.1 frozen text is not edited, this entry records the realization. Results invalidated: none;
+no agent output exists.

@@ -94,13 +94,14 @@ class LLMClient:
         )
 
     def _response_format(self, json_schema: dict[str, object] | None) -> dict[str, object] | None:
-        # Constrained decoding (§6.4): the schema is the output constraint when safety is enforcing.
+        # Structured output is json_object, not json_schema (ADR-0012, Option A): the pinned hosted
+        # model rejects a json_schema response format, and json_object is used on every provider so
+        # development and the experiment behave identically. json_object constrains output to valid
+        # JSON; Verdict conformance is enforced by each node's parse and by the validator gate on E
+        # (E7-02), not at decode time. The argument is the on/off signal; its contents are not sent.
         if json_schema is None:
             return None
-        return {
-            "type": "json_schema",
-            "json_schema": {"name": "verdict", "schema": json_schema, "strict": True},
-        }
+        return {"type": "json_object"}
 
     def _create_once(
         self, prompt: str, response_format: dict[str, object] | None
@@ -144,7 +145,8 @@ class LLMClient:
     ) -> str:
         """Send one prompt, enforce the output ceiling, log the call, and return the completion.
 
-        Pass `json_schema` (e.g. `verdict_json_schema()`) to constrain decoding to it (§6.4).
+        Pass `json_schema` (e.g. `verdict_json_schema()`) to request json_object structured output
+        (ADR-0012); its contents are the on/off signal, and conformance is checked after decoding.
         """
         started = time.monotonic()
         response = self._create_with_retry(prompt, self._response_format(json_schema))

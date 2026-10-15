@@ -3404,6 +3404,44 @@ None
 **Traceability**
 R-136 · Record §4.2 · Proposal: Methodology (same base model)
 
+---
+
+**[E6-09] Send json_object for structured output on the hosted provider**
+**Type:** Task · **Epic:** EPIC-6 · **Priority:** High · **Points:** 2 · **Labels:** infra
+**Depends on:** E6-01, E6-08, ADR-0012 (accepted) · **Blocks:** E9-08
+
+**Context**
+The pinned experiment model on DeepInfra returns HTTP 400 for a `json_schema` response format; it accepts `json_object` (E6-08). The client sends `json_schema` on the evidence and classification nodes for every condition and on the recommendation node under `enforcing` (`thesis/llm/client.py`, `thesis/agent/graph.py`), so every agentic call fails on DeepInfra. ADR-0012 (Accepted, Option A) decides to send `json_object` wherever structured output is requested, on every provider; schema conformance is enforced by the node parse and the validator gate, not at decode time.
+
+**Goal**
+Agentic calls succeed on the hosted provider, structured as valid JSON, with the enforcing / logging_only distinction preserved as json_object vs free-text, and no frozen parameter changed.
+
+**Scope**
+- In: a structured-output mode on the single client that emits `json_object` on every provider (ADR-0012 Option A); the graph requests it on the same calls as today; the METHODS §6.1 changelog entry; tests around the client and the graph wiring (never LLM output quality).
+- Out: changing prompts, the action catalog, the rejection policy, `max_retries`, the model, the provider, or any other locked parameter. No retry-until-valid loop.
+
+**Technical notes**
+- Keep the single OpenAI-compatible client (locked stack). The switch is the `response_format` type only.
+- Membership stays 1-by-construction under enforcing via the validator (safety_scoring §3.2); do not rely on the decoder for schema conformance.
+- Nodes 1–2 send a schema for all conditions today, so the switch must cover them too, or C5 also 400s.
+
+**Acceptance criteria**
+- A structured call sends `response_format` of type `json_object`, never `json_schema`, asserted from the request the client builds (no network).
+- A call with no schema sends no response format (free text), so the enforcing/logging_only difference is json_object vs free-text.
+- The METHODS §6.1 changelog entry is merged in the same change.
+
+**Deliverables**
+`thesis/llm/client.py`, tests; METHODS changelog entry; ADR-0012.
+
+**Risks / gotchas**
+- Do not touch the rejection policy or `max_retries` (frozen). json_object is valid-JSON only; let the validator reject non-conforming output as designed.
+
+**Open questions**
+None
+
+**Traceability**
+R-136 · Record §4.2, §6.4 · ADR-0012 · Proposal: Methodology (structured output)
+
 
 # Step D — EPIC-7 · Safety & Constraint Layer
 
