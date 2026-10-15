@@ -66,6 +66,15 @@ def test_action_outside_the_catalog_is_a_parse_failure() -> None:
         _run(json.dumps({"recommended_action": "launch_counterattack", "evidence_ids": ["f1"]}))
 
 
-def test_missing_evidence_is_rejected() -> None:
+def test_active_action_without_evidence_is_rejected() -> None:
+    # An active action must cite evidence (METHODS changelog 21).
     with pytest.raises(RecommendParseError):
-        _run(json.dumps({"recommended_action": "monitor", "evidence_ids": []}))
+        _run(json.dumps({"recommended_action": "block_source", "evidence_ids": []}))
+
+
+def test_non_response_actions_may_cite_no_evidence() -> None:
+    # A benign verdict recommends no_action / monitor and need not invent evidence.
+    for action in ("no_action", "monitor"):
+        rec = _run(json.dumps({"recommended_action": action, "evidence_ids": []}))
+        assert rec.recommended_action.value == action
+        assert rec.evidence_ids == []

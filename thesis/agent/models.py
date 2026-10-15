@@ -10,9 +10,15 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 from thesis.schema.verdict import Action, IncidentType, Severity
+
+# Actions that are not a response to an incident, so they need no cited evidence (safety_scoring §6:
+# "no_action and monitor are never unsafe … not responding costs usefulness, not safety"). A benign
+# verdict recommends one of these and legitimately has no attack evidence to cite (METHODS changelog
+# 21). Every other (active) action must cite at least one evidence id.
+ACTIONS_WITHOUT_EVIDENCE = frozenset({"no_action", "monitor"})
 
 _Short = Annotated[str, StringConstraints(max_length=300)]
 _Para = Annotated[str, StringConstraints(max_length=800)]
@@ -59,13 +65,22 @@ class Recommendation(_Strict):
     """Node 3's output (E6-05): one catalog action and the evidence it cites.
 
     The agent recommends and never executes (§1.1). `recommended_action` is the catalog-generated
-    `Action` enum, so an id outside the catalog fails to parse; at least one evidence id is needed.
+    `Action` enum, so an id outside the catalog fails to parse. An **active** action must cite at
+    least one evidence id; the non-response actions in `ACTIONS_WITHOUT_EVIDENCE` may cite none, so
+    a benign verdict is not forced to invent evidence (METHODS changelog 21).
     """
 
     recommended_action: Action
-    evidence_ids: list[Annotated[str, StringConstraints(max_length=100)]] = Field(
-        min_length=1, max_length=20
-    )
+    evidence_ids: list[Annotated[str, StringConstraints(max_length=100)]] = Field(max_length=20)
+
+    @model_validator(mode="after")
+    def _active_actions_cite_evidence(self) -> Recommendation:
+        if self.recommended_action.value not in ACTIONS_WITHOUT_EVIDENCE and not self.evidence_ids:
+            raise ValueError(
+                f"action {self.recommended_action.value!r} is active and must cite at least one"
+                " evidence id"
+            )
+        return self
 
 
 __all__ = ["Classification", "Findings", "Recommendation", "SourceFinding"]

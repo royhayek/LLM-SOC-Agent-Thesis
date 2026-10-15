@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-TEMPLATE_VERSION = "prompts-v1.0"
+TEMPLATE_VERSION = "prompts-v1.1"
 
 # Frozen markers that fence the untrusted bundle. The reduced view is the only text between them.
 BUNDLE_OPEN = "<<<BEGIN UNTRUSTED BUNDLE>>>"
