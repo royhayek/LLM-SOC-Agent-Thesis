@@ -157,6 +157,40 @@ def validity_summary(
     return out
 
 
+def result_reason(payload: object, failure: str | None) -> str:
+    """One coarse reason an item did or did not produce a usable verdict, for the diagnostic.
+
+    `failure` (set by the runner) is an absorbed exception: `ceiling`, `node1_parse`,
+    `node2_parse`, `node3_parse`, `call_error`. Otherwise a graph trace that withheld is a
+    `validator_<outcome>` (the safety layer refused — expected, e.g. unknown_evidence), a parsed
+    verdict is `ok`, and a `None` payload with no failure is a baseline `no_verdict`.
+    """
+    if failure is not None:
+        return failure
+    from thesis.agent.graph import GraphTrace
+
+    if isinstance(payload, GraphTrace):
+        return "ok" if payload.emitted is not None else f"validator_{payload.validator_outcome}"
+    return "ok" if payload is not None else "no_verdict"
+
+
+def reason_breakdown(
+    results: Sequence[object], conditions: Sequence[ExperimentConfig]
+) -> dict[str, dict[str, int]]:
+    """Per condition (C1..C7), a count of each reason (`result_reason`). Separates the two kinds of
+    failure the exploratory run must distinguish: malformed-output parse failures (the json_object
+    validity problem) versus safety-layer rejections (the layer working)."""
+    by_hash = {config_hash(c): f"C{i + 1}" for i, c in enumerate(conditions)}
+    out: dict[str, dict[str, int]] = {f"C{i + 1}": {} for i in range(len(conditions))}
+    for result in results:
+        label = by_hash.get(str(getattr(result, "config_hash", "")))
+        if label is None:
+            continue
+        reason = result_reason(getattr(result, "payload", None), getattr(result, "failure", None))
+        out[label][reason] = out[label].get(reason, 0) + 1
+    return out
+
+
 def run_all_metrics(
     rows: Sequence[Mapping[str, object]], conditions: Sequence[ExperimentConfig]
 ) -> list[str]:
@@ -215,6 +249,7 @@ def write_report(
     cost: ExploratoryCost,
     metrics_ran: Sequence[str],
     validity: Sequence[ConditionValidity],
+    reasons: Mapping[str, Mapping[str, int]],
     *,
     eval_hash: str,
     path: Path = REPORT_PATH,
@@ -266,6 +301,18 @@ def write_report(
         *(
             f"| {v.label} | {v.strategy} | {v.unusable} | {v.total} | {v.rate:.1%} |"
             for v in validity
+        ),
+        "",
+        "### Failure reasons per condition",
+        "",
+        "`nodeN_parse` / `ceiling` / `call_error` are the model failing to emit valid output (the "
+        "json_object problem). `validator_*` is the safety layer refusing a verdict (expected — it "
+        "works). `no_verdict` is a baseline that could not parse. `ok` produced a verdict.",
+        "",
+        *(
+            f"- **{label}**: "
+            + ", ".join(f"{r}={n}" for r, n in sorted(counts.items(), key=lambda kv: -kv[1]))
+            for label, counts in reasons.items()
         ),
         "",
         "## Bugs found and fixed",
@@ -371,7 +418,8 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - the live r
     metrics_ran = run_all_metrics(row_dicts, conditions)
     cost = project_cost(row_dicts, len(eval_bundles))
     validity = validity_summary(row_dicts, conditions)
-    write_report(cost, metrics_ran, validity, eval_hash=eval_hash)
+    reasons = reason_breakdown(results, conditions)
+    write_report(cost, metrics_ran, validity, reasons, eval_hash=eval_hash)
     print(f"exploratory run complete: {cost.n_slice} bundles; {_verdict(cost)}")
     print(f"wrote {REPORT_PATH}")
     return 0 if cost.within_cap else 1
@@ -446,6 +494,8 @@ __all__ = [
     "ExploratoryCost",
     "draw_slice",
     "project_cost",
+    "reason_breakdown",
+    "result_reason",
     "run_all_metrics",
     "validity_summary",
     "write_report",

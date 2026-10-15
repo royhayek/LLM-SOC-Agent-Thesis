@@ -217,14 +217,44 @@ def test_write_report_has_cost_validity_and_human_sections(tmp_path: Path) -> No
     validity = validity_summary(
         [{"config_hash": config_hash(conditions[0]), "emitted": False}], conditions
     )
+    reasons = {"C1": {"ok": 60, "node3_parse": 2}, "C5": {"node3_parse": 61, "ok": 1}}
     path = tmp_path / "exploratory_run.md"
-    write_report(cost, ["detection", "block_bootstrap"], validity, eval_hash="deadbeef", path=path)
+    write_report(
+        cost, ["detection", "block_bootstrap"], validity, reasons, eval_hash="deadbeef", path=path
+    )
     text = path.read_text(encoding="utf-8")
     assert str(cost.measured_eur) in text  # actual euros spent
     assert str(cost.projected_total_eur) in text  # projected euros for the full runs
     assert "deadbeef" in text  # eval-set hash for traceability
     assert "WITHIN CAP" in text
     assert "Output validity" in text  # the malformed-output rate section
+    assert "Failure reasons per condition" in text and "node3_parse=61" in text  # breakdown
     assert "## Bugs found and fixed" in text  # human section
     assert "Parameter-change confirmation" in text  # no-change confirmation
     assert "- detection" in text and "- block_bootstrap" in text  # metrics that ran
+
+
+def test_reason_breakdown_separates_parse_from_rejection() -> None:
+    from dataclasses import dataclass
+
+    from thesis.eval.exploratory import reason_breakdown, result_reason
+
+    conditions = load_conditions(_prov())
+    c1 = config_hash(conditions[0])
+
+    @dataclass
+    class _Res:
+        config_hash: str
+        payload: object
+        failure: str | None = None
+
+    # A malformed-output failure, a safety rejection, and a clean verdict — all for C1.
+    results = [
+        _Res(c1, None, failure="node3_parse"),
+        _Res(c1, None, failure="node3_parse"),
+        _Res(c1, object()),  # a non-None, non-trace payload → treated as a parsed verdict
+    ]
+    breakdown = reason_breakdown(results, conditions)
+    assert breakdown["C1"] == {"node3_parse": 2, "ok": 1}
+    assert result_reason(None, "ceiling") == "ceiling"  # failure category wins
+    assert result_reason(None, None) == "no_verdict"  # baseline could not parse
