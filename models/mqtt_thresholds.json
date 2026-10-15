@@ -1,0 +1,10 @@
+{
+  "auth_failure_score": 0.4,
+  "benign_channels": [
+    "status",
+    "telemetry"
+  ],
+  "decision_threshold": 0.5,
+  "payload_bytes_p99": 196.0,
+  "payload_percentile": 99
+}
