@@ -190,16 +190,41 @@ def test_line_count(tmp_path: Path) -> None:
     assert _line_count(log) == 3
 
 
-def test_write_report_has_cost_projection_and_human_sections(tmp_path: Path) -> None:
+def test_validity_summary_counts_unusable_per_condition() -> None:
+    from thesis.eval.exploratory import validity_summary
+
+    conditions = load_conditions(_prov())
+    c1 = config_hash(conditions[0])
+    rows: list[dict[str, object]] = [
+        {"config_hash": c1, "emitted": True},
+        {"config_hash": c1, "emitted": False},  # 1 of 2 unusable for C1
+        {"config_hash": c1, "emitted": True},
+        {"config_hash": c1, "emitted": False},
+    ]
+    summary = validity_summary(rows, conditions)
+    assert [v.label for v in summary] == [f"C{i + 1}" for i in range(len(conditions))]
+    c1_row = summary[0]
+    assert (c1_row.unusable, c1_row.total, c1_row.rate) == (2, 4, 0.5)
+    assert summary[1].total == 0 and summary[1].rate == 0.0  # a condition with no rows
+
+
+def test_write_report_has_cost_validity_and_human_sections(tmp_path: Path) -> None:
+    from thesis.eval.exploratory import validity_summary
+
+    conditions = load_conditions(_prov())
     rows = [_cost_row("b1", 1_000_000, 0), _cost_row("b2", 1_000_000, 0)]
     cost = project_cost(rows, n_eval=20)
+    validity = validity_summary(
+        [{"config_hash": config_hash(conditions[0]), "emitted": False}], conditions
+    )
     path = tmp_path / "exploratory_run.md"
-    write_report(cost, ["detection", "block_bootstrap"], eval_hash="deadbeef", path=path)
+    write_report(cost, ["detection", "block_bootstrap"], validity, eval_hash="deadbeef", path=path)
     text = path.read_text(encoding="utf-8")
     assert str(cost.measured_eur) in text  # actual euros spent
     assert str(cost.projected_total_eur) in text  # projected euros for the full runs
     assert "deadbeef" in text  # eval-set hash for traceability
     assert "WITHIN CAP" in text
+    assert "Output validity" in text  # the malformed-output rate section
     assert "## Bugs found and fixed" in text  # human section
     assert "Parameter-change confirmation" in text  # no-change confirmation
     assert "- detection" in text and "- block_bootstrap" in text  # metrics that ran

@@ -120,6 +120,43 @@ def project_cost(
     )
 
 
+@dataclass(frozen=True)
+class ConditionValidity:
+    label: str  # C1..C7 in config order
+    strategy: str
+    unusable: int  # bundles with no usable verdict (withheld, unparsed, or malformed node output)
+    total: int
+    rate: float
+
+
+def validity_summary(
+    rows: Sequence[Mapping[str, object]], conditions: Sequence[ExperimentConfig]
+) -> list[ConditionValidity]:
+    """Per condition, the share of bundles whose verdict was unusable — withheld, unparsed, or a
+    malformed node output absorbed as a failure (ADR-0012 / json_object). This is the key E9-08
+    signal: how often the model fails to produce a valid verdict. It is output validity, not
+    classification accuracy, so reporting it does not report an evaluation result (scope)."""
+    counts: dict[str, list[int]] = defaultdict(lambda: [0, 0])  # hash -> [unusable, total]
+    for row in rows:
+        h = str(row["config_hash"])
+        counts[h][1] += 1
+        if not bool(row["emitted"]):
+            counts[h][0] += 1
+    out: list[ConditionValidity] = []
+    for i, cond in enumerate(conditions):
+        unusable, total = counts.get(config_hash(cond), [0, 0])
+        out.append(
+            ConditionValidity(
+                label=f"C{i + 1}",
+                strategy=cond.strategy.value,
+                unusable=unusable,
+                total=total,
+                rate=round(unusable / total, 3) if total else 0.0,
+            )
+        )
+    return out
+
+
 def run_all_metrics(
     rows: Sequence[Mapping[str, object]], conditions: Sequence[ExperimentConfig]
 ) -> list[str]:
@@ -177,12 +214,13 @@ def _smoke_bootstrap(
 def write_report(
     cost: ExploratoryCost,
     metrics_ran: Sequence[str],
+    validity: Sequence[ConditionValidity],
     *,
     eval_hash: str,
     path: Path = REPORT_PATH,
 ) -> None:
     """Write `docs/eval/exploratory_run.md`: the measured and projected cost, the metrics that ran,
-    and the human sections (bugs, parameter-change confirmation) for Roy to complete."""
+    the per-condition output-validity rate, and the human sections for Roy to complete."""
     path.parent.mkdir(parents=True, exist_ok=True)
     verdict = "WITHIN CAP" if cost.within_cap else "OVER CAP — STOP"
     body = [
@@ -216,6 +254,19 @@ def write_report(
         "Every metric function produced output with no error on the slice:",
         "",
         *(f"- {name}" for name in metrics_ran),
+        "",
+        "## Output validity (not accuracy)",
+        "",
+        "Share of bundles with **no usable verdict** — withheld, unparsed, or a malformed node "
+        "output absorbed as a failure (json_object has no decode-time schema; ADR-0012). This is "
+        "the key signal for whether json_object is viable; it is output validity, not accuracy.",
+        "",
+        "| Condition | Strategy | Unusable | Total | Rate |",
+        "|---|---|---|---|---|",
+        *(
+            f"| {v.label} | {v.strategy} | {v.unusable} | {v.total} | {v.rate:.1%} |"
+            for v in validity
+        ),
         "",
         "## Bugs found and fixed",
         "",
@@ -319,7 +370,8 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - the live r
     row_dicts = [dict(vars(r)) for r in rows]
     metrics_ran = run_all_metrics(row_dicts, conditions)
     cost = project_cost(row_dicts, len(eval_bundles))
-    write_report(cost, metrics_ran, eval_hash=eval_hash)
+    validity = validity_summary(row_dicts, conditions)
+    write_report(cost, metrics_ran, validity, eval_hash=eval_hash)
     print(f"exploratory run complete: {cost.n_slice} bundles; {_verdict(cost)}")
     print(f"wrote {REPORT_PATH}")
     return 0 if cost.within_cap else 1
@@ -390,9 +442,11 @@ if __name__ == "__main__":  # pragma: no cover
 
 
 __all__ = [
+    "ConditionValidity",
     "ExploratoryCost",
     "draw_slice",
     "project_cost",
     "run_all_metrics",
+    "validity_summary",
     "write_report",
 ]
