@@ -266,11 +266,20 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - the live r
     bundles_by_id = {b.bundle_id: b for b in slice_bundles}
     configs_by_hash = {config_hash(c): c for c in conditions}
 
+    # The exploratory run is a fresh pass (its numbers are discarded), so start from an empty
+    # ledger — a stale one from an earlier/aborted run would skip items. And snapshot the call log's
+    # length now, so cost counts only THIS run's calls, never an earlier run's for the same bundles.
+    ledger_path = REPO_ROOT / "data" / "exploratory" / "ledger.jsonl"
+    ledger_path.unlink(missing_ok=True)
+    log_start = _line_count(LOG_PATH)
+
     results: list[RunResult] = []
-    ledger = Ledger(REPO_ROOT / "data" / "exploratory" / "ledger.jsonl")
+    ledger = Ledger(ledger_path)
     run_matrix(slice_bundles, conditions, client=client, ledger=ledger, sink=results.append, k=1)
 
-    totals = _call_totals_by_item(LOG_PATH, set(configs_by_hash), set(bundles_by_id))
+    totals = _call_totals_by_item(
+        LOG_PATH, set(configs_by_hash), set(bundles_by_id), since_line=log_start
+    )
     rows: list[ResultRow] = []
     for result in results:
         item = (result.bundle_id, result.config_hash, result.repetition)
@@ -324,24 +333,34 @@ def _verdict(cost: ExploratoryCost) -> str:
     )
 
 
-def _call_totals_by_item(  # pragma: no cover - reads the live call log of Roy's run
-    log_path: Path, config_hashes: set[str], bundle_ids: set[str]
+def _line_count(path: Path) -> int:
+    """The number of lines currently in the call log, used to ignore earlier runs' calls."""
+    if not path.exists():
+        return 0
+    return sum(1 for _ in path.open(encoding="utf-8"))
+
+
+def _call_totals_by_item(
+    log_path: Path, config_hashes: set[str], bundle_ids: set[str], *, since_line: int = 0
 ) -> dict[tuple[str, str, int], tuple[int, int, float]]:
-    """Group the call log's records by (bundle, config, repetition) and sum each item's cost."""
+    """Group the call log's records by (bundle, config, repetition) and sum each item's cost.
+
+    Only lines from index `since_line` onward are read, so a previous or aborted run's calls for the
+    same bundles — and unit-test lines — are never double-counted into this run's cost."""
     import json
+
+    from thesis.eval.results import call_totals
 
     grouped: dict[tuple[str, str, int], list[dict[str, object]]] = defaultdict(list)
     if not log_path.exists():
         return {}
-    for line in log_path.read_text(encoding="utf-8").splitlines():
+    for line in log_path.read_text(encoding="utf-8").splitlines()[since_line:]:
         if not line.strip():
             continue
         rec = json.loads(line)
         if rec.get("config_hash") in config_hashes and rec.get("bundle_id") in bundle_ids:
             key = (str(rec["bundle_id"]), str(rec["config_hash"]), int(rec["repetition"]))
             grouped[key].append(rec)
-    from thesis.eval.results import call_totals
-
     return {key: call_totals(records) for key, records in grouped.items()}
 
 
