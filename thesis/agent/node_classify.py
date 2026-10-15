@@ -32,12 +32,18 @@ def classify(
     bundle_id: str,
     config_hash: str,
     repetition: int,
+    json_schema: dict[str, object] | None = None,
 ) -> Classification:
     """Run node 2 on node 1's findings and return the parsed `Classification`."""
     content = findings.model_dump_json()
     prompt = render(classification_template.TEMPLATE, content)
     completion = client.complete(
-        prompt, node=NODE, bundle_id=bundle_id, config_hash=config_hash, repetition=repetition
+        prompt,
+        node=NODE,
+        bundle_id=bundle_id,
+        config_hash=config_hash,
+        repetition=repetition,
+        json_schema=json_schema,
     )
     try:
         return Classification.model_validate_json(completion)
