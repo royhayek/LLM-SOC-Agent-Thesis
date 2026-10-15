@@ -68,9 +68,26 @@ def static_prefix(template: PromptTemplate) -> str:
     return _static_sections(template) + SECTION_SEP + bundle_header
 
 
-def render(template: PromptTemplate, reduced_view_json: str) -> str:
-    """The full prompt: the static prefix, then the reduced view, then the closing marker."""
-    return static_prefix(template) + reduced_view_json + "\n" + BUNDLE_CLOSE
+def render(template: PromptTemplate, reduced_view_json: str, context: str = "") -> str:
+    """The full prompt: static sections, optional trusted context, then the delimited bundle.
+
+    `context` is per-call **trusted** material — retrieved knowledge and device context (E6-03) —
+    placed after the static sections and before the untrusted bundle, so it is never inside the
+    bundle delimiters and the schema stays separated from the bundle. It is empty for nodes that
+    pass only the reduced view.
+    """
+    sections = _static_sections(template)
+    context_block = f"{SECTION_SEP}## Reference context (trusted)\n{context}" if context else ""
+    bundle_header = f"## {BUNDLE_TITLE}\n{BUNDLE_INSTRUCTION}\n{BUNDLE_OPEN}\n"
+    return (
+        sections
+        + context_block
+        + SECTION_SEP
+        + bundle_header
+        + reduced_view_json
+        + "\n"
+        + BUNDLE_CLOSE
+    )
 
 
 __all__ = [
