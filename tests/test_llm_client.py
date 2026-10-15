@@ -118,9 +118,9 @@ def test_output_over_the_ceiling_raises_and_logs(
     monkeypatch.setattr(
         client_module, "log_llm_call", lambda **kw: obslog.log_llm_call(**kw, path=log_path)
     )
-    long_completion = " ".join(["telemetry"] * 300)  # ~300 tokens, over the 250 ceiling
+    long_completion = " ".join(["telemetry"] * 1000)  # well over the 768-token output ceiling
     with _fake_server(
-        [(200, _completion_body(long_completion, completion_tokens=300))]
+        [(200, _completion_body(long_completion, completion_tokens=1000))]
     ) as base_url:
         client = _client(base_url)
         with pytest.raises(TokenCeilingError):

@@ -32,6 +32,7 @@ from thesis.baselines.baseline_a import baseline_a_verdict
 from thesis.baselines.baseline_b import baseline_b_verdict
 from thesis.config import ExperimentConfig, Provenance, Safety, Strategy, config_hash
 from thesis.eval.ledger import Ledger, LedgerKey
+from thesis.reduce.check_tokens import OUTPUT_CEILING
 from thesis.reduce.policy import reduce
 from thesis.schema.alert import Source
 
@@ -172,7 +173,7 @@ def _placeholder_provenance() -> Provenance:
         provider="dry-run",
         temperature=0.6,
         top_p=0.9,
-        max_tokens=250,
+        max_tokens=OUTPUT_CEILING,
         seed=None,
         prompt_template_version="prompts-v1.0",
         graph_version="graph-v1.0",

@@ -538,3 +538,28 @@ decode, and is reported as a finding; E9-08 measures the real raw-invalid and re
 are then locked. No frozen parameter changes (the rejection policy and `max_retries` are untouched);
 the §6.1 frozen text is not edited, this entry records the realization. Results invalidated: none;
 no agent output exists.
+
+### 19. 2026-10-15: output token ceiling raised to 768 (E9-08, SCRUM-107, ADR-0012)
+
+**What.** The per-call output token ceiling (`OUTPUT_CEILING`, Annex E §9) is raised from **250 to
+768 tokens**; `max_tokens` follows it (the client sets `max_tokens = OUTPUT_CEILING`). Decided by
+Roy El Hayek, 2026-10-15. The output *target* (200) and the input ceiling (2500) are unchanged.
+
+**Why.** Under the json_schema strict decoding originally coded, output was forced to the schema and
+the step-by-step reasoning the node prompts request (`REASONING`, record §6.3, the H2 treatment)
+never reached the output. Changelog 18 (ADR-0012) switched structured output to `json_object` on
+every provider; the model now obeys the reasoning instruction and emits reasoning text before the
+JSON object. The E9-08 exploratory run showed the classification node repeatedly generating to the
+250-token cap and truncating before the JSON closed, which raised the output-ceiling error and
+aborted the run. 250 was sized for JSON-only output (target 200) and cannot hold reasoning + JSON.
+768 fits a reasoning paragraph plus the largest node JSON (the evidence findings) with margin.
+`reduction_policy.md` §Annex E already flagged this risk ("node 1's output … may hit the 250-token
+ceiling … Any change goes through a changelog entry"). Billing is on actual tokens, so the higher
+ceiling removes the truncation without raising cost by itself.
+
+**Results invalidated.** None; no experiment results exist. The E9-08 exploratory run is re-run under
+the new ceiling (its numbers are discarded regardless); the full matrix (E9-09) runs under it from
+the start. Change scope: `thesis/reduce/check_tokens.py` (`OUTPUT_CEILING`) and the dry-run
+placeholder in `thesis/eval/run.py`; the client already reads `OUTPUT_CEILING`. No ADR change
+(ADR-0012 records the json_object decision; ADR-0001's "max_tokens 250" line is a point-in-time
+record superseded by this entry). The frozen Annex E §9 text is not edited.
