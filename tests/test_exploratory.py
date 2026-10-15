@@ -234,6 +234,30 @@ def test_write_report_has_cost_validity_and_human_sections(tmp_path: Path) -> No
     assert "- detection" in text and "- block_bootstrap" in text  # metrics that ran
 
 
+def test_reason_detail_joins_reason_and_ground_truth() -> None:
+    from dataclasses import dataclass
+
+    from thesis.eval.exploratory import reason_detail
+
+    conditions = load_conditions(_prov())
+    c1 = config_hash(conditions[0])
+
+    @dataclass
+    class _Res:
+        config_hash: str
+        bundle_id: str
+        payload: object
+        failure: str | None = None
+
+    results = [
+        _Res(c1, "b-benign", None, failure="node3_parse"),
+        _Res(c1, "b-attack", object()),
+    ]
+    detail = reason_detail(results, conditions, {"b-benign": "benign", "b-attack": "syn_flood"})
+    assert ("C1", "b-benign", "benign", "node3_parse") in detail
+    assert ("C1", "b-attack", "syn_flood", "ok") in detail
+
+
 def test_reason_breakdown_separates_parse_from_rejection() -> None:
     from dataclasses import dataclass
 
