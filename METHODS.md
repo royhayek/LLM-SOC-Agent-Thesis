@@ -591,3 +591,30 @@ still fail or are rejected as before — extraction only recovers output that wa
 re-run to measure the recovery, and the full matrix (E9-09) runs with extraction from the start.
 Change scope: `thesis/llm/parse.py` (new), and the parse call in `node_evidence`, `node_classify`,
 `node_recommend` and `baseline_b`. No ADR change; prompts and the safety contract are unchanged.
+
+### 21. 2026-10-15: evidence required only for active actions (E9-08, SCRUM-107)
+
+**What.** Node 3's `Recommendation` (`thesis/agent/models.py`) no longer requires `evidence_ids` to
+be non-empty for every action. An **active** action must still cite at least one evidence id; the
+non-response actions `no_action` and `monitor` (`ACTIONS_WITHOUT_EVIDENCE`) may cite none. The
+recommendation prompt (`RECOMMENDATION_SCHEMA`) is reworded to match, and the prompt template
+version is bumped to **`prompts-v1.1`**. Decided by Roy El Hayek, 2026-10-15.
+
+**Why.** The E9-08 exploratory run showed single sparse-source conditions failing mostly on **benign**
+bundles: a benign verdict correctly recommends `no_action`/`monitor` but has no attack evidence to
+cite, so under the old min-1 rule it emitted an empty list (parse failure) or invented one (validator
+rejection). With all sources C1 masked this (27/31 benign ok); flows-only C2 showed 4/31 and
+honeypot-only C4 0/31. The min-1 rule therefore inflated H1 by failing legitimate benign verdicts on
+sparse sources rather than measuring detection. (Honeypot-only on benign is additionally structural —
+§8, no benign traffic reaches the honeypot — and is unaffected by this change.)
+
+**What is preserved.** Active actions (block, isolate, rate-limit, reset, disable, escalate) still
+must cite evidence, so the "no un-grounded response" safety intent holds. The validator, rejection
+policy and action catalog are unchanged; the `Verdict`/Baseline-B path had no such constraint and is
+untouched.
+
+**Results invalidated.** None; no experiment results exist. Affected scoring is output validity and
+everything downstream of node 3, for the agentic conditions; the E9-08 exploratory run is re-run to
+measure the recovery, and the full matrix (E9-09) runs with this rule and `prompts-v1.1`. Change
+scope: `thesis/agent/models.py`, `thesis/prompts/templates/_shared.py`, `thesis/prompts/render.py`
+(version). No ADR change.

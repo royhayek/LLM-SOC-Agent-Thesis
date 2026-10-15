@@ -57,7 +57,9 @@ CLASSIFICATION_SCHEMA = (
 RECOMMENDATION_SCHEMA = (
     "Output one JSON object with exactly these keys and no others:"
     ' {"recommended_action": one action id from the catalog below, "evidence_ids": [string, ...]}.'
-    " The action must be one catalog id, exactly as written; include at least one evidence id."
+    " The action must be one catalog id, exactly as written. For any active action, cite at least"
+    " one evidence id (an alert id from the bundle). For `no_action` or `monitor`, leave"
+    " `evidence_ids` empty ([]) rather than invent one."
 )
 
 # Baseline B emits the full Verdict in one call — the same output schema as the agent (§6.6).
