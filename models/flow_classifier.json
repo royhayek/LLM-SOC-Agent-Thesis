@@ -1,0 +1,47 @@
+{
+  "best_params": {
+    "feature_fraction": 1.0,
+    "learning_rate": 0.1,
+    "min_child_samples": 20,
+    "num_boost_round": 200,
+    "num_leaves": 63
+  },
+  "classes": [
+    "benign",
+    "botnet",
+    "mqtt_brute_force",
+    "mqtt_publish_flood",
+    "port_scan",
+    "ssh_brute_force",
+    "syn_flood"
+  ],
+  "cv": {
+    "folds": 3,
+    "grouped_by": "episode",
+    "trials": 15
+  },
+  "cv_macro_f1": 0.8517,
+  "features": [
+    "duration_s",
+    "packets_fwd",
+    "packets_bwd",
+    "bytes_fwd",
+    "bytes_bwd",
+    "total_packets",
+    "total_bytes",
+    "bytes_per_packet",
+    "fwd_bwd_packet_ratio",
+    "syn_count_fwd",
+    "ack_count_fwd",
+    "syn_ratio_fwd",
+    "dst_port",
+    "is_tcp",
+    "is_udp",
+    "is_icmp"
+  ],
+  "imbalance": "inverse-frequency sample weights",
+  "library": "lightgbm",
+  "library_version": "4.7.0",
+  "n_training_flows": 565,
+  "seed": 20261015
+}
