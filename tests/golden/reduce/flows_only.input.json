@@ -1,0 +1,70 @@
+{
+  "bundle": {
+    "alerts": [
+      {
+        "alert_id": "f1",
+        "detail": {
+          "ack_count_fwd": 0,
+          "bytes_bwd": 0,
+          "bytes_fwd": 720,
+          "dst_ip": "192.0.2.10",
+          "dst_port": 80,
+          "duration_s": 1.5,
+          "flow_start": "2026-01-01T00:00:01Z",
+          "packets_bwd": 0,
+          "packets_fwd": 12,
+          "protocol": "tcp",
+          "src_ip": "10.77.0.22",
+          "src_port": 40001,
+          "syn_count_fwd": 12,
+          "tcp_flags": null
+        },
+        "detector_label": "syn_flood",
+        "detector_name": "flow_classifier",
+        "detector_score": 0.9,
+        "schema_version": "alert-v1",
+        "source": "flows",
+        "subject_device": "iot-cam-01",
+        "ts": "2026-01-01T00:00:01Z"
+      },
+      {
+        "alert_id": "f2",
+        "detail": {
+          "ack_count_fwd": 0,
+          "bytes_bwd": 0,
+          "bytes_fwd": 720,
+          "dst_ip": "192.0.2.10",
+          "dst_port": 22,
+          "duration_s": 1.5,
+          "flow_start": "2026-01-01T00:00:07Z",
+          "packets_bwd": 0,
+          "packets_fwd": 12,
+          "protocol": "tcp",
+          "src_ip": "10.77.0.22",
+          "src_port": 40007,
+          "syn_count_fwd": 12,
+          "tcp_flags": null
+        },
+        "detector_label": "syn_flood",
+        "detector_name": "flow_classifier",
+        "detector_score": 0.4,
+        "schema_version": "alert-v1",
+        "source": "flows",
+        "subject_device": "iot-cam-01",
+        "ts": "2026-01-01T00:00:07Z"
+      }
+    ],
+    "bundle_id": "iot-cam-01|2026-01-01T00:00:00+00:00",
+    "device": "iot-cam-01",
+    "episode_id": "ep-golden",
+    "label": "syn_flood",
+    "sources": [
+      "flows"
+    ],
+    "window_end": "2026-01-01T00:01:00Z",
+    "window_start": "2026-01-01T00:00:00Z"
+  },
+  "sources": [
+    "flows"
+  ]
+}
