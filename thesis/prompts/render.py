@@ -58,6 +58,20 @@ class PromptTemplate:
             )
 
 
+def _escape_markers(text: str) -> str:
+    """Neutralise any forged delimiter inside the untrusted bundle (record §3.3, §6.11).
+
+    Attacker-typed honeypot text could contain the literal close marker and try to end the section
+    early so the rest looks like instructions. The reduction's JSON-string escaping does not touch
+    it (the marker has no JSON-special characters), so a zero-width space is inserted into any
+    marker occurrence here: it no longer matches `BUNDLE_CLOSE`, so the section closes only at the
+    real delimiter, while the text stays readable.
+    """
+    for marker in (BUNDLE_OPEN, BUNDLE_CLOSE):
+        text = text.replace(marker, marker[:3] + "​" + marker[3:])
+    return text
+
+
 def _static_sections(template: PromptTemplate) -> str:
     return SECTION_SEP.join(f"## {title}\n{body}" for title, body in template.sections)
 
@@ -84,7 +98,7 @@ def render(template: PromptTemplate, reduced_view_json: str, context: str = "") 
         + context_block
         + SECTION_SEP
         + bundle_header
-        + reduced_view_json
+        + _escape_markers(reduced_view_json)
         + "\n"
         + BUNDLE_CLOSE
     )
