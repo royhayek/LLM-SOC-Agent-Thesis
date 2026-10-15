@@ -249,12 +249,19 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - the live r
         print(_runbook(), file=sys.stderr)
         return 2
 
+    # Set before any native ML library (torch/sentence-transformers, LightGBM) loads, to avoid a
+    # fork/parallelism crash and reduce OpenMP thread contention on a small machine. setdefault, so
+    # an explicit value in the environment still wins.
+    os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
+
     # Imported lazily: these pull in the model client and the full assembly pipeline, which the
     # runbook path (and the unit tests of the pure functions above) must not require.
     from thesis.assemble.build_frozen import build
     from thesis.eval.ledger import Ledger
     from thesis.eval.results import ResultRow, build_row
-    from thesis.eval.run import RunResult, load_conditions, run_matrix
+    from thesis.eval.run import CONCURRENCY, RunResult, load_conditions, run_matrix
+    from thesis.kb.retrieve import retrieve
     from thesis.llm.client import LLMClient
     from thesis.obs.logging import LOG_PATH
 
@@ -266,6 +273,12 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - the live r
     bundles_by_id = {b.bundle_id: b for b in slice_bundles}
     configs_by_hash = {config_hash(c): c for c in conditions}
 
+    # Load the embedding model once, now, in the main thread — so the native model init cannot race
+    # or crash inside a worker thread mid-run. EXPLORATORY_MAX_WORKERS=1 forces a serial run, which
+    # isolates any remaining native crash from thread concurrency.
+    retrieve("warmup")
+    max_workers = int(os.environ.get("EXPLORATORY_MAX_WORKERS", str(CONCURRENCY)))
+
     # The exploratory run is a fresh pass (its numbers are discarded), so start from an empty
     # ledger — a stale one from an earlier/aborted run would skip items. And snapshot the call log's
     # length now, so cost counts only THIS run's calls, never an earlier run's for the same bundles.
@@ -275,7 +288,15 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - the live r
 
     results: list[RunResult] = []
     ledger = Ledger(ledger_path)
-    run_matrix(slice_bundles, conditions, client=client, ledger=ledger, sink=results.append, k=1)
+    run_matrix(
+        slice_bundles,
+        conditions,
+        client=client,
+        ledger=ledger,
+        sink=results.append,
+        k=1,
+        max_workers=max_workers,
+    )
 
     totals = _call_totals_by_item(
         LOG_PATH, set(configs_by_hash), set(bundles_by_id), since_line=log_start
