@@ -12,6 +12,8 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
+from thesis.schema.verdict import IncidentType, Severity
+
 _Short = Annotated[str, StringConstraints(max_length=300)]
 _Para = Annotated[str, StringConstraints(max_length=800)]
 
@@ -39,4 +41,18 @@ class Findings(_Strict):
     missing_evidence: list[_Short] = Field(default_factory=list, max_length=5)
 
 
-__all__ = ["Findings", "SourceFinding"]
+class Classification(_Strict):
+    """Node 2's output (E6-04): the incident label, severity, affected device and confidence.
+
+    An intermediate model inside the agent, reusing the frozen `IncidentType` and `Severity` enums;
+    E7-01 composes the final `Verdict` from it, so the graph never depends on the verdict schema.
+    The classification node sees no action catalog (§4.4), keeping it separate from recommendation.
+    """
+
+    incident_type: IncidentType
+    severity: Severity
+    affected_device: str = Field(min_length=1)
+    confidence: float = Field(ge=0, le=1)
+
+
+__all__ = ["Classification", "Findings", "SourceFinding"]
