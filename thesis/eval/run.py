@@ -23,6 +23,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
+import structlog
 import yaml  # type: ignore[import-untyped]
 
 from thesis.agent.graph import run_graph
@@ -32,9 +33,17 @@ from thesis.baselines.baseline_a import baseline_a_verdict
 from thesis.baselines.baseline_b import baseline_b_verdict
 from thesis.config import ExperimentConfig, Provenance, Safety, Strategy, config_hash
 from thesis.eval.ledger import Ledger, LedgerKey
-from thesis.reduce.check_tokens import OUTPUT_CEILING
+from thesis.llm.client import LLMError
+from thesis.reduce.check_tokens import OUTPUT_CEILING, TokenCeilingError
 from thesis.reduce.policy import reduce
 from thesis.schema.alert import Source
+
+_log = structlog.get_logger("thesis.eval.run")
+
+# A per-item failure the runner absorbs: a call that failed after the client's own retries, or an
+# output over the ceiling. The item is recorded as an unusable verdict (scored wrong, like any
+# withheld or unparsed output, §3.1), never allowed to abort the whole matrix.
+_ITEM_FAILURE = (LLMError, TokenCeilingError)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONDITIONS_PATH = REPO_ROOT / "config" / "conditions.yaml"
@@ -125,6 +134,18 @@ def run_one(
     return RunResult(bundle.bundle_id, ch, repetition, config.strategy.value, payload)
 
 
+def _failed_result(item: RunItem) -> RunResult:
+    """A result for an item whose run failed at the client (after retries) or exceeded the output
+    ceiling. `payload=None` makes it an unusable verdict downstream: scored wrong, never dropped."""
+    return RunResult(
+        item.bundle.bundle_id,
+        config_hash(item.config),
+        item.repetition,
+        item.config.strategy.value,
+        None,
+    )
+
+
 def _items(bundles: list[Bundle], conditions: list[ExperimentConfig], k: int) -> Iterator[RunItem]:
     for bundle in bundles:
         for config in conditions:
@@ -156,10 +177,23 @@ def run_matrix(
             for it in todo
         }
         # Mark each item only once its result is safely handed to the sink, so an interruption
-        # leaves finished items recorded and everything else simply un-run (re-run on resume).
+        # leaves finished items recorded and everything else simply un-run (re-run on resume). A
+        # per-item call failure or over-ceiling output becomes an unusable result for that item
+        # (§3.1), so one bad bundle cannot abort the whole run; other errors still propagate.
         for future in as_completed(futures):
             it = futures[future]
-            sink(future.result())  # raises here if run_one_fn raised; pending items are cancelled
+            try:
+                result = future.result()
+            except _ITEM_FAILURE as error:
+                _log.warning(
+                    "item_failed",
+                    bundle_id=it.bundle.bundle_id,
+                    config_hash=config_hash(it.config),
+                    repetition=it.repetition,
+                    error=str(error),
+                )
+                result = _failed_result(it)
+            sink(result)
             ledger.mark(it.key())
     finally:
         executor.shutdown(wait=False, cancel_futures=True)

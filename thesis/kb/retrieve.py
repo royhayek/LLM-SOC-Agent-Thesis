@@ -17,6 +17,7 @@ retrieval can be traced (ticket gotcha).
 from __future__ import annotations
 
 import json
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
@@ -50,14 +51,21 @@ class RetrievedDoc:
 
 _index: tuple[np.ndarray, list[str]] | None = None
 _model: object = None
+# The runner drives retrieval from several worker threads (eval runner, 8 concurrent). Without a
+# lock they all see the lazy globals as None at once and each loads the index and the embedding
+# model in parallel — wasteful, and a memory spike that can exhaust a 16 GB machine. Double-checked
+# locking keeps the hot path lock-free once loaded; it changes no retrieval output.
+_init_lock = threading.Lock()
 
 
 def _load_index() -> tuple[np.ndarray, list[str]]:
     global _index
     if _index is None:
-        embeddings = np.load(EMBEDDINGS_PATH).astype(np.float32)
-        doc_ids = json.loads(DOC_IDS_PATH.read_text(encoding="utf-8"))
-        _index = (embeddings, doc_ids)
+        with _init_lock:
+            if _index is None:
+                embeddings = np.load(EMBEDDINGS_PATH).astype(np.float32)
+                doc_ids = json.loads(DOC_IDS_PATH.read_text(encoding="utf-8"))
+                _index = (embeddings, doc_ids)
     return _index
 
 
@@ -73,9 +81,11 @@ def rank(
 def _embed_query(query: str) -> np.ndarray:
     global _model
     if _model is None:
-        from sentence_transformers import SentenceTransformer
+        with _init_lock:
+            if _model is None:
+                from sentence_transformers import SentenceTransformer
 
-        _model = SentenceTransformer(MODEL_NAME, revision=MODEL_REVISION, device="cpu")
+                _model = SentenceTransformer(MODEL_NAME, revision=MODEL_REVISION, device="cpu")
     vec = _model.encode(  # type: ignore[attr-defined]
         [query], convert_to_numpy=True, normalize_embeddings=True, show_progress_bar=False
     )
