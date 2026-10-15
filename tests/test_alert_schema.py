@@ -17,8 +17,8 @@ from thesis.schema.devices import (
 )
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "alerts"
-BROKER_IP = "172.20.0.2"
-IOT_IP = "172.20.0.21"
+BROKER_IP = "10.77.0.2"
+IOT_IP = "10.77.0.21"
 
 
 def fixture_text(source: Source) -> str:
@@ -71,11 +71,11 @@ def test_honeypot_event_maps_to_honeypot(src_ip: str) -> None:
 
 
 def test_attacker_flow_to_honeypot_maps_to_honeypot() -> None:
-    assert subject_device(Source.FLOWS, "203.0.113.45", "172.20.0.10") == HONEYPOT_ID
+    assert subject_device(Source.FLOWS, "203.0.113.45", "10.77.0.10") == HONEYPOT_ID
 
 
 def test_infrastructure_only_flow_has_no_subject() -> None:
-    assert subject_device(Source.FLOWS, "172.20.0.1", BROKER_IP) is None
+    assert subject_device(Source.FLOWS, "10.77.0.1", BROKER_IP) is None
 
 
 def test_external_to_infrastructure_flow_has_no_subject() -> None:
@@ -85,11 +85,11 @@ def test_external_to_infrastructure_flow_has_no_subject() -> None:
 
 def test_device_to_device_flow_has_no_subject() -> None:
     # Case 5 (E3-10): device-to-device traffic forms no bundle (no longer raises).
-    assert subject_device(Source.FLOWS, IOT_IP, "172.20.0.22") is None
+    assert subject_device(Source.FLOWS, IOT_IP, "10.77.0.22") is None
 
 
 def test_infrastructure_list() -> None:
-    assert {"gateway", "mqtt-broker", "capture-sidecar"} <= set(INFRASTRUCTURE.values())
+    assert {"gateway", "mqtt-broker"} <= set(INFRASTRUCTURE.values())
     assert set(INFRASTRUCTURE).isdisjoint(DEVICES)
     assert HONEYPOT_ID in DEVICES.values()
 

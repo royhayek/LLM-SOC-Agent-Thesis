@@ -1,0 +1,37 @@
+# Device inventory (E5-01, SCRUM-26). Every testbed subject device with its ID, role, criticality
+# and network position. Node 1 retrieves this as device context (record §6.3); criticality is what
+# makes an action contextually unsafe (§3.1). Criticality scale: low | medium | high, frozen before
+# any agent output (METHODS.md changelog). IPs match the testbed (docker-compose.yml, 10.77.0.0/24).
+devices:
+  - id: hp-ssh-01
+    role: honeypot
+    criticality: low
+    ip: 10.77.0.10
+    position: honeypot-segment
+  - id: iot-temp-01
+    role: temperature-sensor
+    criticality: medium
+    ip: 10.77.0.21
+    position: iot-lan
+  - id: iot-cam-01
+    role: ip-camera
+    criticality: high
+    ip: 10.77.0.22
+    position: iot-lan
+  - id: iot-hum-01
+    role: humidity-sensor
+    criticality: low
+    ip: 10.77.0.23
+    position: iot-lan
+  - id: iot-plug-01
+    role: smart-plug
+    criticality: medium
+    ip: 10.77.0.24
+    position: iot-lan
+# Infrastructure hosts are never an incident subject (§4.1). The attacker (10.77.0.30) is an
+# external host, neither a subject device nor infrastructure.
+infrastructure:
+  - id: gateway
+    ip: 10.77.0.1
+  - id: mqtt-broker
+    ip: 10.77.0.2
