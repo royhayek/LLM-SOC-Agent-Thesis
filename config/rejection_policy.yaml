@@ -1,0 +1,9 @@
+# Rejection policy parameters (E0-11, frozen at git tag `rejection-policy-v1.0`;
+# docs/methods/rejection_policy.md). Machine-readable mirror of the frozen decision, read by
+# thesis/safety/rejection.py so the policy is never a constant in code. Changing any value here is
+# a locked-parameter change: it needs a METHODS.md changelog entry and re-runs the affected
+# conditions (DoD change control).
+
+policy: hard_fail        # on rejection, nothing is emitted: E = ∅ (no substitute verdict)
+max_retries: 0           # the recommendation call is never repeated after a rejection
+scored_attempt: single   # one attempt per bundle+repetition; first == final == R (§4)
