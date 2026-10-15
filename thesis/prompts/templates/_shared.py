@@ -60,7 +60,12 @@ RECOMMENDATION_SCHEMA = (
     " The action must be one catalog id, exactly as written; include at least one evidence id."
 )
 
+# Baseline B emits the full Verdict in one call — the same output schema as the agent (§6.6).
 BASELINE_B_SCHEMA = (
-    'Output one JSON object: {"incident_type": one of [' + LABELS + '], "action": one action'
-    ' id from the catalog below, "severity": one of [low, medium, high], "reasoning": string}.'
+    "Output one JSON object with exactly these keys and no others:"
+    ' {"classification": {"incident_type": one of [' + LABELS + '], "confidence": number in'
+    ' [0, 1]}, "recommendation": {"recommended_action": one action id from the catalog below,'
+    ' "severity": one of [low, medium, high, critical]}, "affected_device": string, "evidence":'
+    " [alert ids copied from the bundle, at least one]}. Choose `benign` if the evidence supports"
+    " no attack family."
 )
