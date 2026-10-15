@@ -1,0 +1,2 @@
+# prices ADR-0001: DeepInfra checked 2026-10-04 (USD 0.02/1M input, USD 0.04/1M output); euros at ECB 2026-10-02, 1 EUR = 1.1225 USD
+config_hash,n,mean_tokens_in,median_tokens_in,mean_tokens_out,median_tokens_out,mean_eur,median_eur,mean_seconds,median_seconds
