@@ -458,3 +458,13 @@ criticality and network position; `thesis/schema/devices.py` loads it (real test
 (EPIC-6 onward), so it cannot bias contextual-safety scoring; iot-cam-01 is `high`, the sensors and
 honeypot `low`, the actuator/temperature device `medium`. This is device context (§6.3), not raw
 corpus telemetry, so it re-derives nothing (C-13). Results invalidated: none.
+
+### 14. 2026-10-15: Baseline A frozen (E4-03, SCRUM-37)
+
+The flow classifier that doubles as Baseline A (record §5) is frozen **before any agent output
+exists**, so it cannot be retuned after seeing the agent. Model `models/flow_classifier.txt`
+(LightGBM, E4-02), SHA-256 `1aa54a1636fc4c33874a958a44b42febb8cb05146a24523ed2b72341cb8a235d`
+(`models/flow_classifier.json`), git tag `baseline-a-v1.0`. Evaluated once on held-out training
+episodes (never the evaluation split): macro-F1 0.865, per-class metrics in
+`docs/detectors/flow_eval.md`. Any later change to Baseline A needs a changelog entry and a full
+rerun. Results invalidated: none; no agent or baseline output exists on evaluation bundles.
