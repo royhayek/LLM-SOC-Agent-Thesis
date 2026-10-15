@@ -39,7 +39,7 @@ REPORT_PATH = REPO_ROOT / "docs" / "reduction" / "token_report.md"
 INPUT_TARGET = 2000
 INPUT_CEILING = 2500
 OUTPUT_TARGET = 200
-OUTPUT_CEILING = 250
+OUTPUT_CEILING = 768  # raised from 250 for the visible reasoning under json_object (changelog 19)
 
 _TOKENIZER: Tokenizer | None = None
 
