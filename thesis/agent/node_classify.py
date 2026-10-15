@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from thesis.agent.models import Classification, Findings
 from thesis.agent.node_evidence import Completer
+from thesis.llm.parse import json_payload
 from thesis.prompts.render import render
 from thesis.prompts.templates import classification as classification_template
 
@@ -46,7 +47,7 @@ def classify(
         json_schema=json_schema,
     )
     try:
-        return Classification.model_validate_json(completion)
+        return Classification.model_validate_json(json_payload(completion))
     except ValidationError as error:
         raise ClassifyParseError(
             f"node 2 output did not parse into Classification: {error}"

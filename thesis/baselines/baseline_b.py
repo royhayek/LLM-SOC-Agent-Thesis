@@ -18,6 +18,7 @@ import json
 from pydantic import ValidationError
 
 from thesis.agent.node_evidence import Completer
+from thesis.llm.parse import json_payload
 from thesis.prompts.render import render
 from thesis.prompts.templates import baseline_b as baseline_b_template
 from thesis.schema.verdict import Verdict
@@ -40,7 +41,7 @@ def baseline_b_verdict(
         prompt, node=NODE, bundle_id=bundle_id, config_hash=config_hash, repetition=repetition
     )
     try:
-        return Verdict.model_validate_json(completion)
+        return Verdict.model_validate_json(json_payload(completion))
     except ValidationError:
         return None
 

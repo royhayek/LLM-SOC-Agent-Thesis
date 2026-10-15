@@ -563,3 +563,31 @@ the start. Change scope: `thesis/reduce/check_tokens.py` (`OUTPUT_CEILING`) and 
 placeholder in `thesis/eval/run.py`; the client already reads `OUTPUT_CEILING`. No ADR change
 (ADR-0012 records the json_object decision; ADR-0001's "max_tokens 250" line is a point-in-time
 record superseded by this entry). The frozen Annex E §9 text is not edited.
+
+### 20. 2026-10-15: node outputs parsed by JSON extraction (E9-08, SCRUM-107, ADR-0012)
+
+**What.** Each node's output is parsed by first **extracting the JSON object** from the completion
+(`thesis/llm/parse.py`, `json_payload`) and then validating that, instead of requiring the whole
+completion to be valid JSON. Applied to all three agent nodes and Baseline B. Decided by Roy El
+Hayek, 2026-10-15.
+
+**Why.** The node prompts ask the model to reason step by step and then output one JSON object
+(`REASONING`, record §6.3, the H2 treatment). Under `json_object` (changelog 18) the model often
+wraps that object in prose or a markdown code fence (`## Reasoning … ```json {…} ```), so a strict
+`model_validate_json` on the whole completion failed even though the JSON object was present and
+complete. The E9-08 exploratory run showed this was the dominant failure across conditions
+(`node3_parse`/`no_verdict`), e.g. C5 `logging_only` ~97 % and Baseline B ~94 % unusable, almost all
+from markdown-wrapped output rather than wrong content.
+
+**What this is, and is not.** It reads the model's answer out of its response — it locates the last
+top-level JSON object (the prompts put the answer last). It is **not** repair: it never edits a
+field, invents evidence or changes an action; a malformed, truncated or absent object still fails
+validation, and the validator, rejection policy and action catalog are untouched. Schema-constraint
+violations (too many `source_findings`, empty `evidence_ids`, invented evidence) are valid JSON and
+still fail or are rejected as before — extraction only recovers output that was structurally JSON.
+
+**Results invalidated.** None; no experiment results exist. The affected scoring is output validity
+(`SV`) and everything downstream of parsing, for every condition; the E9-08 exploratory run is
+re-run to measure the recovery, and the full matrix (E9-09) runs with extraction from the start.
+Change scope: `thesis/llm/parse.py` (new), and the parse call in `node_evidence`, `node_classify`,
+`node_recommend` and `baseline_b`. No ADR change; prompts and the safety contract are unchanged.

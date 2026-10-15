@@ -22,6 +22,7 @@ from pydantic import ValidationError
 
 from thesis.agent.models import Findings, SourceFinding
 from thesis.kb.retrieve import RetrievedDoc, device_context, retrieve
+from thesis.llm.parse import json_payload
 from thesis.prompts.render import render
 from thesis.prompts.templates import evidence
 
@@ -100,7 +101,7 @@ def analyze_evidence(
         json_schema=json_schema,
     )
     try:
-        findings = Findings.model_validate_json(completion)
+        findings = Findings.model_validate_json(json_payload(completion))
     except ValidationError as error:
         raise EvidenceParseError(f"node 1 output did not parse into Findings: {error}") from error
     return _clean_evidence(findings, valid_alert_ids)
