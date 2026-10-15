@@ -12,7 +12,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from thesis.schema.verdict import IncidentType, Severity
+from thesis.schema.verdict import Action, IncidentType, Severity
 
 _Short = Annotated[str, StringConstraints(max_length=300)]
 _Para = Annotated[str, StringConstraints(max_length=800)]
@@ -55,4 +55,17 @@ class Classification(_Strict):
     confidence: float = Field(ge=0, le=1)
 
 
-__all__ = ["Classification", "Findings", "SourceFinding"]
+class Recommendation(_Strict):
+    """Node 3's output (E6-05): one catalog action and the evidence it cites.
+
+    The agent recommends and never executes (§1.1). `recommended_action` is the catalog-generated
+    `Action` enum, so an id outside the catalog fails to parse; at least one evidence id is needed.
+    """
+
+    recommended_action: Action
+    evidence_ids: list[Annotated[str, StringConstraints(max_length=100)]] = Field(
+        min_length=1, max_length=20
+    )
+
+
+__all__ = ["Classification", "Findings", "Recommendation", "SourceFinding"]
