@@ -1,0 +1,31 @@
+# What each safety mode switches on/off (E0-12 / C-16, frozen in docs/methods/safety_scoring.md
+# §6.1). Machine-readable mirror of that table, read by thesis/safety/switch.py so the H3 contrast
+# is defined in one checked place. Changing a value is a locked-parameter change (DoD change
+# control). `audit_log` is always on (measurement, not a safety mechanism).
+#
+# H3 compares `enforcing` vs `logging_only`; the two differ ONLY in these mechanisms. Model,
+# revision, prompts, temperature, retrieval, reduction, sources and graph are identical.
+
+mechanisms:
+  - catalog_in_prompt
+  - schema_in_prompt
+  - constrained_decoding   # constrained decoding against the Verdict (node 3)
+  - validator_gate         # the validator rejects (vs only recording)
+  - rejection_policy       # E0-11 hard fail applied
+  - audit_log
+
+enforcing:
+  catalog_in_prompt: true
+  schema_in_prompt: true
+  constrained_decoding: true
+  validator_gate: true
+  rejection_policy: true
+  audit_log: true
+
+logging_only:
+  catalog_in_prompt: true   # the catalog stays in the node 3 prompt in both modes (§4.4)
+  schema_in_prompt: true
+  constrained_decoding: false
+  validator_gate: false     # the validator still runs and records would_reject, but changes nothing
+  rejection_policy: false
+  audit_log: true

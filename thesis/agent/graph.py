@@ -9,11 +9,18 @@ the bundle is reduced to the configured sources, so an unconfigured source leave
 prompt. Only each node's **parsed** fields are passed forward — never a raw completion — so no
 conversation accumulates by the back door (the gotcha).
 
-Validation and the audit log are EPIC-7; this returns a trace of the three node outputs.
+The safety layer (E7-06) wraps the graph: `ExperimentConfig.safety` picks a `SafetyMode`
+(config/safety_modes.yaml, the E0-12 / §6.1 list). Under `enforcing` the Verdict is generated with
+constrained decoding, the validator gates it and the rejection policy applies; under `logging_only`
+the Verdict is free-form, the validator only records `would_reject`, and it is emitted unchanged.
+The two reasoning nodes (evidence, classify) always use structured output — they are the agent's
+internal steps, not the scored Verdict whose constrained decoding §6.1 switches. The audit log is
+written in both modes.
 """
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 
 from thesis.agent.models import Classification, Findings, Recommendation
@@ -23,10 +30,13 @@ from thesis.agent.node_recommend import recommend
 from thesis.assemble.bundles import Bundle
 from thesis.config import ExperimentConfig, config_hash
 from thesis.reduce.policy import reduce
+from thesis.safety.audit import AuditRecord
+from thesis.safety.stage import apply_safety
+from thesis.safety.switch import SafetyMode
+from thesis.schema.verdict import Verdict
 
-# Node output schemas for constrained decoding (structured outputs). Passing these forces the model
-# to emit compact, schema-valid JSON. The safety-mode switch that turns this on for `enforcing` is
-# E7-06; `run_graph(constrain=...)` is the plumbing it binds to.
+# Node output schemas for constrained decoding (structured outputs): the model must emit compact,
+# schema-valid JSON. The reasoning nodes always use them; node 3 (the Verdict) only under enforcing.
 _EVIDENCE_SCHEMA = Findings.model_json_schema()
 _CLASSIFY_SCHEMA = Classification.model_json_schema()
 _RECOMMEND_SCHEMA = Recommendation.model_json_schema()
@@ -36,7 +46,7 @@ EXPECTED_CALLS = 3
 
 @dataclass(frozen=True)
 class GraphTrace:
-    """The end-to-end trace of one agentic run over one bundle (the three node outputs)."""
+    """The end-to-end trace of one agentic run: the three node outputs and the safety outcome."""
 
     bundle_id: str
     config_hash: str
@@ -45,6 +55,10 @@ class GraphTrace:
     findings: Findings
     classification: Classification
     recommendation: Recommendation
+    safety_mode: str
+    emitted: Verdict | str | None  # E: the emitted verdict, raw (logging_only), or None (hard fail)
+    validator_outcome: str
+    audit: AuditRecord
 
 
 class _CountingClient:
@@ -75,26 +89,38 @@ class _CountingClient:
         )
 
 
-def run_graph(
-    bundle: Bundle,
-    config: ExperimentConfig,
-    *,
-    client: Completer,
-    repetition: int,
-    constrain: bool = False,
-) -> GraphTrace:
-    """Run the fixed evidence → classify → recommend graph on one bundle, per `config`.
+def _verdict_completion(classification: Classification, recommendation: Recommendation) -> str:
+    """Assemble the node-3 Verdict from the parsed classification and recommendation, as JSON."""
+    return json.dumps(
+        {
+            "classification": {
+                "incident_type": classification.incident_type.value,
+                "confidence": classification.confidence,
+            },
+            "recommendation": {
+                "recommended_action": recommendation.recommended_action.value,
+                "severity": classification.severity.value,
+            },
+            "affected_device": classification.affected_device,
+            "evidence": recommendation.evidence_ids,
+        }
+    )
 
-    `constrain` turns on structured outputs (constrained decoding) for every node; E7-06 binds it
-    to `safety == enforcing`.
-    """
+
+def run_graph(
+    bundle: Bundle, config: ExperimentConfig, *, client: Completer, repetition: int
+) -> GraphTrace:
+    """Run the fixed evidence → classify → recommend graph on one bundle, per `config`."""
     ch = config_hash(config)
+    mode = SafetyMode.load(config.safety)
     view = reduce(bundle, sources=config.sources)
     valid_ids = {a.alert_id for a in bundle.alerts if a.source in config.sources}
 
     counter = _CountingClient(client)
     bid = bundle.bundle_id
 
+    # The two reasoning nodes always use structured output; node 3's constrained decoding follows
+    # the safety mode (the Verdict-level mechanism §6.1 switches).
     findings = analyze_evidence(
         view,
         client=counter,
@@ -102,7 +128,7 @@ def run_graph(
         config_hash=ch,
         repetition=repetition,
         valid_alert_ids=valid_ids,
-        json_schema=_EVIDENCE_SCHEMA if constrain else None,
+        json_schema=_EVIDENCE_SCHEMA,
     )
     classification = classify(
         findings,
@@ -110,7 +136,7 @@ def run_graph(
         bundle_id=bid,
         config_hash=ch,
         repetition=repetition,
-        json_schema=_CLASSIFY_SCHEMA if constrain else None,
+        json_schema=_CLASSIFY_SCHEMA,
     )
     evidence_ids = sorted({e for f in findings.source_findings for e in f.evidence_ids})
     recommendation = recommend(
@@ -120,20 +146,29 @@ def run_graph(
         bundle_id=bid,
         config_hash=ch,
         repetition=repetition,
-        json_schema=_RECOMMEND_SCHEMA if constrain else None,
+        json_schema=_RECOMMEND_SCHEMA if mode.constrained_decoding else None,
     )
 
     if counter.nodes != ["evidence", "classification", "recommendation"]:
         raise AssertionError(f"graph made calls {counter.nodes}, expected the three fixed nodes")
 
+    completion = _verdict_completion(classification, recommendation)
+    safety = apply_safety(
+        completion, bundle, mode=mode, bundle_id=bid, config_hash=ch, repetition=repetition
+    )
+
     return GraphTrace(
-        bundle_id=bundle.bundle_id,
+        bundle_id=bid,
         config_hash=ch,
         repetition=repetition,
         sources=tuple(sorted(s.value for s in config.sources)),
         findings=findings,
         classification=classification,
         recommendation=recommendation,
+        safety_mode=mode.name,
+        emitted=safety.emitted,
+        validator_outcome=safety.validator_outcome,
+        audit=safety.audit,
     )
 
 

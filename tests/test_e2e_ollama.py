@@ -53,7 +53,7 @@ def _config() -> ExperimentConfig:
     return ExperimentConfig(
         sources=frozenset({Source.FLOWS, Source.MQTT}),
         strategy=Strategy.AGENTIC,
-        safety=Safety.LOGGING_ONLY,
+        safety=Safety.ENFORCING,  # so node 3 uses constrained decoding and the 8B emits valid JSON
         provenance=prov,
     )
 
@@ -70,8 +70,8 @@ def test_graph_runs_end_to_end_against_ollama() -> None:
 
     bundle = Bundle.model_validate_json(FIXTURE.read_text(encoding="utf-8"))
     client = LLMClient.from_env(model_revision="ollama-dev")
-    # Constrained decoding, so a small dev model emits compact schema-valid JSON within the ceiling.
-    trace = run_graph(bundle, _config(), client=client, repetition=0, constrain=True)
+    # safety=enforcing -> constrained decoding, so the small dev model emits schema-valid JSON.
+    trace = run_graph(bundle, _config(), client=client, repetition=0)
 
     # Shape only: three nodes ran in order and a recommendation parsed, whatever its content.
     assert trace.recommendation.recommended_action.value  # a catalog action id
