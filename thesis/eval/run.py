@@ -27,7 +27,9 @@ import structlog
 import yaml  # type: ignore[import-untyped]
 
 from thesis.agent.graph import run_graph
-from thesis.agent.node_evidence import Completer
+from thesis.agent.node_classify import ClassifyParseError
+from thesis.agent.node_evidence import Completer, EvidenceParseError
+from thesis.agent.node_recommend import RecommendParseError
 from thesis.assemble.bundles import Bundle
 from thesis.baselines.baseline_a import baseline_a_verdict
 from thesis.baselines.baseline_b import baseline_b_verdict
@@ -40,10 +42,18 @@ from thesis.schema.alert import Source
 
 _log = structlog.get_logger("thesis.eval.run")
 
-# A per-item failure the runner absorbs: a call that failed after the client's own retries, or an
-# output over the ceiling. The item is recorded as an unusable verdict (scored wrong, like any
-# withheld or unparsed output, §3.1), never allowed to abort the whole matrix.
-_ITEM_FAILURE = (LLMError, TokenCeilingError)
+# A per-item failure the runner absorbs: a call that failed after the client's own retries, an
+# output over the ceiling, or a node output that did not conform to its schema (common under
+# json_object, where decoding no longer enforces structure — ADR-0012). The item is recorded as an
+# unusable verdict (scored wrong, like any withheld or unparsed output, §3.1), never repaired and
+# never allowed to abort the whole matrix. Other exceptions still propagate as real bugs.
+_ITEM_FAILURE = (
+    LLMError,
+    TokenCeilingError,
+    EvidenceParseError,
+    ClassifyParseError,
+    RecommendParseError,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONDITIONS_PATH = REPO_ROOT / "config" / "conditions.yaml"
