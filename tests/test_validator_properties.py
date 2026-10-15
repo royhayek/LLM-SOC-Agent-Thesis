@@ -95,8 +95,9 @@ def test_no_out_of_catalog_action_ever_passes(action: str) -> None:
     extra=st.text(min_size=1, max_size=8),
 )
 def test_unknown_evidence_never_passes(bundle_ids: list[str], extra: str) -> None:
-    # `extra` is an evidence id guaranteed not to be in the bundle.
-    present = [b for b in bundle_ids if b != extra] or ["f1"]
+    # `extra` is an evidence id guaranteed not to be in the bundle (the present ids exclude it; the
+    # bundle contains only those, possibly none), so citing it must be rejected.
+    present = [b for b in bundle_ids if b != extra]
     result = validate(_verdict(ACTION_IDS[0], [*present, extra]), _bundle(present))
     assert isinstance(result, Rejection)
     assert result.reason is RejectionReason.UNKNOWN_EVIDENCE
