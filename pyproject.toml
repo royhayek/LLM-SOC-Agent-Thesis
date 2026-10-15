@@ -18,6 +18,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6,<7",
     "mypy>=1.18",
     "pre-commit>=4.3",
     "pytest>=8.4",

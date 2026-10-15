@@ -18,7 +18,7 @@ Every later code ticket assumes linting, type checking, tests and a place to rec
 | Package | `thesis`, until a system name is chosen (record §4, §11.4) |
 | Lint and format | ruff |
 | Type checking | mypy, strict, scoped to `thesis/`. `spikes/` is excluded |
-| Tests | pytest. Tests marked `slow` are excluded from CI (record §6.9) |
+| Tests | pytest. Tests marked `slow` are excluded from CI (record §6.9). Property tests use Hypothesis (dev dependency; added by E7-03 under this ADR, record §6.9) |
 | Hooks | pre-commit. ruff and mypy run from the locked project environment. No hook touches `spikes/` |
 | CI | GitHub Actions: install from the lock file, run pre-commit on all files, run `pytest -m "not slow"` |
 | Secrets | `.env` is gitignored and never logged (record §6.11). CI fails if `.env` is tracked. `.env.example` holds placeholders only |
