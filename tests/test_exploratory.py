@@ -145,6 +145,51 @@ def test_run_all_metrics_raises_naming_the_failing_metric() -> None:
         run_all_metrics(rows, conditions)
 
 
+def test_call_totals_ignores_earlier_runs_and_other_bundles(tmp_path: Path) -> None:
+    import json
+
+    from thesis.eval.exploratory import _call_totals_by_item
+
+    log = tmp_path / "calls.jsonl"
+    stale = {
+        "bundle_id": "b1",
+        "config_hash": "cfg",
+        "repetition": 0,
+        "tokens_in": 999,
+        "tokens_out": 999,
+        "latency_ms": 9.0,
+    }  # an earlier run's call
+    fresh = {
+        "bundle_id": "b1",
+        "config_hash": "cfg",
+        "repetition": 0,
+        "tokens_in": 10,
+        "tokens_out": 5,
+        "latency_ms": 1.0,
+    }  # this run
+    other = {
+        "bundle_id": "zz",
+        "config_hash": "cfg",
+        "repetition": 0,
+        "tokens_in": 1,
+        "tokens_out": 1,
+        "latency_ms": 1.0,
+    }  # not in the slice
+    log.write_text("\n".join(json.dumps(r) for r in (stale, fresh, other)) + "\n", encoding="utf-8")
+
+    totals = _call_totals_by_item(log, {"cfg"}, {"b1"}, since_line=1)  # skip the stale first line
+    assert totals == {("b1", "cfg", 0): (10, 5, 1.0)}  # only the fresh b1 call, not stale or other
+
+
+def test_line_count(tmp_path: Path) -> None:
+    from thesis.eval.exploratory import _line_count
+
+    log = tmp_path / "calls.jsonl"
+    assert _line_count(log) == 0  # missing file
+    log.write_text("a\nb\nc\n", encoding="utf-8")
+    assert _line_count(log) == 3
+
+
 def test_write_report_has_cost_projection_and_human_sections(tmp_path: Path) -> None:
     rows = [_cost_row("b1", 1_000_000, 0), _cost_row("b2", 1_000_000, 0)]
     cost = project_cost(rows, n_eval=20)
