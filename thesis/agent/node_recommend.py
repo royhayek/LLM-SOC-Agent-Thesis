@@ -19,6 +19,7 @@ from pydantic import ValidationError
 
 from thesis.agent.models import Classification, Recommendation
 from thesis.agent.node_evidence import Completer
+from thesis.llm.parse import json_payload
 from thesis.prompts.render import render
 from thesis.prompts.templates import recommendation as recommendation_template
 
@@ -59,7 +60,7 @@ def recommend(
         json_schema=json_schema,
     )
     try:
-        rec = Recommendation.model_validate_json(completion)
+        rec = Recommendation.model_validate_json(json_payload(completion))
     except ValidationError as error:
         raise RecommendParseError(
             f"node 3 output did not parse into Recommendation: {error}"
