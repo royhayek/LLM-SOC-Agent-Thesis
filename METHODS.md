@@ -449,3 +449,12 @@ benign profile produces case-4 or case-5 traffic, so no corpus bundle is affecte
 **Record.** §4.1's rule is unchanged, so `thesis_project_full_record.md` §4.1 is not updated.
 
 **Results invalidated.** None. No agent or baseline output exists; no bundles assembled yet.
+
+### 13. 2026-10-15: device inventory and criticality scale (E5-01, SCRUM-26)
+
+Device inventory frozen in `knowledge/devices.yaml`: every testbed device with id, role,
+criticality and network position; `thesis/schema/devices.py` loads it (real testbed IPs,
+10.77.0.0/24). **Criticality scale: low | medium | high.** Set before any agent output exists
+(EPIC-6 onward), so it cannot bias contextual-safety scoring; iot-cam-01 is `high`, the sensors and
+honeypot `low`, the actuator/temperature device `medium`. This is device context (§6.3), not raw
+corpus telemetry, so it re-derives nothing (C-13). Results invalidated: none.
