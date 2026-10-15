@@ -475,3 +475,40 @@ rerun. Results invalidated: none; no agent or baseline output exists on evaluati
 `thesis/detect/annotate.py` runs the three detectors over the normalized alerts and writes annotated
 alerts to `data/alerts_annotated/<source>/<run_id>.parquet`, with a completeness check. A transform
 over the raw corpus (C-13): re-derives, does not regenerate. Results invalidated: none.
+
+### 16. 2026-10-15: frozen bundle set for corpus v1.0.0 (E3-09, SCRUM-105)
+
+**What.** `python -m thesis.assemble.build_frozen` runs the frozen pipeline (normalization →
+detectors → assembly) on corpus v1.0.0 and writes the reduced bundle set to
+`data/bundles/v1.0.0/{eval,train}.parquet` (git-ignored like the raw corpus). The sets are the
+single representation every condition receives (record §4); their identity is fixed by:
+
+- Evaluation bundle-set hash:
+  **`78600b864d0debff987f165f46cb9fbd28c045bcd6049dd42e789ebe2c37f2fa`** (609 bundles).
+- Baseline-A training bundle-set hash:
+  **`ad28f4404aac19ee487a66994f89d43152526c9fa4d1aa53745e2251c486fdd2`** (249 bundles).
+
+Running the builder twice gives the same hashes. Counts per family are in
+`docs/corpus/frozen_bundle_set.md`.
+
+**Split (E2-01).** Attack bundles follow their episode's split, read from the episode id. For
+benign, the E2-01 design intended per-benign-block splits, but the realized corpus captured **no
+telemetry in the post-attack benign blocks** — the capture stops at the attack-phase end in every
+chunk — so the only benign bundles are the continuously-published benign MQTT windows, which carry
+no block tag. **Decision (Roy El Hayek, 2026-10-15):** split benign bundles by a fixed-seed
+per-bundle 70/30 rule (`BENIGN_SPLIT_SEED = 20261011`, the corpus generation seed; share 0.70),
+hashing the bundle id. Benign traffic has no episode structure and §4.3 already treats each benign
+bundle as its own bootstrap block, so a per-bundle split introduces no cross-set leakage. Benign
+evaluation bundles: 307 (target 180); benign training: 115.
+
+**Accepted shortfall (Roy El Hayek, 2026-10-15).** `ssh_brute_force` (17) and `port_scan` (18)
+deliver fewer than the 50 evaluation-bundle target, and below the per-family H1 floor of 30. These
+honeypot/scan families are bursty: most of their labelled windows contain no alert and are dropped
+at assembly (~1 bundle/episode, against ~4 for the continuously-active families), an instance of
+the empty-window effect flagged in E2-03 and `docs/corpus/expected_counts.md`. The corpus is
+**frozen as-is** rather than regenerated; the thesis reports reduced statistical power for H1 on
+these two families as a limitation. The other four families (65–69 each) and benign clear their
+targets.
+
+A transform over the raw corpus (C-13): re-derives, does not regenerate. Results invalidated: none;
+no agent or baseline output exists on these bundles.
