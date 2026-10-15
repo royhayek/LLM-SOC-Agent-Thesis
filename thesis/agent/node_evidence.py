@@ -85,13 +85,19 @@ def analyze_evidence(
     config_hash: str,
     repetition: int,
     valid_alert_ids: set[str],
+    json_schema: dict[str, object] | None = None,
 ) -> Findings:
     """Run node 1 on one reduced bundle view and return validated `Findings`."""
     device = str(view.get("device", ""))
     context = _context_block(device_context(device), retrieve(_build_query(view)))
     prompt = render(evidence.TEMPLATE, json.dumps(view, separators=(",", ":")), context=context)
     completion = client.complete(
-        prompt, node=NODE, bundle_id=bundle_id, config_hash=config_hash, repetition=repetition
+        prompt,
+        node=NODE,
+        bundle_id=bundle_id,
+        config_hash=config_hash,
+        repetition=repetition,
+        json_schema=json_schema,
     )
     try:
         findings = Findings.model_validate_json(completion)

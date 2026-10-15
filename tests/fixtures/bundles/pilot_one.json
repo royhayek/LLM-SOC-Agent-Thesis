@@ -1,0 +1,113 @@
+{
+  "bundle_id": "iot-cam-01|2026-01-01T00:00:00+00:00",
+  "device": "iot-cam-01",
+  "window_start": "2026-01-01T00:00:00Z",
+  "window_end": "2026-01-01T00:01:00Z",
+  "label": "syn_flood",
+  "episode_id": "ep-pilot-1",
+  "sources": [
+    "flows",
+    "mqtt"
+  ],
+  "alerts": [
+    {
+      "schema_version": "alert-v1",
+      "alert_id": "f1",
+      "source": "flows",
+      "ts": "2026-01-01T00:00:01Z",
+      "subject_device": "iot-cam-01",
+      "detail": {
+        "flow_start": "2026-01-01T00:00:01Z",
+        "duration_s": 0.4,
+        "src_ip": "10.77.0.22",
+        "src_port": 40001,
+        "dst_ip": "192.0.2.5",
+        "dst_port": 80,
+        "protocol": "tcp",
+        "packets_fwd": 20,
+        "packets_bwd": 0,
+        "bytes_fwd": 1200,
+        "bytes_bwd": 0,
+        "tcp_flags": null,
+        "syn_count_fwd": 20,
+        "ack_count_fwd": 0
+      },
+      "detector_score": 0.95,
+      "detector_label": "syn_flood",
+      "detector_name": "flow_classifier"
+    },
+    {
+      "schema_version": "alert-v1",
+      "alert_id": "f2",
+      "source": "flows",
+      "ts": "2026-01-01T00:00:02Z",
+      "subject_device": "iot-cam-01",
+      "detail": {
+        "flow_start": "2026-01-01T00:00:02Z",
+        "duration_s": 0.4,
+        "src_ip": "10.77.0.22",
+        "src_port": 40002,
+        "dst_ip": "192.0.2.5",
+        "dst_port": 80,
+        "protocol": "tcp",
+        "packets_fwd": 20,
+        "packets_bwd": 0,
+        "bytes_fwd": 1200,
+        "bytes_bwd": 0,
+        "tcp_flags": null,
+        "syn_count_fwd": 20,
+        "ack_count_fwd": 0
+      },
+      "detector_score": 0.95,
+      "detector_label": "syn_flood",
+      "detector_name": "flow_classifier"
+    },
+    {
+      "schema_version": "alert-v1",
+      "alert_id": "f3",
+      "source": "flows",
+      "ts": "2026-01-01T00:00:05Z",
+      "subject_device": "iot-cam-01",
+      "detail": {
+        "flow_start": "2026-01-01T00:00:05Z",
+        "duration_s": 0.4,
+        "src_ip": "10.77.0.22",
+        "src_port": 40005,
+        "dst_ip": "192.0.2.5",
+        "dst_port": 443,
+        "protocol": "tcp",
+        "packets_fwd": 20,
+        "packets_bwd": 0,
+        "bytes_fwd": 1200,
+        "bytes_bwd": 0,
+        "tcp_flags": null,
+        "syn_count_fwd": 20,
+        "ack_count_fwd": 0
+      },
+      "detector_score": 0.95,
+      "detector_label": "syn_flood",
+      "detector_name": "flow_classifier"
+    },
+    {
+      "schema_version": "alert-v1",
+      "alert_id": "m1",
+      "source": "mqtt",
+      "ts": "2026-01-01T00:00:03Z",
+      "subject_device": "iot-cam-01",
+      "detail": {
+        "event": "publish",
+        "client_id": null,
+        "src_ip": null,
+        "dst_ip": null,
+        "src_port": null,
+        "dst_port": null,
+        "topic": "iot/iot-cam-01/telemetry",
+        "qos": 0,
+        "payload_bytes": 42
+      },
+      "detector_score": 0.0,
+      "detector_label": "benign",
+      "detector_name": "mqtt_thresholds"
+    }
+  ]
+}

@@ -40,21 +40,24 @@ def action_catalog_lines() -> str:
 
 
 EVIDENCE_SCHEMA = (
-    'Output one JSON object: {"summary": string, "indicators": [string, ...],'
-    ' "reasoning": string}. `summary` is a short factual description of what the evidence shows;'
-    " `indicators` are the concrete signals you used."
+    "Output one JSON object with exactly these keys and no others:"
+    ' {"source_findings": [{"source": string, "summary": string, "evidence_ids": [string, ...]}],'
+    ' "cross_source": string, "candidate_hypotheses": [string, ...], "missing_evidence": [string,'
+    ' ...]}. Give one `source_findings` entry per source present; `summary` states "no alerts"'
+    " when a source is absent. `evidence_ids` are alert ids copied from the bundle, never invented."
 )
 
 CLASSIFICATION_SCHEMA = (
-    'Output one JSON object: {"incident_type": one of [' + LABELS + '], "confidence":'
-    ' number in [0, 1], "reasoning": string}. Choose `benign` if the evidence does not support'
-    " any attack family."
+    "Output one JSON object with exactly these keys and no others:"
+    ' {"incident_type": one of [' + LABELS + '], "severity": one of [low, medium, high, critical],'
+    ' "affected_device": string, "confidence": number in [0, 1]}. Choose `benign` if the evidence'
+    " does not support any attack family."
 )
 
 RECOMMENDATION_SCHEMA = (
-    'Output one JSON object: {"action": one action id from the catalog below, "severity":'
-    ' one of [low, medium, high], "reasoning": string}. The action must be one catalog id,'
-    " exactly as written."
+    "Output one JSON object with exactly these keys and no others:"
+    ' {"recommended_action": one action id from the catalog below, "evidence_ids": [string, ...]}.'
+    " The action must be one catalog id, exactly as written; include at least one evidence id."
 )
 
 BASELINE_B_SCHEMA = (

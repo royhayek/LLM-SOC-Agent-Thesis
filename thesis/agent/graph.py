@@ -24,6 +24,13 @@ from thesis.assemble.bundles import Bundle
 from thesis.config import ExperimentConfig, config_hash
 from thesis.reduce.policy import reduce
 
+# Node output schemas for constrained decoding (structured outputs). Passing these forces the model
+# to emit compact, schema-valid JSON. The safety-mode switch that turns this on for `enforcing` is
+# E7-06; `run_graph(constrain=...)` is the plumbing it binds to.
+_EVIDENCE_SCHEMA = Findings.model_json_schema()
+_CLASSIFY_SCHEMA = Classification.model_json_schema()
+_RECOMMEND_SCHEMA = Recommendation.model_json_schema()
+
 EXPECTED_CALLS = 3
 
 
@@ -69,9 +76,18 @@ class _CountingClient:
 
 
 def run_graph(
-    bundle: Bundle, config: ExperimentConfig, *, client: Completer, repetition: int
+    bundle: Bundle,
+    config: ExperimentConfig,
+    *,
+    client: Completer,
+    repetition: int,
+    constrain: bool = False,
 ) -> GraphTrace:
-    """Run the fixed evidence → classify → recommend graph on one bundle, per `config`."""
+    """Run the fixed evidence → classify → recommend graph on one bundle, per `config`.
+
+    `constrain` turns on structured outputs (constrained decoding) for every node; E7-06 binds it
+    to `safety == enforcing`.
+    """
     ch = config_hash(config)
     view = reduce(bundle, sources=config.sources)
     valid_ids = {a.alert_id for a in bundle.alerts if a.source in config.sources}
@@ -86,9 +102,15 @@ def run_graph(
         config_hash=ch,
         repetition=repetition,
         valid_alert_ids=valid_ids,
+        json_schema=_EVIDENCE_SCHEMA if constrain else None,
     )
     classification = classify(
-        findings, client=counter, bundle_id=bid, config_hash=ch, repetition=repetition
+        findings,
+        client=counter,
+        bundle_id=bid,
+        config_hash=ch,
+        repetition=repetition,
+        json_schema=_CLASSIFY_SCHEMA if constrain else None,
     )
     evidence_ids = sorted({e for f in findings.source_findings for e in f.evidence_ids})
     recommendation = recommend(
@@ -98,6 +120,7 @@ def run_graph(
         bundle_id=bid,
         config_hash=ch,
         repetition=repetition,
+        json_schema=_RECOMMEND_SCHEMA if constrain else None,
     )
 
     if counter.nodes != ["evidence", "classification", "recommendation"]:

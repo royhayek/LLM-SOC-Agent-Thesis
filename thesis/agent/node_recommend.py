@@ -39,6 +39,7 @@ def recommend(
     bundle_id: str,
     config_hash: str,
     repetition: int,
+    json_schema: dict[str, object] | None = None,
 ) -> Recommendation:
     """Run node 3 on node 2's classification and return the parsed `Recommendation`."""
     content = json.dumps(
@@ -50,7 +51,12 @@ def recommend(
     )
     prompt = render(recommendation_template.TEMPLATE, content)
     completion = client.complete(
-        prompt, node=NODE, bundle_id=bundle_id, config_hash=config_hash, repetition=repetition
+        prompt,
+        node=NODE,
+        bundle_id=bundle_id,
+        config_hash=config_hash,
+        repetition=repetition,
+        json_schema=json_schema,
     )
     try:
         rec = Recommendation.model_validate_json(completion)
