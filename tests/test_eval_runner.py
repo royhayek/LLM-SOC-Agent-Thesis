@@ -60,6 +60,30 @@ def test_dry_run_counts_calls_and_cost() -> None:
     assert est["usd"] > 0
 
 
+def test_item_failure_is_absorbed_not_fatal(tmp_path: Path) -> None:
+    from thesis.reduce.check_tokens import TokenCeilingError
+
+    bundles = [_bundle(i) for i in range(3)]
+    conditions = load_conditions(_prov())
+
+    def _flaky(bundle: Bundle, config: object, *, client: object, repetition: int) -> RunResult:
+        if bundle.bundle_id == "bundle-0":
+            raise TokenCeilingError("completion over the output ceiling")
+        return RunResult(bundle.bundle_id, config_hash(config), repetition, "mock", None)  # type: ignore[arg-type]
+
+    ledger = Ledger(tmp_path / "ledger.jsonl")
+    results: list[RunResult] = []
+    ran = run_matrix(
+        bundles, conditions, client=None, ledger=ledger, sink=results.append, k=1, run_one_fn=_flaky
+    )
+    expected = 3 * len(conditions)
+    assert ran == expected  # the failing items did not abort the run
+    assert len(results) == expected  # every item produced a result
+    assert len(ledger) == expected  # and was marked done (not re-run on resume)
+    failed = [r for r in results if r.bundle_id == "bundle-0"]
+    assert failed and all(r.payload is None for r in failed)  # bundle-0 recorded as unusable
+
+
 def test_full_run_covers_every_item_once(tmp_path: Path) -> None:
     bundles = [_bundle(i) for i in range(3)]
     conditions = load_conditions(_prov())
