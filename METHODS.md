@@ -512,3 +512,12 @@ targets.
 
 A transform over the raw corpus (C-13): re-derives, does not regenerate. Results invalidated: none;
 no agent or baseline output exists on these bundles.
+
+### 17. 2026-10-15: retrieval top-k fixed (E5-04, SCRUM-51)
+
+**What.** The deterministic retrieval tool (node 1's only tool, record §6.3) returns the top
+**k = 3** knowledge-base documents by cosine similarity, with ties broken by ascending document id.
+k is a locked parameter: a later change needs a changelog entry and re-runs the affected
+conditions. The embedding index is `all-MiniLM-L6-v2` pinned at revision `1110a243…` (E5-03). A
+transform/configuration change, not raw corpus; re-derives, does not regenerate (C-13). Results
+invalidated: none; no agent output exists.
