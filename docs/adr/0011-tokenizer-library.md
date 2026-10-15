@@ -1,6 +1,6 @@
 # ADR-0011: Tokenizer for the per-call token budget
 
-- Status: Proposed
+- Status: Accepted (2026-10-15)
 - Date: 2026-10-15
 - Ticket: SCRUM-99 [E3-08]
 
