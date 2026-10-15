@@ -45,14 +45,21 @@ def _completion_body(content: str, completion_tokens: int = 3) -> dict[str, obje
 
 
 @contextmanager
-def _fake_server(responses: list[tuple[int, dict[str, object]]]) -> Iterator[str]:
-    """Serve the queued (status, body) responses in order at a throwaway OpenAI-compatible URL."""
+def _fake_server(
+    responses: list[tuple[int, dict[str, object]]],
+    captured: list[dict[str, object]] | None = None,
+) -> Iterator[str]:
+    """Serve the queued (status, body) responses in order at a throwaway OpenAI-compatible URL.
+
+    When `captured` is given, each request's parsed JSON body is appended to it."""
     queue = list(responses)
 
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler API
             length = int(self.headers.get("Content-Length", 0))
-            self.rfile.read(length)
+            raw = self.rfile.read(length)
+            if captured is not None:
+                captured.append(json.loads(raw) if raw else {})
             status, body = queue.pop(0) if queue else (500, {"error": "no response queued"})
             payload = json.dumps(body).encode("utf-8")
             self.send_response(status)
@@ -152,6 +159,32 @@ def test_one_record_with_all_twelve_fields_is_written(
     assert record["node"] == "evidence"
     assert record["model_revision"] == "rev-abc"
     assert record["repetition"] == 2
+
+
+def test_structured_output_requests_json_object_never_json_schema() -> None:
+    """ADR-0012 Option A: a structured call sends response_format json_object, never json_schema
+    (which the hosted model rejects), so the same request works on every provider."""
+    captured: list[dict[str, object]] = []
+    with _fake_server([(200, _completion_body("{}"))], captured=captured) as base_url:
+        client = _client(base_url)
+        client.complete(
+            "hi",
+            node="n",
+            bundle_id="b",
+            config_hash="c",
+            repetition=0,
+            json_schema={"type": "object", "properties": {}},
+        )
+    assert captured[0]["response_format"] == {"type": "json_object"}
+
+
+def test_no_schema_sends_no_response_format() -> None:
+    """logging_only's recommendation node passes no schema, so the request is free-form text."""
+    captured: list[dict[str, object]] = []
+    with _fake_server([(200, _completion_body("free text"))], captured=captured) as base_url:
+        client = _client(base_url)
+        client.complete("hi", node="n", bundle_id="b", config_hash="c", repetition=0)
+    assert "response_format" not in captured[0]
 
 
 def test_from_env_requires_base_url_and_model(monkeypatch: pytest.MonkeyPatch) -> None:

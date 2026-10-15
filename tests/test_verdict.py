@@ -97,8 +97,9 @@ def _capturing_server(reply: dict[str, object]) -> Iterator[tuple[str, list[dict
         thread.join()
 
 
-def test_client_sends_the_verdict_schema_as_the_output_constraint() -> None:
-    schema = verdict_json_schema()
+def test_client_requests_json_object_for_the_verdict() -> None:
+    # ADR-0012 Option A: the Verdict schema is the on/off signal; the request is json_object, not a
+    # json_schema the hosted model would reject. Conformance is enforced after decoding.
     with _capturing_server(_completion(json.dumps(VALID))) as (base_url, captured):
         client = LLMClient(model="test-model", base_url=base_url, api_key="k")
         client.complete(
@@ -107,11 +108,9 @@ def test_client_sends_the_verdict_schema_as_the_output_constraint() -> None:
             bundle_id="b",
             config_hash="c",
             repetition=0,
-            json_schema=schema,
+            json_schema=verdict_json_schema(),
         )
-    sent = captured[0]["response_format"]  # type: ignore[index]
-    assert sent["type"] == "json_schema"  # type: ignore[index]
-    assert sent["json_schema"]["schema"] == schema  # type: ignore[index]
+    assert captured[0]["response_format"] == {"type": "json_object"}  # type: ignore[index]
 
 
 def test_client_omits_response_format_when_unconstrained() -> None:

@@ -106,6 +106,7 @@ Ticket references (`E0-01`) are used in every description and in `backlog_full.m
 | E6-06 | SCRUM-81 | 3 | Wire the three-node graph runner with source injection |
 | E6-07 | SCRUM-90 | 2 | Add a slow end-to-end test against local Ollama |
 | E6-08 | SCRUM-98 | 2 | Sanity-compare the dev and experiment models |
+| E6-09 | SCRUM-131 | 2 | Send json_object for structured output on the hosted provider |
 
 ## EPIC-7 · Safety & Constraint Layer · `SCRUM-13`
 
