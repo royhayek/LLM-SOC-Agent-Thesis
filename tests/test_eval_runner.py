@@ -60,15 +60,28 @@ def test_dry_run_counts_calls_and_cost() -> None:
     assert est["usd"] > 0
 
 
-def test_item_failure_is_absorbed_not_fatal(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "error",
+    [
+        pytest.param("TokenCeilingError", id="over_ceiling"),
+        pytest.param("EvidenceParseError", id="malformed_node_output"),
+    ],
+)
+def test_item_failure_is_absorbed_not_fatal(tmp_path: Path, error: str) -> None:
+    from thesis.agent.node_evidence import EvidenceParseError
     from thesis.reduce.check_tokens import TokenCeilingError
 
+    raised: Exception = (
+        TokenCeilingError("completion over the output ceiling")
+        if error == "TokenCeilingError"
+        else EvidenceParseError("node 1 output had 4 source_findings, max 3")
+    )
     bundles = [_bundle(i) for i in range(3)]
     conditions = load_conditions(_prov())
 
     def _flaky(bundle: Bundle, config: object, *, client: object, repetition: int) -> RunResult:
         if bundle.bundle_id == "bundle-0":
-            raise TokenCeilingError("completion over the output ceiling")
+            raise raised
         return RunResult(bundle.bundle_id, config_hash(config), repetition, "mock", None)  # type: ignore[arg-type]
 
     ledger = Ledger(tmp_path / "ledger.jsonl")
