@@ -191,6 +191,37 @@ def reason_breakdown(
     return out
 
 
+def reason_detail(
+    results: Sequence[object],
+    conditions: Sequence[ExperimentConfig],
+    bundle_labels: Mapping[str, str],
+) -> list[tuple[str, str, str, str]]:
+    """Per item: (condition label, bundle id, ground-truth label, reason). Lets a diagnostic ask
+    whether a condition's failures fall on benign or attack bundles — e.g. whether empty
+    `evidence_ids` on single sparse sources is a benign-bundle artifact or real grounding loss."""
+    by_hash = {config_hash(c): f"C{i + 1}" for i, c in enumerate(conditions)}
+    out: list[tuple[str, str, str, str]] = []
+    for result in results:
+        label = by_hash.get(str(getattr(result, "config_hash", "")))
+        if label is None:
+            continue
+        bundle_id = str(getattr(result, "bundle_id", ""))
+        reason = result_reason(getattr(result, "payload", None), getattr(result, "failure", None))
+        out.append((label, bundle_id, bundle_labels.get(bundle_id, ""), reason))
+    return out
+
+
+def write_reason_detail(rows: Sequence[tuple[str, str, str, str]], path: Path) -> None:
+    """Write the per-item reason detail as CSV (a local diagnostic; accuracy stays discarded)."""
+    import csv
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["condition", "bundle_id", "ground_truth", "reason"])
+        writer.writerows(rows)
+
+
 def run_all_metrics(
     rows: Sequence[Mapping[str, object]], conditions: Sequence[ExperimentConfig]
 ) -> list[str]:
@@ -419,6 +450,11 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - the live r
     cost = project_cost(row_dicts, len(eval_bundles))
     validity = validity_summary(row_dicts, conditions)
     reasons = reason_breakdown(results, conditions)
+    bundle_labels = {bid: b.label for bid, b in bundles_by_id.items()}
+    write_reason_detail(
+        reason_detail(results, conditions, bundle_labels),
+        REPO_ROOT / "data" / "exploratory" / "reason_detail.csv",
+    )
     write_report(cost, metrics_ran, validity, reasons, eval_hash=eval_hash)
     print(f"exploratory run complete: {cost.n_slice} bundles; {_verdict(cost)}")
     print(f"wrote {REPORT_PATH}")
@@ -495,6 +531,7 @@ __all__ = [
     "draw_slice",
     "project_cost",
     "reason_breakdown",
+    "reason_detail",
     "result_reason",
     "run_all_metrics",
     "validity_summary",
