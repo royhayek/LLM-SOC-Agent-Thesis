@@ -53,12 +53,12 @@ beforeEach(() => {
 describe("IncidentDetail", () => {
   it("shows the report, evidence and the three trace steps, escaping attacker text", async () => {
     vi.mocked(client.getIncident).mockResolvedValue(incident);
-    vi.mocked(client.getReport).mockResolvedValue("# Incident\nThis is a recommendation.");
+    vi.mocked(client.getReport).mockResolvedValue("# Incident report\nRecorded E7-08 report body.");
     vi.mocked(client.traceUrl).mockReturnValue("/api/incidents/b1/trace?condition=C1");
 
     render(<IncidentDetail bundleId="b1" condition="C1" onBack={() => {}} />);
 
-    await waitFor(() => screen.getByText(/This is a recommendation/));
+    await waitFor(() => screen.getByText(/Recorded E7-08 report body/));
     // The attacker evidence id renders as text, not as an <img> element (no XSS).
     expect(screen.getByText("<img src=x onerror=alert(1)>")).toBeInTheDocument();
     expect(document.querySelector("img")).toBeNull();

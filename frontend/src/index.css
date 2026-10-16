@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* SOC console design tokens. A deep navy-slate console; colour is reserved for severity, which
+   carries information. IBM Plex Sans for the UI, IBM Plex Mono for identifiers (real data). */
+@theme {
+  --color-ink: #0a0e17;
+  --color-panel: #121826;
+  --color-panel-2: #171f30;
+  --color-line: #232a3b;
+  --color-line-strong: #324056;
+  --color-muted: #8b93a7;
+  --color-text: #e6e9f2;
+  --color-accent: #7c83ff;
+  --color-accent-soft: #2a2f55;
+
+  --color-sev-critical: #fb7185;
+  --color-sev-high: #fbbf24;
+  --color-sev-medium: #38bdf8;
+  --color-sev-low: #34d399;
+
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --radius: 0.5rem;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-ink);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv05", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* A faint grid wash on the app background, like a monitoring surface — one quiet texture. */
+.app-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.015) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fade-in {
+    animation: fade-in 0.25s ease-out;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
