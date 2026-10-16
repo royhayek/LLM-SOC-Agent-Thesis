@@ -5,6 +5,7 @@ import { incidentSummary } from "./incidentLabel";
 
 const withVerdict: Incident = {
   bundle_id: "b1",
+  condition: "C1",
   ground_truth: "syn_flood",
   emitted: true,
   decision: null,

@@ -1,11 +1,12 @@
-"""The localhost-only SOC console REST API (E10-01, SCRUM-45).
+"""The localhost-only SOC console REST API (E10-01, E10-04..E10-07).
 
 Serves, read-only, what the experiments already wrote (record §2, §5): the incidents and their
-verdicts (from the results Parquet, E9-02), the human-readable reports (E7-08) and the audit log
-(E7-05). The one write endpoint stores the human accept/reject in SQLite (E10-01 db). The `Verdict`
-model (E7-01) is reused as the response model, so the safety schema and the API schema cannot drift
-(§6.2). No authentication; binds to 127.0.0.1 only (§4, §6.8). The system recommends and never
-executes: no route acts on the testbed or any network (§1.1).
+verdicts (from the results Parquet, E9-02) per condition, the human-readable reports (E7-08), the
+reasoning trace (E0-10 call log, over SSE) and the audit log (E7-05). The one write endpoint stores
+the human accept/reject in SQLite (E10-01 db). The `Verdict` model (E7-01) is reused as the response
+model, so the safety schema and the API schema cannot drift (§6.2). No authentication; binds to
+127.0.0.1 only (§4, §6.8). The system recommends and never executes: no route acts on the testbed
+or any network (§1.1).
 """
 
 from __future__ import annotations
@@ -15,7 +16,8 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Literal, cast
 
-from fastapi import FastAPI, HTTPException
+import yaml  # type: ignore[import-untyped]
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
 
@@ -27,21 +29,21 @@ from thesis.schema.verdict import Verdict
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RESULTS_PARQUET = REPO_ROOT / "results" / "results.parquet"
 REPORTS_DIR = REPO_ROOT / "reports"
+CONDITIONS_YAML = REPO_ROOT / "config" / "conditions.yaml"
 
 HOST = "127.0.0.1"  # localhost only (§4, §6.8); never 0.0.0.0
 PORT = 8000
-
-# The console shows the full agent's verdict: C1 = all three sources, agentic, enforcing.
-PRIMARY_SOURCES = frozenset({"flows", "mqtt", "honeypot"})
+DEFAULT_CONDITION = "C1"  # the full agent
 
 # The three reasoning nodes in order, and the SSE event name each is streamed under.
 NODE_EVENT = {"evidence": "evidence", "classification": "classify", "recommendation": "recommend"}
 
 
 class Incident(BaseModel):
-    """One evaluated bundle with the full agent's verdict and any recorded human decision."""
+    """One evaluated bundle under one condition, with its verdict and any human decision."""
 
     bundle_id: str
+    condition: str  # C1..C7
     ground_truth: str
     emitted: bool
     verdict: Verdict | None  # the Verdict schema itself, so the contract cannot drift (§6.2)
@@ -60,9 +62,18 @@ class DecisionOut(BaseModel):
     decided_at: str
 
 
+def _condition_labels(path: Path = CONDITIONS_YAML) -> dict[tuple[str, str, frozenset[str]], str]:
+    """Map each condition's (strategy, safety, sources) signature to its C-label (conditions.yaml
+    order). The signature is provenance-independent, so it matches the stored result rows."""
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return {
+        (c["strategy"], c["safety"], frozenset(c["sources"])): f"C{i + 1}"
+        for i, c in enumerate(data["conditions"])
+    }
+
+
 def _verdict_from_row(row: dict[str, object]) -> Verdict | None:
-    """Rebuild the `Verdict` from a result row's emitted fields, or None if the bundle was withheld
-    or unparsed. The agent recommends only; nothing here acts."""
+    """Rebuild the `Verdict` from a result row's emitted fields, or None if withheld/unparsed."""
     if not bool(row.get("emitted")) or row.get("incident_type") is None:
         return None
     return Verdict.model_validate(
@@ -81,28 +92,28 @@ def _verdict_from_row(row: dict[str, object]) -> Verdict | None:
     )
 
 
-def _load_primary_incidents(results_path: Path) -> dict[str, dict[str, object]]:
-    """One row per bundle from the C1 condition (agentic, enforcing, all sources), repetition 0."""
+def _load_by_condition(
+    results_path: Path, labels: dict[tuple[str, str, frozenset[str]], str]
+) -> dict[str, dict[str, dict[str, object]]]:
+    """Result rows at repetition 0, grouped by condition label then bundle id."""
     if not results_path.exists():
         return {}
     import pyarrow.parquet as pq  # type: ignore[import-untyped]
 
-    out: dict[str, dict[str, object]] = {}
+    out: dict[str, dict[str, dict[str, object]]] = {}
     for row in pq.read_table(results_path).to_pylist():
-        if (
-            str(row["strategy"]) == "agentic"
-            and str(row["safety"]) == "enforcing"
-            and frozenset(str(s) for s in row["sources"]) == PRIMARY_SOURCES
-            and int(row["repetition"]) == 0
-        ):
-            out[str(row["bundle_id"])] = row
+        if int(row["repetition"]) != 0:
+            continue
+        sig = (str(row["strategy"]), str(row["safety"]), frozenset(str(s) for s in row["sources"]))
+        label = labels.get(sig)
+        if label is not None:
+            out.setdefault(label, {})[str(row["bundle_id"])] = row
     return out
 
 
 def _load_trace(call_log_path: Path, bundle_id: str, config_hash: str) -> list[dict[str, object]]:
-    """The recorded reasoning trace for one bundle's full-agent run, in node order, from the call
-    log (E0-10). Replayed only — the console never calls the model. Empty if no trace was recorded
-    (e.g. Baseline A makes no calls)."""
+    """The recorded reasoning trace for one bundle+condition run, in node order, from the call log
+    (E0-10). Replayed only. Empty if no trace was recorded (e.g. Baseline A makes no calls)."""
     if not call_log_path.exists():
         return []
     completions: dict[str, str] = {}
@@ -138,12 +149,14 @@ def create_app(
     audit_path: Path = AUDIT_PATH,
     db_path: Path = db.DB_PATH,
     call_log_path: Path = LOG_PATH,
+    conditions_path: Path = CONDITIONS_YAML,
 ) -> FastAPI:
     """Build the console API over the given artifact paths (so tests can point at fixtures)."""
-    app = FastAPI(title="SOC console", description="Read-only over experiment outputs (E10-01).")
-    incidents = _load_primary_incidents(results_path)
+    app = FastAPI(title="SOC console", description="Read-only over experiment outputs (EPIC-10).")
+    by_condition = _load_by_condition(results_path, _condition_labels(conditions_path))
+    all_bundles = {bid for incidents in by_condition.values() for bid in incidents}
 
-    def _incident(bundle_id: str, row: dict[str, object]) -> Incident:
+    def _incident(condition: str, bundle_id: str, row: dict[str, object]) -> Incident:
         conn = db.connect(db_path)
         try:
             decision = db.get_decision(conn, bundle_id)
@@ -151,28 +164,45 @@ def create_app(
             conn.close()
         return Incident(
             bundle_id=bundle_id,
+            condition=condition,
             ground_truth=str(row["ground_truth"]),
             emitted=bool(row["emitted"]),
             verdict=_verdict_from_row(row),
             decision=None if decision is None else str(decision["decision"]),
         )
 
+    def _rows_for(condition: str) -> dict[str, dict[str, object]]:
+        if condition not in by_condition:
+            raise HTTPException(status_code=404, detail="unknown condition")
+        return by_condition[condition]
+
+    @app.get("/conditions")
+    def list_conditions() -> list[str]:
+        return sorted(by_condition)
+
     @app.get("/incidents")
-    def list_incidents() -> list[Incident]:
-        return [_incident(bid, incidents[bid]) for bid in sorted(incidents)]
+    def list_incidents(
+        condition: str = DEFAULT_CONDITION,
+        limit: int = Query(default=100, ge=1, le=1000),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[Incident]:
+        rows = _rows_for(condition)
+        page = sorted(rows)[offset : offset + limit]
+        return [_incident(condition, bid, rows[bid]) for bid in page]
 
     @app.get("/incidents/{bundle_id}")
-    def get_incident(bundle_id: str) -> Incident:
-        if bundle_id not in incidents:
+    def get_incident(bundle_id: str, condition: str = DEFAULT_CONDITION) -> Incident:
+        rows = _rows_for(condition)
+        if bundle_id not in rows:
             raise HTTPException(status_code=404, detail="unknown incident")
-        return _incident(bundle_id, incidents[bundle_id])
+        return _incident(condition, bundle_id, rows[bundle_id])
 
     @app.get("/incidents/{bundle_id}/trace")
-    def get_trace(bundle_id: str) -> StreamingResponse:
-        if bundle_id not in incidents:
+    def get_trace(bundle_id: str, condition: str = DEFAULT_CONDITION) -> StreamingResponse:
+        rows = _rows_for(condition)
+        if bundle_id not in rows:
             raise HTTPException(status_code=404, detail="unknown incident")
-        config_hash = str(incidents[bundle_id]["config_hash"])
-        trace = _load_trace(call_log_path, bundle_id, config_hash)
+        trace = _load_trace(call_log_path, bundle_id, str(rows[bundle_id]["config_hash"]))
         if not trace:
             raise HTTPException(status_code=404, detail="no recorded trace for this incident")
 
@@ -190,18 +220,25 @@ def create_app(
         return path.read_text(encoding="utf-8")
 
     @app.get("/audit")
-    def get_audit() -> list[AuditRecord]:
+    def get_audit(
+        outcome: str | None = None,
+        limit: int = Query(default=100, ge=1, le=1000),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[AuditRecord]:
         if not audit_path.exists():
             return []
-        records = []
+        records: list[AuditRecord] = []
         for line in audit_path.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                records.append(AuditRecord.model_validate(json.loads(line)))
-        return records
+            if not line.strip():
+                continue
+            record = AuditRecord.model_validate(json.loads(line))
+            if outcome is None or record.validator_outcome == outcome:
+                records.append(record)
+        return records[offset : offset + limit]
 
     @app.post("/incidents/{bundle_id}/decision")
     def post_decision(bundle_id: str, body: DecisionIn) -> DecisionOut:
-        if bundle_id not in incidents:
+        if bundle_id not in all_bundles:
             raise HTTPException(status_code=404, detail="unknown incident")
         conn = db.connect(db_path)
         try:

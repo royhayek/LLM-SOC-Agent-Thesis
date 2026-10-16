@@ -187,10 +187,14 @@
         "type": "object"
       },
       "Incident": {
-        "description": "One evaluated bundle with the full agent's verdict and any recorded human decision.",
+        "description": "One evaluated bundle under one condition, with its verdict and any human decision.",
         "properties": {
           "bundle_id": {
             "title": "Bundle Id",
+            "type": "string"
+          },
+          "condition": {
+            "title": "Condition",
             "type": "string"
           },
           "decision": {
@@ -225,6 +229,7 @@
         },
         "required": [
           "bundle_id",
+          "condition",
           "ground_truth",
           "emitted",
           "verdict",
@@ -351,7 +356,7 @@
     }
   },
   "info": {
-    "description": "Read-only over experiment outputs (E10-01).",
+    "description": "Read-only over experiment outputs (EPIC-10).",
     "title": "SOC console",
     "version": "0.1.0"
   },
@@ -360,6 +365,47 @@
     "/audit": {
       "get": {
         "operationId": "get_audit_audit_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "outcome",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Outcome"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -374,14 +420,81 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "Get Audit"
       }
     },
+    "/conditions": {
+      "get": {
+        "operationId": "list_conditions_conditions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response List Conditions Conditions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Conditions"
+      }
+    },
     "/incidents": {
       "get": {
         "operationId": "list_incidents_incidents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "condition",
+            "required": false,
+            "schema": {
+              "default": "C1",
+              "title": "Condition",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -396,6 +509,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "List Incidents"
@@ -411,6 +534,16 @@
             "required": true,
             "schema": {
               "title": "Bundle Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "condition",
+            "required": false,
+            "schema": {
+              "default": "C1",
+              "title": "Condition",
               "type": "string"
             }
           }
@@ -499,6 +632,16 @@
             "required": true,
             "schema": {
               "title": "Bundle Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "condition",
+            "required": false,
+            "schema": {
+              "default": "C1",
+              "title": "Condition",
               "type": "string"
             }
           }
