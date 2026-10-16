@@ -59,6 +59,8 @@ describe("IncidentDetail", () => {
     render(<IncidentDetail bundleId="b1" condition="C1" onBack={() => {}} />);
 
     await waitFor(() => screen.getByText(/Recorded E7-08 report body/));
+    // The report renders as Markdown: the "# Incident report" line becomes a heading element.
+    expect(screen.getByRole("heading", { name: /Incident report/ })).toBeInTheDocument();
     // The attacker evidence id renders as text, not as an <img> element (no XSS).
     expect(screen.getByText("<img src=x onerror=alert(1)>")).toBeInTheDocument();
     expect(document.querySelector("img")).toBeNull();
