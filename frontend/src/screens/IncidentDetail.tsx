@@ -70,7 +70,7 @@ export default function IncidentDetail(props: {
   const confidence = v ? `${Math.round(v.classification.confidence * 100)}%` : "—";
 
   return (
-    <section className="mx-auto max-w-5xl space-y-5">
+    <section className="mx-auto max-w-7xl space-y-5">
       <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2">
         <ArrowLeft className="h-4 w-4" />
         Incidents

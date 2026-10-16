@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
-/* SOC console design tokens. A deep navy-slate console; colour is reserved for severity, which
+/* SOC console design tokens — a permanent light theme. Colour is reserved for severity, which
    carries information. IBM Plex Sans for the UI, IBM Plex Mono for identifiers (real data). */
 @theme {
-  --color-ink: #0a0e17;
-  --color-panel: #121826;
-  --color-panel-2: #171f30;
-  --color-line: #232a3b;
-  --color-line-strong: #324056;
-  --color-muted: #8b93a7;
-  --color-text: #e6e9f2;
-  --color-accent: #7c83ff;
-  --color-accent-soft: #2a2f55;
+  --color-ink: #f6f7f9; /* app background */
+  --color-panel: #ffffff; /* cards / surfaces */
+  --color-panel-2: #eef1f5; /* subtle hover / insets */
+  --color-line: #e6e9ee;
+  --color-line-strong: #d3d9e1;
+  --color-muted: #64708a;
+  --color-text: #141b2b;
+  --color-accent: #4f52e8;
+  --color-accent-soft: #ecedff;
 
-  --color-sev-critical: #fb7185;
-  --color-sev-high: #fbbf24;
-  --color-sev-medium: #38bdf8;
-  --color-sev-low: #34d399;
+  --color-sev-critical: #dc2626;
+  --color-sev-high: #c2740a;
+  --color-sev-medium: #0a74c4;
+  --color-sev-low: #0a9d6b;
 
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
@@ -25,7 +25,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -40,8 +40,8 @@ body {
 /* A faint grid wash on the app background, like a monitoring surface — one quiet texture. */
 .app-grid {
   background-image:
-    linear-gradient(to right, rgb(255 255 255 / 0.015) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(255 255 255 / 0.015) 1px, transparent 1px);
+    linear-gradient(to right, rgb(20 27 43 / 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(20 27 43 / 0.025) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
