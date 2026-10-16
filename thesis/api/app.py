@@ -11,14 +11,16 @@ executes: no route acts on the testbed or any network (§1.1).
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Literal, cast
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
 
 from thesis.api import db
+from thesis.obs.logging import LOG_PATH
 from thesis.safety.audit import AUDIT_PATH, AuditRecord
 from thesis.schema.verdict import Verdict
 
@@ -31,6 +33,9 @@ PORT = 8000
 
 # The console shows the full agent's verdict: C1 = all three sources, agentic, enforcing.
 PRIMARY_SOURCES = frozenset({"flows", "mqtt", "honeypot"})
+
+# The three reasoning nodes in order, and the SSE event name each is streamed under.
+NODE_EVENT = {"evidence": "evidence", "classification": "classify", "recommendation": "recommend"}
 
 
 class Incident(BaseModel):
@@ -94,12 +99,45 @@ def _load_primary_incidents(results_path: Path) -> dict[str, dict[str, object]]:
     return out
 
 
+def _load_trace(call_log_path: Path, bundle_id: str, config_hash: str) -> list[dict[str, object]]:
+    """The recorded reasoning trace for one bundle's full-agent run, in node order, from the call
+    log (E0-10). Replayed only — the console never calls the model. Empty if no trace was recorded
+    (e.g. Baseline A makes no calls)."""
+    if not call_log_path.exists():
+        return []
+    completions: dict[str, str] = {}
+    for line in call_log_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        rec = json.loads(line)
+        if (
+            str(rec.get("bundle_id")) == bundle_id
+            and str(rec.get("config_hash")) == config_hash
+            and int(rec.get("repetition", -1)) == 0
+            and str(rec.get("node")) in NODE_EVENT
+        ):
+            completions[str(rec["node"])] = str(rec.get("completion", ""))
+    return [
+        # `untrusted`: the completion can echo attacker-controlled bundle text; the frontend must
+        # escape it on display (ticket gotcha).
+        {
+            "node": node,
+            "event": NODE_EVENT[node],
+            "completion": completions[node],
+            "untrusted": True,
+        }
+        for node in NODE_EVENT
+        if node in completions
+    ]
+
+
 def create_app(
     *,
     results_path: Path = RESULTS_PARQUET,
     reports_dir: Path = REPORTS_DIR,
     audit_path: Path = AUDIT_PATH,
     db_path: Path = db.DB_PATH,
+    call_log_path: Path = LOG_PATH,
 ) -> FastAPI:
     """Build the console API over the given artifact paths (so tests can point at fixtures)."""
     app = FastAPI(title="SOC console", description="Read-only over experiment outputs (E10-01).")
@@ -128,6 +166,21 @@ def create_app(
         if bundle_id not in incidents:
             raise HTTPException(status_code=404, detail="unknown incident")
         return _incident(bundle_id, incidents[bundle_id])
+
+    @app.get("/incidents/{bundle_id}/trace")
+    def get_trace(bundle_id: str) -> StreamingResponse:
+        if bundle_id not in incidents:
+            raise HTTPException(status_code=404, detail="unknown incident")
+        config_hash = str(incidents[bundle_id]["config_hash"])
+        trace = _load_trace(call_log_path, bundle_id, config_hash)
+        if not trace:
+            raise HTTPException(status_code=404, detail="no recorded trace for this incident")
+
+        def events() -> Iterator[str]:
+            for step in trace:
+                yield f"event: {step['event']}\ndata: {json.dumps(step)}\n\n"
+
+        return StreamingResponse(events(), media_type="text/event-stream")
 
     @app.get("/reports/{bundle_id}", response_class=PlainTextResponse)
     def get_report(bundle_id: str) -> str:
