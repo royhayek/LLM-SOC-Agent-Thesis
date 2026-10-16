@@ -12,3 +12,6 @@ hashed results (E9-09). Tables are byte-identical on re-run. Stratified H1 is in
 - `cost.md` — cost per incident (§4.4)
 
 ## Figures (`docs/thesis/figures/`)
+
+- `detection_f1.png` — H1, H4 (detection by condition)
+- `classification_accuracy.png` — H1, H2, H4 (classification by condition)
