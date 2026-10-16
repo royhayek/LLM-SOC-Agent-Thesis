@@ -96,6 +96,16 @@ def test_incidents_returns_bundles_with_verdict_typed_fields(tmp_path: Path) -> 
     assert b2["verdict"] is None and b2["emitted"] is False  # withheld
 
 
+def test_conditions_list_and_filter(tmp_path: Path) -> None:
+    client = _client(tmp_path)
+    assert client.get("/conditions").json() == ["C1", "C2"]  # from the fixture rows
+    # The single-source flows bundle b3 is condition C2, not in the default C1 view.
+    c2 = client.get("/incidents", params={"condition": "C2"}).json()
+    assert [i["bundle_id"] for i in c2] == ["b3"]
+    assert c2[0]["condition"] == "C2"
+    assert client.get("/incidents", params={"condition": "C9"}).status_code == 404
+
+
 def test_binds_to_localhost_only() -> None:
     assert HOST == "127.0.0.1"  # never 0.0.0.0 (§4, §6.8)
 

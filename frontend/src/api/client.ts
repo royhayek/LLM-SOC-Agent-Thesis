@@ -18,15 +18,22 @@ async function getJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-export const getIncidents = (): Promise<Incident[]> => getJson<Incident[]>("/incidents");
+export const getConditions = (): Promise<string[]> => getJson<string[]>("/conditions");
 
-export const getIncident = (id: string): Promise<Incident> =>
-  getJson<Incident>(`/incidents/${encodeURIComponent(id)}`);
+export const getIncidents = (condition: string): Promise<Incident[]> =>
+  getJson<Incident[]>(`/incidents?condition=${encodeURIComponent(condition)}`);
 
-export const getAudit = (): Promise<AuditRecord[]> => getJson<AuditRecord[]>("/audit");
+export const getIncident = (id: string, condition: string): Promise<Incident> =>
+  getJson<Incident>(
+    `/incidents/${encodeURIComponent(id)}?condition=${encodeURIComponent(condition)}`,
+  );
+
+export const getAudit = (outcome?: string): Promise<AuditRecord[]> =>
+  getJson<AuditRecord[]>(`/audit${outcome ? `?outcome=${encodeURIComponent(outcome)}` : ""}`);
 
 export async function getReport(id: string): Promise<string> {
   const res = await fetch(`${BASE}/reports/${encodeURIComponent(id)}`);
+  if (res.status === 404) return "";
   if (!res.ok) throw new Error(`report ${id} failed: ${res.status}`);
   return res.text();
 }
@@ -41,5 +48,5 @@ export async function postDecision(id: string, body: DecisionIn): Promise<Decisi
   return (await res.json()) as DecisionOut;
 }
 
-export const traceUrl = (id: string): string =>
-  `${BASE}/incidents/${encodeURIComponent(id)}/trace`;
+export const traceUrl = (id: string, condition: string): string =>
+  `${BASE}/incidents/${encodeURIComponent(id)}/trace?condition=${encodeURIComponent(condition)}`;

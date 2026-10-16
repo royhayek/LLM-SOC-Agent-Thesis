@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/conditions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Conditions */
+        get: operations["list_conditions_conditions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/incidents": {
         parameters: {
             query?: never;
@@ -175,11 +192,13 @@ export interface components {
         };
         /**
          * Incident
-         * @description One evaluated bundle with the full agent's verdict and any recorded human decision.
+         * @description One evaluated bundle under one condition, with its verdict and any human decision.
          */
         Incident: {
             /** Bundle Id */
             bundle_id: string;
+            /** Condition */
+            condition: string;
             /** Decision */
             decision: string | null;
             /** Emitted */
@@ -244,7 +263,11 @@ export type $defs = Record<string, never>;
 export interface operations {
     get_audit_audit_get: {
         parameters: {
-            query?: never;
+            query?: {
+                outcome?: string | null;
+                limit?: number;
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -260,11 +283,44 @@ export interface operations {
                     "application/json": components["schemas"]["AuditRecord"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_conditions_conditions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
         };
     };
     list_incidents_incidents_get: {
         parameters: {
-            query?: never;
+            query?: {
+                condition?: string;
+                limit?: number;
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -280,11 +336,22 @@ export interface operations {
                     "application/json": components["schemas"]["Incident"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     get_incident_incidents__bundle_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                condition?: string;
+            };
             header?: never;
             path: {
                 bundle_id: string;
@@ -350,7 +417,9 @@ export interface operations {
     };
     get_trace_incidents__bundle_id__trace_get: {
         parameters: {
-            query?: never;
+            query?: {
+                condition?: string;
+            };
             header?: never;
             path: {
                 bundle_id: string;
