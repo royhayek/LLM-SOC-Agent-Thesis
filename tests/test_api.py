@@ -10,6 +10,9 @@ import pyarrow.parquet as pq  # type: ignore[import-untyped]
 from fastapi.testclient import TestClient
 
 from thesis.api.app import HOST, create_app
+from thesis.report.render import report_filename
+
+SPECIAL_ID = "hp-ssh-01|2026-10-11T11:38:20+00:00"  # a real bundle id: carries '|' and ':'
 
 
 def _row(
@@ -71,6 +74,8 @@ def _client(tmp: Path) -> TestClient:
     reports = tmp / "reports"
     reports.mkdir()
     (reports / "b1.md").write_text("# Incident b1\nThis is a recommendation. A human decides.\n")
+    # A report written under the sanitised name the renderer uses for a real (':'/'|') bundle id.
+    (reports / report_filename(SPECIAL_ID)).write_text("# special\nA human decides.\n")
 
     return TestClient(
         create_app(
@@ -158,3 +163,6 @@ def test_audit_and_report_endpoints(tmp_path: Path) -> None:
     report = client.get("/reports/b1")
     assert report.status_code == 200 and "A human decides" in report.text
     assert client.get("/reports/missing").status_code == 404
+    # A real bundle id (with ':' and '|') resolves to the renderer's sanitised filename.
+    special = client.get(f"/reports/{SPECIAL_ID}")
+    assert special.status_code == 200 and "A human decides" in special.text

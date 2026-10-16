@@ -47,3 +47,15 @@ Every decision, number or figure the thesis will cite is logged here when its ti
 The following paragraph is frozen for the ethics section. Appended by SCRUM-39 [E1-04] from ADR-0003; identical to the ADR's Ethics section.
 
 > All attack traffic runs inside the emulated testbed on its isolated internal Docker network (10.77.0.0/24), which publishes no ports and whose isolation from the host LAN and the internet is checked before any attack tooling runs (E0-07). No attack targets any third-party host: the targets are testbed containers, and the `botnet` family's destination is a fixed non-routable address that no real host answers. No family uses custom exploit code; attacks replay published research datasets or run standard tools at fixed, low-rate parameters. No personal data is collected or processed: telemetry is synthetic and the replayed datasets are not represented as containing personal data. The agent only recommends and never executes; no code path acts on the testbed or any network.
+
+## Console reports and audit log are derived post-hoc
+
+The full matrix run (E9-09) wrote only the result rows; it did not render the E7-08 incident reports
+nor write the E7-05 audit log. Both are regenerated for the console by `thesis.eval.backfill_console`
+from the frozen artifacts, with no model call: reports from the full-agent (C1) verdict, node-1
+findings and the bundle; the audit log by replaying `apply_safety` (the live run's own code) over the
+node-2/node-3 completions in the call log, for the agentic conditions C1–C5. The replay is verified
+to match the frozen `validator_outcome` for every item exactly (2459 records, 0 mismatches); the 586
+agentic items with no record are the ones whose node output failed to parse, which produced no audit
+record in the live run either. These are a derived view of the frozen run for display — not a live
+capture — and change no result, locked parameter or methods contract.
