@@ -17,3 +17,4 @@ One file per decision, numbered. Start a new one by copying `template.md`; it st
 | 0010 | Parquet library | E2-04 |
 | 0011 | Tokenizer for the per-call token budget | E3-08 |
 | 0012 | Structured output on the hosted provider (json_object) | E6-08 |
+| 0013 | Plotting library for the results figures (matplotlib) | E9-11 |
