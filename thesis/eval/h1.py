@@ -69,6 +69,16 @@ def _classified_right(row: Mapping[str, object]) -> float:
     return 1.0 if _pred(row) == _truth(row) else 0.0
 
 
+def _detection_correct(row: Mapping[str, object]) -> float:
+    """DET as in §3.2: 1 if attack-vs-benign is right (an unusable output is always wrong). Over
+    attack-only bundles this equals recall, but over benign bundles too it credits a correct
+    `benign`, so it is the right score for the overall C1-vs-single test (matches E9-05)."""
+    pred = _pred(row)
+    if pred is None:
+        return 0.0
+    return 1.0 if (pred != BENIGN) == (_truth(row) != BENIGN) else 0.0
+
+
 def _per_bundle_majority(
     rows: Iterable[Mapping[str, object]], score: Callable[[Mapping[str, object]], float]
 ) -> dict[str, float]:
@@ -205,7 +215,7 @@ def h1_tests(
         or meta.get(str(r["bundle_id"]), _MISSING).honeypot_keyed == honeypot_keyed
     ]
     results: list[H1Test] = []
-    for outcome, score in (("DET", _detected_attack), ("CLS", _classified_right)):
+    for outcome, score in (("DET", _detection_correct), ("CLS", _classified_right)):
         outcomes = _bundle_outcome(kept, score)
         c1 = outcomes.get(inv["C1"], {})
         for single in ("C2", "C3", "C4"):

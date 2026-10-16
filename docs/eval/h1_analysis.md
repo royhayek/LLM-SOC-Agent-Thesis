@@ -9,9 +9,9 @@ cells are in `results/h1_stratified.csv`.
 
 | Contrast | Outcome | C1 better? | McNemar | p |
 |---|---|---|---|---|
-| C1 vs C2 | DET | yes | 330.794 | 0.0 |
-| C1 vs C3 | DET | yes | 36.2319 | 0.0 |
-| C1 vs C4 | DET | yes | 401.3958 | 0.0 |
+| C1 vs C2 | DET | yes | 87.8629 | 0.0 |
+| C1 vs C3 | DET | yes | 23.6739 | 0.0 |
+| C1 vs C4 | DET | yes | 168.4378 | 0.0 |
 | C1 vs C2 | CLS | yes | 1.9406 | 0.1636 |
 | C1 vs C3 | CLS | yes | 12.9888 | 0.0003 |
 | C1 vs C4 | CLS | yes | 78.6273 | 0.0 |
@@ -40,9 +40,9 @@ and inflate detection for any condition that sees the honeypot. H1 is reported b
 
 | Contrast | Outcome | C1 better? | McNemar | p |
 |---|---|---|---|---|
-| C1 vs C2 | DET | yes | 335.4681 | 0.0 |
-| C1 vs C3 | DET | yes | 20.0208 | 0.0 |
-| C1 vs C4 | DET | yes | 406.191 | 0.0 |
+| C1 vs C2 | DET | yes | 90.843 | 0.0 |
+| C1 vs C3 | DET | yes | 7.84 | 0.0051 |
+| C1 vs C4 | DET | yes | 172.8535 | 0.0 |
 | C1 vs C2 | CLS | yes | 3.9239 | 0.0476 |
 | C1 vs C3 | CLS | yes | 2.1493 | 0.1426 |
 | C1 vs C4 | CLS | yes | 68.3438 | 0.0 |
