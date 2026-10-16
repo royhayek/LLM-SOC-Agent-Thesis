@@ -31,3 +31,4 @@ node_modules/
 .idea/
 .vscode/
 data/external/
+results/full_run_rows.jsonl
