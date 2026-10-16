@@ -144,10 +144,10 @@ def cost_table(rows: Sequence[Mapping[str, object]]) -> str:
 def _write_figures(
     rows: Sequence[Mapping[str, object]], conditions: Sequence[ExperimentConfig], out_dir: Path
 ) -> list[str]:  # pragma: no cover - plotting is exercised only in the live run
-    import matplotlib  # type: ignore[import-not-found]
+    import matplotlib
 
     matplotlib.use("Agg")
-    import matplotlib.pyplot as plt  # type: ignore[import-not-found]
+    import matplotlib.pyplot as plt
 
     out_dir.mkdir(parents=True, exist_ok=True)
     labels = _labels(conditions)

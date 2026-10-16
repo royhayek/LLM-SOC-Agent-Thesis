@@ -1,6 +1,6 @@
 # ADR-0013: Plotting library for the results figures (matplotlib)
 
-- Status: Proposed
+- Status: Accepted (2026-10-16)
 - Date: 2026-10-16
 - Ticket: SCRUM-118 [E9-11]
 
@@ -15,7 +15,8 @@ needed, and they render headless in CI.
 
 ## Decision
 
-Proposed: add **matplotlib** as a dependency, used only in `thesis/eval/report.py` with the
+Accepted by Roy El Hayek on 2026-10-16: add **matplotlib** (3.11.2, pinned in `uv.lock`) as a
+dependency, used only in `thesis/eval/report.py` with the
 non-interactive `Agg` backend to write PNGs under `docs/thesis/figures/`. The report already runs
 without it — it writes the tables and skips the figures with a notice — so the dependency is additive
 and the tables never depend on it. Pin the version in the lock file as usual.
