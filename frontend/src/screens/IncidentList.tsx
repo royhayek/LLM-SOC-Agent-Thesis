@@ -4,10 +4,13 @@ import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getIncidents, type Incident } from "../api/client";
+import { Button } from "../components/ui/Button";
 import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
 import { SeverityBadge } from "../components/ui/SeverityBadge";
 import { severityRank } from "../lib/utils";
+
+const PAGE = 50;
 
 export default function IncidentList(props: {
   condition: string;
@@ -18,12 +21,17 @@ export default function IncidentList(props: {
   const { condition, conditions, onConditionChange, onSelect } = props;
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     let active = true;
     setError(null);
     getIncidents(condition)
-      .then((rows) => active && setIncidents(rows))
+      .then((rows) => {
+        if (!active) return;
+        setIncidents(rows);
+        setPage(0);
+      })
       .catch((e: unknown) => active && setError(String(e)));
     return () => {
       active = false;
@@ -35,6 +43,8 @@ export default function IncidentList(props: {
       severityRank(a.verdict?.recommendation.severity) -
       severityRank(b.verdict?.recommendation.severity),
   );
+  const shown = sorted.slice(page * PAGE, page * PAGE + PAGE);
+  const lastPage = (page + 1) * PAGE >= sorted.length;
 
   return (
     <section className="mx-auto max-w-5xl space-y-4">
@@ -44,6 +54,12 @@ export default function IncidentList(props: {
           <p className="text-sm text-muted">
             {incidents.length} analysed bundle{incidents.length === 1 ? "" : "s"}, sorted by
             severity.
+            {sorted.length > PAGE && (
+              <>
+                {" "}
+                Showing {page * PAGE + 1}–{Math.min((page + 1) * PAGE, sorted.length)}.
+              </>
+            )}
           </p>
         </div>
         <label className="flex items-center gap-2 text-sm text-muted">
@@ -77,7 +93,7 @@ export default function IncidentList(props: {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((incident) => (
+            {shown.map((incident) => (
               <tr
                 key={incident.bundle_id}
                 className="group cursor-pointer border-b border-line/60 last:border-0 hover:bg-panel-2"
@@ -119,6 +135,28 @@ export default function IncidentList(props: {
           </tbody>
         </table>
       </Panel>
+
+      {sorted.length > PAGE && (
+        <div className="flex items-center justify-end gap-3 text-sm text-muted">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page === 0}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Previous
+          </Button>
+          <span className="font-mono text-xs">page {page + 1}</span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={lastPage}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </section>
   );
 }

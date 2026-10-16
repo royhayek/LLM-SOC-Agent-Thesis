@@ -26,12 +26,14 @@ beforeEach(() => vi.resetAllMocks());
 describe("Recommendation", () => {
   it("stores an accept and states that nothing was executed", async () => {
     vi.mocked(client.postDecision).mockResolvedValue({
-      bundle_id: "b1", decision: "accept", note: null, decided_at: "2026-10-16T00:00:00Z",
+      bundle_id: "b1", condition: "C1", decision: "accept", note: null,
+      decided_at: "2026-10-16T00:00:00Z",
     });
     render(<Recommendation incident={incident} />);
     fireEvent.click(screen.getByText("Accept recommendation"));
     await waitFor(() => screen.getByRole("status"));
-    expect(client.postDecision).toHaveBeenCalledWith("b1", { decision: "accept", note: null });
+    // The decision is recorded against the condition whose recommendation was reviewed.
+    expect(client.postDecision).toHaveBeenCalledWith("b1", "C1", { decision: "accept", note: null });
     expect(screen.getByRole("status").textContent).toMatch(/no action was executed/i);
   });
 

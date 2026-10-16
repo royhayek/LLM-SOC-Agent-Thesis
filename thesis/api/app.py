@@ -12,6 +12,7 @@ or any network (§1.1).
 from __future__ import annotations
 
 import json
+import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Literal, cast
@@ -57,6 +58,7 @@ class DecisionIn(BaseModel):
 
 class DecisionOut(BaseModel):
     bundle_id: str
+    condition: str
     decision: str
     note: str | None
     decided_at: str
@@ -154,14 +156,11 @@ def create_app(
     """Build the console API over the given artifact paths (so tests can point at fixtures)."""
     app = FastAPI(title="SOC console", description="Read-only over experiment outputs (EPIC-10).")
     by_condition = _load_by_condition(results_path, _condition_labels(conditions_path))
-    all_bundles = {bid for incidents in by_condition.values() for bid in incidents}
 
-    def _incident(condition: str, bundle_id: str, row: dict[str, object]) -> Incident:
-        conn = db.connect(db_path)
-        try:
-            decision = db.get_decision(conn, bundle_id)
-        finally:
-            conn.close()
+    def _incident(
+        condition: str, bundle_id: str, row: dict[str, object], conn: sqlite3.Connection
+    ) -> Incident:
+        decision = db.get_decision(conn, bundle_id, condition)
         return Incident(
             bundle_id=bundle_id,
             condition=condition,
@@ -188,14 +187,22 @@ def create_app(
     ) -> list[Incident]:
         rows = _rows_for(condition)
         page = sorted(rows)[offset : offset + limit]
-        return [_incident(condition, bid, rows[bid]) for bid in page]
+        conn = db.connect(db_path)
+        try:
+            return [_incident(condition, bid, rows[bid], conn) for bid in page]
+        finally:
+            conn.close()
 
     @app.get("/incidents/{bundle_id}")
     def get_incident(bundle_id: str, condition: str = DEFAULT_CONDITION) -> Incident:
         rows = _rows_for(condition)
         if bundle_id not in rows:
             raise HTTPException(status_code=404, detail="unknown incident")
-        return _incident(condition, bundle_id, rows[bundle_id])
+        conn = db.connect(db_path)
+        try:
+            return _incident(condition, bundle_id, rows[bundle_id], conn)
+        finally:
+            conn.close()
 
     @app.get("/incidents/{bundle_id}/trace")
     def get_trace(bundle_id: str, condition: str = DEFAULT_CONDITION) -> StreamingResponse:
@@ -237,12 +244,16 @@ def create_app(
         return records[offset : offset + limit]
 
     @app.post("/incidents/{bundle_id}/decision")
-    def post_decision(bundle_id: str, body: DecisionIn) -> DecisionOut:
-        if bundle_id not in all_bundles:
+    def post_decision(
+        bundle_id: str, body: DecisionIn, condition: str = DEFAULT_CONDITION
+    ) -> DecisionOut:
+        # The decision is tied to the recommendation reviewed, so the incident must exist under the
+        # given condition (each condition has its own verdict for the same bundle).
+        if bundle_id not in _rows_for(condition):
             raise HTTPException(status_code=404, detail="unknown incident")
         conn = db.connect(db_path)
         try:
-            stored = db.record_decision(conn, bundle_id, body.decision, body.note)
+            stored = db.record_decision(conn, bundle_id, condition, body.decision, body.note)
         finally:
             conn.close()
         return DecisionOut.model_validate(stored)

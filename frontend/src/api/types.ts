@@ -178,6 +178,8 @@ export interface components {
         DecisionOut: {
             /** Bundle Id */
             bundle_id: string;
+            /** Condition */
+            condition: string;
             /** Decided At */
             decided_at: string;
             /** Decision */
@@ -382,7 +384,9 @@ export interface operations {
     };
     post_decision_incidents__bundle_id__decision_post: {
         parameters: {
-            query?: never;
+            query?: {
+                condition?: string;
+            };
             header?: never;
             path: {
                 bundle_id: string;
