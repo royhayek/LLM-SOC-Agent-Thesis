@@ -19,6 +19,8 @@ node_modules/
 
 # Runtime output. Root-level only, so spikes/logs/ stays tracked.
 /logs/
+# Rendered incident reports (E7-08): regenerated locally by thesis.eval.backfill_console.
+/reports/
 /data/*
 !/data/corpus-manifest.json
 !/data/corpus-manifest.sha256

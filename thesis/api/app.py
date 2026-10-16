@@ -24,6 +24,7 @@ from pydantic import BaseModel
 
 from thesis.api import db
 from thesis.obs.logging import LOG_PATH
+from thesis.report.render import report_filename
 from thesis.safety.audit import AUDIT_PATH, AuditRecord
 from thesis.schema.verdict import Verdict
 
@@ -221,7 +222,8 @@ def create_app(
 
     @app.get("/reports/{bundle_id}", response_class=PlainTextResponse)
     def get_report(bundle_id: str) -> str:
-        path = reports_dir / f"{bundle_id}.md"
+        # Same sanitised name the renderer writes (bundle ids carry ':' and '|').
+        path = reports_dir / report_filename(bundle_id)
         if not path.exists():
             raise HTTPException(status_code=404, detail="no report for this incident")
         return path.read_text(encoding="utf-8")

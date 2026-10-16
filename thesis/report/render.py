@@ -34,6 +34,13 @@ def _md_escape(text: str) -> str:
     return _MD_SPECIAL.sub(r"\\\1", text.replace("\n", " ").replace("\r", " ")).strip()
 
 
+def report_filename(bundle_id: str) -> str:
+    """The on-disk report name for a bundle id, sanitised so the id's ``:`` and ``|`` are legal and
+    stable across filesystems. The renderer writes it and the API reads it, so the two agree."""
+    safe = bundle_id.replace("/", "_").replace(":", "-").replace("|", "_")
+    return f"{safe}.md"
+
+
 def _alert_summary(alert: Alert) -> str:
     """A one-line, escaped summary of one alert, keyed by its id (never raw attacker text)."""
     d = alert.detail
@@ -75,8 +82,7 @@ def render_report(
         findings=findings_md,
     )
     out_dir.mkdir(parents=True, exist_ok=True)
-    safe_name = bundle.bundle_id.replace("/", "_").replace(":", "-").replace("|", "_")
-    (out_dir / f"{safe_name}.md").write_text(report, encoding="utf-8")
+    (out_dir / report_filename(bundle.bundle_id)).write_text(report, encoding="utf-8")
     return report
 
 
@@ -84,4 +90,4 @@ def word_count(report: str) -> int:
     return len(report.split())
 
 
-__all__ = ["render_report", "word_count"]
+__all__ = ["render_report", "report_filename", "word_count"]
