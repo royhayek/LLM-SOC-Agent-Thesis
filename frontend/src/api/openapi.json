@@ -1,0 +1,569 @@
+{
+  "components": {
+    "schemas": {
+      "Action": {
+        "enum": [
+          "no_action",
+          "monitor",
+          "escalate_to_analyst",
+          "block_source",
+          "rate_limit_source",
+          "isolate_device",
+          "reset_credentials",
+          "disable_service"
+        ],
+        "title": "Action",
+        "type": "string"
+      },
+      "AuditRecord": {
+        "additionalProperties": false,
+        "properties": {
+          "attempt": {
+            "minimum": 1.0,
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "bundle_id": {
+            "minLength": 1,
+            "title": "Bundle Id",
+            "type": "string"
+          },
+          "call_ref": {
+            "minLength": 1,
+            "title": "Call Ref",
+            "type": "string"
+          },
+          "config_hash": {
+            "minLength": 1,
+            "title": "Config Hash",
+            "type": "string"
+          },
+          "emitted": {
+            "title": "Emitted",
+            "type": "boolean"
+          },
+          "node": {
+            "minLength": 1,
+            "title": "Node",
+            "type": "string"
+          },
+          "policy_action": {
+            "minLength": 1,
+            "title": "Policy Action",
+            "type": "string"
+          },
+          "rejection_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Reason"
+          },
+          "repetition": {
+            "minimum": 0.0,
+            "title": "Repetition",
+            "type": "integer"
+          },
+          "validator_outcome": {
+            "minLength": 1,
+            "title": "Validator Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bundle_id",
+          "config_hash",
+          "repetition",
+          "node",
+          "attempt",
+          "validator_outcome",
+          "rejection_reason",
+          "policy_action",
+          "emitted",
+          "call_ref"
+        ],
+        "title": "AuditRecord",
+        "type": "object"
+      },
+      "Classification": {
+        "additionalProperties": false,
+        "description": "Node 2's output: the incident label and the model's confidence in it.",
+        "properties": {
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "incident_type": {
+            "$ref": "#/components/schemas/IncidentType"
+          }
+        },
+        "required": [
+          "incident_type",
+          "confidence"
+        ],
+        "title": "Classification",
+        "type": "object"
+      },
+      "DecisionIn": {
+        "properties": {
+          "decision": {
+            "enum": [
+              "accept",
+              "reject"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "title": "DecisionIn",
+        "type": "object"
+      },
+      "DecisionOut": {
+        "properties": {
+          "bundle_id": {
+            "title": "Bundle Id",
+            "type": "string"
+          },
+          "decided_at": {
+            "title": "Decided At",
+            "type": "string"
+          },
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "bundle_id",
+          "decision",
+          "note",
+          "decided_at"
+        ],
+        "title": "DecisionOut",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Incident": {
+        "description": "One evaluated bundle with the full agent's verdict and any recorded human decision.",
+        "properties": {
+          "bundle_id": {
+            "title": "Bundle Id",
+            "type": "string"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "emitted": {
+            "title": "Emitted",
+            "type": "boolean"
+          },
+          "ground_truth": {
+            "title": "Ground Truth",
+            "type": "string"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Verdict"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "bundle_id",
+          "ground_truth",
+          "emitted",
+          "verdict",
+          "decision"
+        ],
+        "title": "Incident",
+        "type": "object"
+      },
+      "IncidentType": {
+        "description": "The six attack families plus `benign` (record \u00a76.5, METHODS.md Changelog entry 1).",
+        "enum": [
+          "ssh_brute_force",
+          "port_scan",
+          "mqtt_publish_flood",
+          "mqtt_brute_force",
+          "syn_flood",
+          "botnet",
+          "benign"
+        ],
+        "title": "IncidentType",
+        "type": "string"
+      },
+      "Recommendation": {
+        "additionalProperties": false,
+        "description": "Node 3's output: one catalog action and the reported severity.",
+        "properties": {
+          "recommended_action": {
+            "$ref": "#/components/schemas/Action"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          }
+        },
+        "required": [
+          "recommended_action",
+          "severity"
+        ],
+        "title": "Recommendation",
+        "type": "object"
+      },
+      "Severity": {
+        "description": "Reported severity (record \u00a76.5). Descriptive only; no true severity is scored (\u00a74.2).",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "Severity",
+        "type": "string"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "Verdict": {
+        "additionalProperties": false,
+        "description": "The validated bundle verdict (record \u00a76.5): classification + recommendation + evidence.",
+        "properties": {
+          "affected_device": {
+            "minLength": 1,
+            "title": "Affected Device",
+            "type": "string"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/Classification"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "recommendation": {
+            "$ref": "#/components/schemas/Recommendation"
+          }
+        },
+        "required": [
+          "classification",
+          "recommendation",
+          "affected_device",
+          "evidence"
+        ],
+        "title": "Verdict",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Read-only over experiment outputs (E10-01).",
+    "title": "SOC console",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/audit": {
+      "get": {
+        "operationId": "get_audit_audit_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AuditRecord"
+                  },
+                  "title": "Response Get Audit Audit Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Audit"
+      }
+    },
+    "/incidents": {
+      "get": {
+        "operationId": "list_incidents_incidents_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Incident"
+                  },
+                  "title": "Response List Incidents Incidents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Incidents"
+      }
+    },
+    "/incidents/{bundle_id}": {
+      "get": {
+        "operationId": "get_incident_incidents__bundle_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bundle_id",
+            "required": true,
+            "schema": {
+              "title": "Bundle Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incident"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Incident"
+      }
+    },
+    "/incidents/{bundle_id}/decision": {
+      "post": {
+        "operationId": "post_decision_incidents__bundle_id__decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bundle_id",
+            "required": true,
+            "schema": {
+              "title": "Bundle Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Post Decision"
+      }
+    },
+    "/incidents/{bundle_id}/trace": {
+      "get": {
+        "operationId": "get_trace_incidents__bundle_id__trace_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bundle_id",
+            "required": true,
+            "schema": {
+              "title": "Bundle Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Trace"
+      }
+    },
+    "/reports/{bundle_id}": {
+      "get": {
+        "operationId": "get_report_reports__bundle_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bundle_id",
+            "required": true,
+            "schema": {
+              "title": "Bundle Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Report"
+      }
+    }
+  }
+}
