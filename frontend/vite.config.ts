@@ -1,9 +1,10 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 // Localhost-only dev server (§6.8); the API runs on 127.0.0.1:8000.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
     host: "127.0.0.1",
     proxy: {
