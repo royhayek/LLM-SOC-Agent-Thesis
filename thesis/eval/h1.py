@@ -323,20 +323,9 @@ def main() -> int:  # pragma: no cover - reads the frozen results
         return 2
     rows = pq.read_table(RESULTS_PARQUET).to_pylist()
     meta = load_bundle_meta()
-    from thesis.config import Provenance
+    from thesis.eval.results import provenance_from_rows
 
-    prov = Provenance(
-        model="results",
-        model_revision="results",
-        provider="results",
-        temperature=0.6,
-        top_p=0.9,
-        max_tokens=768,
-        seed=None,
-        prompt_template_version="prompts-v1.1",
-        graph_version="graph-v1.0",
-    )
-    conditions = load_conditions(prov)
+    conditions = load_conditions(provenance_from_rows(rows))
     cells = stratified_cells(rows, conditions, meta)
     write_stratified_csv(cells)
     write_analysis_md(

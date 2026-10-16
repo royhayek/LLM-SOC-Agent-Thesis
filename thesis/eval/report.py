@@ -211,25 +211,14 @@ def write_outputs_md(
 def main() -> int:  # pragma: no cover - reads the frozen results and plots
     import pyarrow.parquet as pq  # type: ignore[import-untyped]
 
-    from thesis.config import Provenance
+    from thesis.eval.results import provenance_from_rows
     from thesis.eval.run import load_conditions
 
     if not RESULTS_PARQUET.exists():
         print(f"no results at {RESULTS_PARQUET}; run E9-09 first")
         return 2
     rows = pq.read_table(RESULTS_PARQUET).to_pylist()
-    prov = Provenance(
-        model="results",
-        model_revision="results",
-        provider="results",
-        temperature=0.6,
-        top_p=0.9,
-        max_tokens=768,
-        seed=None,
-        prompt_template_version="prompts-v1.1",
-        graph_version="graph-v1.0",
-    )
-    conditions = load_conditions(prov)
+    conditions = load_conditions(provenance_from_rows(rows))
 
     TABLES_DIR.mkdir(parents=True, exist_ok=True)
     (TABLES_DIR / "overall_metrics.md").write_text(
@@ -243,7 +232,11 @@ def main() -> int:  # pragma: no cover - reads the frozen results and plots
     )
     (TABLES_DIR / "cost.md").write_text(cost_table(rows), encoding="utf-8")
     tables = ["overall_metrics.md", "hypothesis_tests.md", "reliability.md", "cost.md"]
-    figures = _write_figures(rows, conditions, FIGURES_DIR)
+    try:
+        figures = _write_figures(rows, conditions, FIGURES_DIR)
+    except ImportError:
+        figures = []
+        print("matplotlib not installed; wrote tables only (figures need the plotting dependency)")
     write_outputs_md(tables, figures)
     print(f"wrote {len(tables)} tables and {len(figures)} figures")
     return 0

@@ -155,6 +155,41 @@ def test_benign_bundle_has_empty_episode_id_not_null() -> None:
     assert row.episode_id == ""
 
 
+def test_provenance_from_rows_round_trips() -> None:
+    # The provenance recovered from result rows must equal what produced them, so config_hash
+    # recomputed in analysis matches the hashes in the rows (the all-zeros-table bug).
+    from dataclasses import asdict
+
+    from thesis.config import config_hash
+    from thesis.eval.results import provenance_from_rows
+
+    config = _config(Strategy.AGENTIC, Safety.ENFORCING)
+    row = asdict(
+        build_row(
+            _result(VERDICT, Strategy.AGENTIC),
+            _bundle(),
+            config,
+            tokens_in=1,
+            tokens_out=1,
+            latency_ms=1.0,
+        )
+    )
+    # A Baseline A row (sentinel provenance) must be skipped in favour of the LLM row.
+    baseline = asdict(
+        build_row(
+            _result(VERDICT, Strategy.ML_CLASSIFIER),
+            _bundle(),
+            _config(Strategy.ML_CLASSIFIER, Safety.LOGGING_ONLY),
+            tokens_in=0,
+            tokens_out=0,
+            latency_ms=0.0,
+        )
+    )
+    prov = provenance_from_rows([baseline, row])
+    assert prov == PROV
+    assert config_hash(config) == row["config_hash"]  # recomputed hash matches the stored one
+
+
 def test_call_totals_sum_over_calls() -> None:
     records = [
         {"tokens_in": 1000, "tokens_out": 100, "latency_ms": 2000.0},

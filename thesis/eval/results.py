@@ -21,7 +21,7 @@ import pyarrow.parquet as pq  # type: ignore[import-untyped]
 
 from thesis.agent.graph import GraphTrace
 from thesis.assemble.bundles import Bundle
-from thesis.config import ExperimentConfig, config_hash
+from thesis.config import ExperimentConfig, Provenance, config_hash
 from thesis.eval.run import RunResult
 from thesis.schema.verdict import Verdict
 
@@ -165,4 +165,30 @@ def read_results(path: Path) -> list[dict[str, object]]:
     return pq.read_table(path).to_pylist()  # type: ignore[no-any-return]
 
 
-__all__ = ["ResultRow", "build_row", "call_totals", "read_results", "write_results"]
+def provenance_from_rows(rows: list[dict[str, object]]) -> Provenance:
+    """Rebuild the run's Provenance from an LLM-bearing result row, so that `config_hash` recomputed
+    in analysis matches the hashes stored in the rows (config_hash includes provenance). Baseline A
+    (ml_classifier) carries a stand-in provenance, so it is skipped."""
+    row = next(r for r in rows if str(r["strategy"]) != "ml_classifier")
+    seed = row["seed"]
+    return Provenance(
+        model=str(row["model"]),
+        model_revision=str(row["model_revision"]),
+        provider=str(row["provider"]),
+        temperature=float(cast("float", row["temperature"])),
+        top_p=float(cast("float", row["top_p"])),
+        max_tokens=int(cast("int", row["max_tokens"])),
+        seed=None if seed is None else int(cast("int", seed)),
+        prompt_template_version=str(row["prompt_template_version"]),
+        graph_version=str(row["graph_version"]),
+    )
+
+
+__all__ = [
+    "ResultRow",
+    "build_row",
+    "call_totals",
+    "provenance_from_rows",
+    "read_results",
+    "write_results",
+]
