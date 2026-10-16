@@ -19,7 +19,7 @@ export default function Recommendation(props: {
 
   const decide = (choice: "accept" | "reject") => {
     setError(null);
-    postDecision(incident.bundle_id, { decision: choice, note: note || null })
+    postDecision(incident.bundle_id, incident.condition, { decision: choice, note: note || null })
       .then((out) => {
         setDecision(out.decision);
         props.onDecided?.(out.decision);

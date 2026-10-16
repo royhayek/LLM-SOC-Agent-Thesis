@@ -144,6 +144,10 @@
             "title": "Bundle Id",
             "type": "string"
           },
+          "condition": {
+            "title": "Condition",
+            "type": "string"
+          },
           "decided_at": {
             "title": "Decided At",
             "type": "string"
@@ -166,6 +170,7 @@
         },
         "required": [
           "bundle_id",
+          "condition",
           "decision",
           "note",
           "decided_at"
@@ -583,6 +588,16 @@
             "required": true,
             "schema": {
               "title": "Bundle Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "condition",
+            "required": false,
+            "schema": {
+              "default": "C1",
+              "title": "Condition",
               "type": "string"
             }
           }

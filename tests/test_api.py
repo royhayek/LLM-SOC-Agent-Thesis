@@ -126,14 +126,29 @@ def test_decision_is_stored_and_reflected(tmp_path: Path) -> None:
     resp = client.post("/incidents/b1/decision", json={"decision": "accept", "note": "looks right"})
     assert resp.status_code == 200
     assert resp.json()["decision"] == "accept"
+    assert resp.json()["condition"] == "C1"  # defaults to the full agent
     # The decision now shows on the incident.
     assert client.get("/incidents/b1").json()["decision"] == "accept"
+
+
+def test_decision_is_scoped_to_condition(tmp_path: Path) -> None:
+    # The same bundle has a different recommendation per condition, so a decision is tied to the
+    # condition it was made under. b1 is C1; b3 is the C2 (single-source) view.
+    client = _client(tmp_path)
+    client.post("/incidents/b1/decision", json={"decision": "accept"})
+    client.post("/incidents/b3/decision", params={"condition": "C2"}, json={"decision": "reject"})
+    assert client.get("/incidents/b1").json()["decision"] == "accept"
+    assert client.get("/incidents/b3", params={"condition": "C2"}).json()["decision"] == "reject"
+    # A decision made under one condition does not leak to another's view of a different bundle.
+    assert client.get("/incidents/b1", params={"condition": "C1"}).json()["decision"] == "accept"
 
 
 def test_decision_rejects_unknown_incident_and_bad_value(tmp_path: Path) -> None:
     client = _client(tmp_path)
     assert client.post("/incidents/nope/decision", json={"decision": "accept"}).status_code == 404
     assert client.post("/incidents/b1/decision", json={"decision": "maybe"}).status_code == 422
+    # b3 is C2 only, so a decision under the default C1 is a 404 (not that incident under C1).
+    assert client.post("/incidents/b3/decision", json={"decision": "accept"}).status_code == 404
 
 
 def test_audit_and_report_endpoints(tmp_path: Path) -> None:

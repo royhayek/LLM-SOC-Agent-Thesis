@@ -20,8 +20,10 @@ async function getJson<T>(path: string): Promise<T> {
 
 export const getConditions = (): Promise<string[]> => getJson<string[]>("/conditions");
 
+// The API caps a page at 1000; one request fetches every bundle for the condition (the list pages
+// client-side). Raise this alongside the API cap if a condition ever exceeds 1000 bundles.
 export const getIncidents = (condition: string): Promise<Incident[]> =>
-  getJson<Incident[]>(`/incidents?condition=${encodeURIComponent(condition)}`);
+  getJson<Incident[]>(`/incidents?condition=${encodeURIComponent(condition)}&limit=1000`);
 
 export const getIncident = (id: string, condition: string): Promise<Incident> =>
   getJson<Incident>(
@@ -38,12 +40,20 @@ export async function getReport(id: string): Promise<string> {
   return res.text();
 }
 
-export async function postDecision(id: string, body: DecisionIn): Promise<DecisionOut> {
-  const res = await fetch(`${BASE}/incidents/${encodeURIComponent(id)}/decision`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+// A decision is tied to the condition whose recommendation the human reviewed (§6.7).
+export async function postDecision(
+  id: string,
+  condition: string,
+  body: DecisionIn,
+): Promise<DecisionOut> {
+  const res = await fetch(
+    `${BASE}/incidents/${encodeURIComponent(id)}/decision?condition=${encodeURIComponent(condition)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  );
   if (!res.ok) throw new Error(`decision failed: ${res.status}`);
   return (await res.json()) as DecisionOut;
 }
