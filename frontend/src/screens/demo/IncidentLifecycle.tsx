@@ -11,6 +11,7 @@ import { TraceSteps } from "../../components/TraceSteps";
 import { Panel, PanelHeader } from "../../components/ui/Panel";
 import { SeverityBadge } from "../../components/ui/SeverityBadge";
 import Recommendation from "../Recommendation";
+import { LiveRunButton } from "./LiveRunButton";
 
 export function IncidentLifecycle({
   bundleId,
@@ -98,6 +99,15 @@ export function IncidentLifecycle({
       )}
 
       {recommended && incident && <Recommendation incident={incident} />}
+
+      {recommended && (
+        <Panel>
+          <PanelHeader title="Prove it's real" />
+          <div className="p-4">
+            <LiveRunButton bundleId={bundleId} condition={condition} />
+          </div>
+        </Panel>
+      )}
     </div>
   );
 }
