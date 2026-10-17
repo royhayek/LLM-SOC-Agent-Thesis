@@ -16,12 +16,13 @@ import os
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, cast
 
 from openai import APIConnectionError, APIStatusError, APITimeoutError, OpenAI, RateLimitError, omit
 from openai.types.chat import ChatCompletion
 
-from thesis.obs.logging import log_llm_call
+from thesis.obs.logging import LOG_PATH, log_llm_call
 from thesis.reduce.check_tokens import (
     OUTPUT_CEILING,
     TokenCeilingError,
@@ -69,6 +70,9 @@ class LLMClient:
     max_attempts: int = MAX_ATTEMPTS
     backoff_base_s: float = BACKOFF_BASE_S
     sleep: Callable[[float], None] = time.sleep
+    # Where this client's calls are logged (§6.10). The demo live run points this at a throwaway
+    # file so it never writes the frozen experiment call log.
+    log_path: Path = LOG_PATH
     _client: OpenAI = field(init=False)
 
     def __post_init__(self) -> None:
@@ -171,6 +175,7 @@ class LLMClient:
                 config_hash=config_hash,
                 bundle_id=bundle_id,
                 repetition=repetition,
+                path=self.log_path,
             )
 
         try:

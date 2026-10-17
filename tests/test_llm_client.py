@@ -17,9 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from thesis.llm import client as client_module
 from thesis.llm.client import LLMClient, LLMError
-from thesis.obs import logging as obslog
 from thesis.reduce.check_tokens import TokenCeilingError
 
 
@@ -111,33 +109,23 @@ def test_gives_up_after_the_attempt_cap() -> None:
             client.complete("hi", node="n", bundle_id="b", config_hash="c", repetition=0)
 
 
-def test_output_over_the_ceiling_raises_and_logs(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_output_over_the_ceiling_raises_and_logs(tmp_path: Path) -> None:
     log_path = tmp_path / "llm_calls.jsonl"
-    monkeypatch.setattr(
-        client_module, "log_llm_call", lambda **kw: obslog.log_llm_call(**kw, path=log_path)
-    )
     long_completion = " ".join(["telemetry"] * 1000)  # well over the 768-token output ceiling
     with _fake_server(
         [(200, _completion_body(long_completion, completion_tokens=1000))]
     ) as base_url:
-        client = _client(base_url)
+        client = _client(base_url, log_path=log_path)
         with pytest.raises(TokenCeilingError):
             client.complete("hi", node="n", bundle_id="b", config_hash="c", repetition=0)
     record = json.loads(log_path.read_text(encoding="utf-8").strip())
     assert record["parse_outcome"] == "output_ceiling_exceeded"
 
 
-def test_one_record_with_all_twelve_fields_is_written(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_one_record_with_all_twelve_fields_is_written(tmp_path: Path) -> None:
     log_path = tmp_path / "llm_calls.jsonl"
-    monkeypatch.setattr(
-        client_module, "log_llm_call", lambda **kw: obslog.log_llm_call(**kw, path=log_path)
-    )
     with _fake_server([(200, _completion_body("ok"))]) as base_url:
-        client = _client(base_url, model_revision="rev-abc")
+        client = _client(base_url, model_revision="rev-abc", log_path=log_path)
         client.complete("hello", node="evidence", bundle_id="bun-1", config_hash="h", repetition=2)
     lines = log_path.read_text(encoding="utf-8").strip().splitlines()
     assert len(lines) == 1
@@ -209,3 +197,12 @@ def test_marker_roundtrip_against_local_ollama() -> None:
         repetition=0,
     )
     assert marker in out
+
+
+def test_client_logs_to_its_configured_log_path(tmp_path: Path) -> None:
+    # The live demo run points the client at a throwaway log so it never writes the frozen call log.
+    log = tmp_path / "live.jsonl"
+    with _fake_server([(200, _completion_body("ok"))]) as base_url:
+        client = _client(base_url, log_path=log)
+        client.complete("hi", node="evidence", bundle_id="b", config_hash="c", repetition=0)
+    assert log.exists() and log.read_text(encoding="utf-8").strip()

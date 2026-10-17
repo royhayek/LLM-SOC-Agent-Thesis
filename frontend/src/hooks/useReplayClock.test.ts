@@ -20,4 +20,14 @@ describe("useReplayClock", () => {
     const { result } = renderHook(() => useReplayClock([ev(0), ev(1000)], { maxGap: 2 }));
     expect(result.current.duration).toBeLessThanOrEqual(2); // 1000s gap compressed to <=2s
   });
+
+  it("resets to the start when the events change (new scenario/brain)", () => {
+    const { result, rerender } = renderHook(({ evs }) => useReplayClock(evs, { maxGap: 2 }), {
+      initialProps: { evs: [ev(0), ev(10)] },
+    });
+    act(() => result.current.seek(result.current.duration));
+    expect(result.current.visible.length).toBe(2); // all of scenario A revealed
+    rerender({ evs: [ev(0), ev(5), ev(50)] }); // switch to scenario B
+    expect(result.current.visible.length).toBe(1); // reset: only B's first event is visible
+  });
 });

@@ -42,7 +42,7 @@ export function TransportBar(props: {
         aria-label="timeline"
         min={0}
         max={Math.max(duration, 0.001)}
-        step={0.01}
+        step="any"
         value={Math.min(nowT, duration)}
         onChange={(e) => props.onSeek(Number(e.target.value))}
         className="h-1.5 flex-1 cursor-pointer accent-accent"

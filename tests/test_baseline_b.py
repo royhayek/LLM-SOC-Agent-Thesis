@@ -12,7 +12,6 @@ from pathlib import Path
 import pytest
 
 from thesis.baselines.baseline_b import NODE, baseline_b_verdict
-from thesis.obs import logging as obslog
 from thesis.schema.verdict import Verdict
 
 VIEW: dict[str, object] = {
@@ -125,14 +124,13 @@ def test_call_log_has_the_agents_model_and_revision(
     monkeypatch.setattr(
         bb, "render", lambda *a, **k: "prompt"
     )  # avoid needing the real template here
-    import thesis.llm.client as client_mod
-
-    monkeypatch.setattr(
-        client_mod, "log_llm_call", lambda **kw: obslog.log_llm_call(**kw, path=log_path)
-    )
     with _server(VALID) as base_url:
         client = LLMClient(
-            model="shared-model", base_url=base_url, api_key="k", model_revision="rev-9"
+            model="shared-model",
+            base_url=base_url,
+            api_key="k",
+            model_revision="rev-9",
+            log_path=log_path,
         )
         baseline_b_verdict(VIEW, client=client, bundle_id="b", config_hash="c", repetition=0)
     record = json.loads(log_path.read_text(encoding="utf-8").strip())

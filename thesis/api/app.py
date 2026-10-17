@@ -33,6 +33,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 RESULTS_PARQUET = REPO_ROOT / "results" / "results.parquet"
 REPORTS_DIR = REPO_ROOT / "reports"
 CONDITIONS_YAML = REPO_ROOT / "config" / "conditions.yaml"
+# The demo live run logs here, never the frozen experiment call log (research integrity).
+DEMO_LIVE_LOG = REPO_ROOT / "logs" / "demo_live.jsonl"
 
 HOST = "127.0.0.1"  # localhost only (§4, §6.8); never 0.0.0.0
 PORT = 8000
@@ -328,41 +330,52 @@ def create_app(
             raise HTTPException(status_code=404, detail="unknown incident")
 
         def events() -> Iterator[str]:
-            from thesis.agent.graph import run_graph
-            from thesis.eval.exploratory import _provenance
-            from thesis.eval.full_run import MODEL_REVISION
-            from thesis.eval.run import load_conditions
-            from thesis.llm.client import LLMClient
+            # Any failure (missing model/key, a model error, a reconstruction error) must surface as
+            # a clean SSE error event, never a mid-stream 500 (the headers are already sent).
+            try:
+                from thesis.agent.graph import run_graph
+                from thesis.eval.exploratory import _provenance
+                from thesis.eval.full_run import MODEL_REVISION
+                from thesis.eval.run import load_conditions
+                from thesis.llm.client import LLMClient
 
-            bundle = demo.reconstruct_bundle(bundle_id, meta=bundle_meta, alerts=alert_index)
-            client = LLMClient.from_env(model_revision=MODEL_REVISION)
-            conditions = load_conditions(_provenance(client))
-            labels = _condition_labels(conditions_path)
-            config = next(
-                (
-                    c
-                    for c in conditions
-                    if labels.get(
-                        (c.strategy.value, c.safety.value, frozenset(s.value for s in c.sources))
-                    )
-                    == condition
-                ),
-                None,
-            )
-            if config is None or config.strategy.value != "agentic":
-                detail = json.dumps({"detail": "condition not runnable live"})
+                bundle = demo.reconstruct_bundle(bundle_id, meta=bundle_meta, alerts=alert_index)
+                # Log to a throwaway path so the live run never writes the frozen call log.
+                client = LLMClient.from_env(model_revision=MODEL_REVISION, log_path=DEMO_LIVE_LOG)
+                conditions = load_conditions(_provenance(client))
+                labels = _condition_labels(conditions_path)
+                config = next(
+                    (
+                        c
+                        for c in conditions
+                        if labels.get(
+                            (
+                                c.strategy.value,
+                                c.safety.value,
+                                frozenset(s.value for s in c.sources),
+                            )
+                        )
+                        == condition
+                    ),
+                    None,
+                )
+                if config is None or config.strategy.value != "agentic":
+                    detail = json.dumps({"detail": "condition not runnable live"})
+                    yield f"event: error\ndata: {detail}\n\n"
+                    return
+                trace = run_graph(bundle, config, client=client, repetition=0)
+                for name, payload in (
+                    ("evidence", trace.findings),
+                    ("classify", trace.classification),
+                    ("recommend", trace.recommendation),
+                ):
+                    data = json.dumps({"completion": payload.model_dump_json()})
+                    yield f"event: {name}\ndata: {data}\n\n"
+                verdict = json.dumps({"withheld": trace.emitted is None})
+                yield f"event: verdict\ndata: {verdict}\n\n"
+            except Exception as exc:  # noqa: BLE001 - the stream must degrade, never 500
+                detail = json.dumps({"detail": f"live run failed: {type(exc).__name__}"})
                 yield f"event: error\ndata: {detail}\n\n"
-                return
-            trace = run_graph(bundle, config, client=client, repetition=0)
-            for name, payload in (
-                ("evidence", trace.findings),
-                ("classify", trace.classification),
-                ("recommend", trace.recommendation),
-            ):
-                data = json.dumps({"completion": payload.model_dump_json()})
-                yield f"event: {name}\ndata: {data}\n\n"
-            verdict = json.dumps({"withheld": trace.emitted is None})
-            yield f"event: verdict\ndata: {verdict}\n\n"
 
         return StreamingResponse(events(), media_type="text/event-stream")
 

@@ -236,3 +236,15 @@ def test_demo_live_requires_hosted_env(tmp_path: Path, monkeypatch) -> None:  # 
     client = _demo_client(tmp_path)
     # the live run is gated: no hosted model configured -> 503, never a 500 or a hang.
     assert client.get("/demo/live/eb1/trace").status_code == 503
+
+
+def test_demo_live_streams_error_not_500_on_partial_env(tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    # LLM_BASE_URL set (passes the 503 gate) but no model/key: the stream must emit a clean error
+    # event, never a mid-stream 500.
+    monkeypatch.setenv("LLM_BASE_URL", "http://127.0.0.1:1")
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    client = _demo_client(tmp_path)
+    resp = client.get("/demo/live/eb1/trace")
+    assert resp.status_code == 200
+    assert "event: error" in resp.text

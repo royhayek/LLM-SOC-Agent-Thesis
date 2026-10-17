@@ -22,6 +22,15 @@ export function useReplayClock(events: DemoEvent[], opts: { speed?: number; maxG
   const raf = useRef<number | null>(null);
   const last = useRef<number | null>(null);
 
+  // A new scenario or brain replaces the events — start its replay fresh, paused at the beginning.
+  // Keyed on the content (length + first/last t), not array identity, so re-renders with an equal
+  // but new array do not reset mid-replay.
+  const sig = `${events.length}:${events[0]?.t ?? 0}:${events[events.length - 1]?.t ?? 0}`;
+  useEffect(() => {
+    setNowT(0);
+    setPlaying(false);
+  }, [sig]);
+
   useEffect(() => {
     if (!playing) return;
     const tick = (ts: number) => {
