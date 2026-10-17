@@ -11,6 +11,7 @@ import { IncidentFeed, type DemoIncident } from "./demo/IncidentFeed";
 import { IncidentLifecycle } from "./demo/IncidentLifecycle";
 import { PipelineStrip, type Stage } from "./demo/PipelineStrip";
 import { ScenarioPicker } from "./demo/ScenarioPicker";
+import { Scoreboard } from "./demo/Scoreboard";
 import { TelemetryFeed } from "./demo/TelemetryFeed";
 import { TransportBar } from "./demo/TransportBar";
 
@@ -129,7 +130,7 @@ export default function Demo() {
           condition={condition}
           onCondition={setCondition}
         />
-        <span className="text-sm text-muted">{incidents.length} incident(s)</span>
+        <Scoreboard events={visible} />
       </div>
 
       {scenario?.highlight && (
