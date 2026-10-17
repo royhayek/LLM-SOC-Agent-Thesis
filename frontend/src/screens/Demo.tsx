@@ -1,12 +1,15 @@
 // The demo simulator: replay a captured attack episode end to end. A virtual clock reveals the
 // scenario's events over time, driving the pipeline strip, the telemetry feed, the incident feed and
 // the drill-in. All from frozen data (the optional live run is added in Phase 2). Recommend-only.
+import { Maximize2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import type { DemoEvent, Scenario, ScenarioEvents } from "../api/demo";
 import { getScenarioEvents, getScenarios } from "../api/demo";
+import { Button } from "../components/ui/Button";
 import { Panel, PanelHeader } from "../components/ui/Panel";
 import { useReplayClock } from "../hooks/useReplayClock";
+import { cn } from "../lib/utils";
 import { IncidentFeed, type DemoIncident } from "./demo/IncidentFeed";
 import { IncidentLifecycle } from "./demo/IncidentLifecycle";
 import { PipelineStrip, type Stage } from "./demo/PipelineStrip";
@@ -58,12 +61,19 @@ function deriveIncidents(visible: DemoEvent[]): DemoIncident[] {
   return order.map((id) => map.get(id)!);
 }
 
-export default function Demo() {
+export default function Demo({ onPresenter }: { onPresenter?: (on: boolean) => void } = {}) {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [scenarioId, setScenarioId] = useState("");
   const [condition, setCondition] = useState("C1");
   const [data, setData] = useState<ScenarioEvents | null>(null);
   const [clickedId, setClickedId] = useState<string | null>(null);
+  const [presenter, setPresenter] = useState(false);
+
+  const togglePresenter = () =>
+    setPresenter((p) => {
+      onPresenter?.(!p);
+      return !p;
+    });
 
   useEffect(() => {
     getScenarios()
@@ -104,10 +114,13 @@ export default function Demo() {
         clock.step(1);
       } else if (e.code === "ArrowLeft") {
         clock.step(-1);
+      } else if (e.code === "KeyP") {
+        togglePresenter();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clock]);
 
   const incidents = deriveIncidents(visible);
@@ -117,7 +130,12 @@ export default function Demo() {
   const scenario = scenarios.find((s) => s.id === scenarioId);
 
   return (
-    <section className="mx-auto flex h-full max-w-7xl flex-col gap-4">
+    <section
+      className={cn(
+        "mx-auto flex h-full max-w-7xl flex-col gap-4",
+        presenter && "[zoom:1.15]",
+      )}
+    >
       <Panel className="p-3">
         <PipelineStrip activeStage={activeStage} />
       </Panel>
@@ -130,7 +148,19 @@ export default function Demo() {
           condition={condition}
           onCondition={setCondition}
         />
-        <Scoreboard events={visible} />
+        <div className="flex items-center gap-3">
+          <Scoreboard events={visible} />
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label="presenter mode"
+            title="Presenter mode (p)"
+            onClick={togglePresenter}
+          >
+            <Maximize2 className="h-4 w-4" />
+            Presenter
+          </Button>
+        </div>
       </div>
 
       {scenario?.highlight && (

@@ -60,4 +60,11 @@ describe("Demo", () => {
     // the pipeline strip is present (its "Detectors" node is unique to the strip)
     expect(screen.getByText("Detectors")).toBeInTheDocument();
   });
+
+  it("toggles presenter mode", async () => {
+    render(<Demo />);
+    await waitFor(() => screen.getByText("s"));
+    fireEvent.click(screen.getByRole("button", { name: /presenter/i }));
+    expect(document.querySelector("section")).toHaveClass("[zoom:1.15]");
+  });
 });

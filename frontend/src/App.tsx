@@ -38,6 +38,7 @@ export default function App() {
   const [view, setView] = useState<View>({ name: "incidents" });
   const [conditions, setConditions] = useState<string[]>(["C1"]);
   const [condition, setCondition] = useState("C1");
+  const [presenter, setPresenter] = useState(false);
 
   useEffect(() => {
     getConditions()
@@ -47,9 +48,11 @@ export default function App() {
 
   const openDetail = (bundleId: string) => setView({ name: "detail", bundleId });
   const current = view.name;
+  const hideChrome = presenter && current === "demo";
 
   return (
     <div className="app-grid flex min-h-screen">
+      {!hideChrome && (
       <aside className="flex w-60 shrink-0 flex-col justify-between border-r border-line bg-panel/60 px-3 py-5">
         <div>
           <div className="flex items-center gap-2.5 px-2 pb-6">
@@ -90,14 +93,17 @@ export default function App() {
           </p>
         </div>
       </aside>
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-line px-6">
-          <h1 className="text-sm font-medium text-muted">
-            {current === "audit" ? "Audit log" : current === "demo" ? "Demo" : "Incidents"}
-          </h1>
-          <span className="font-mono text-[11px] text-muted">127.0.0.1 · read-only</span>
-        </header>
+        {!hideChrome && (
+          <header className="flex h-14 items-center justify-between border-b border-line px-6">
+            <h1 className="text-sm font-medium text-muted">
+              {current === "audit" ? "Audit log" : current === "demo" ? "Demo" : "Incidents"}
+            </h1>
+            <span className="font-mono text-[11px] text-muted">127.0.0.1 · read-only</span>
+          </header>
+        )}
 
         <main className="fade-in min-w-0 flex-1 overflow-auto p-6">
           {current === "incidents" && (
@@ -116,7 +122,7 @@ export default function App() {
             />
           )}
           {current === "audit" && <AuditLog onSelectIncident={openDetail} />}
-          {current === "demo" && <Demo />}
+          {current === "demo" && <Demo onPresenter={setPresenter} />}
         </main>
       </div>
     </div>
