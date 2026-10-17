@@ -1,0 +1,49 @@
+# Curated scenarios for the console demo simulator (presentation config, not a locked parameter).
+# Each scenario selects its bundles by episode_id, or by an explicit bundle_ids list (benign bundles
+# carry no episode). Episodes were chosen from the frozen run against the design-spec criteria.
+scenarios:
+  - id: ssh-bruteforce
+    title: "SSH brute-force on the honeypot"
+    description: "An external host guesses SSH passwords against the honeypot; the agent isolates it."
+    episode_id: ep-ssh-eval-005
+    bundle_ids: null
+    attack_family: ssh_brute_force
+    default_condition: C1
+    highlight: null
+  - id: syn-flood
+    title: "SYN flood on an IoT device"
+    description: "A volumetric TCP SYN flood, seen in the network flows across several windows."
+    episode_id: ep-syn-eval-005
+    bundle_ids: null
+    attack_family: syn_flood
+    default_condition: C1
+    highlight: null
+  - id: mqtt-flood
+    title: "MQTT publish flood on the broker"
+    description: "A device floods the MQTT broker with PUBLISH messages over several windows."
+    episode_id: ep-mflood-eval-004
+    bundle_ids: null
+    attack_family: mqtt_publish_flood
+    default_condition: C1
+    highlight: null
+  - id: benign
+    title: "Quiet traffic, and false alarms"
+    description: "A window of benign IoT traffic with no attack present."
+    episode_id: null
+    bundle_ids:
+      - "iot-hum-01|2026-10-11T11:37:20+00:00"
+      - "iot-hum-01|2026-10-11T11:56:20+00:00"
+      - "iot-hum-01|2026-10-11T11:57:20+00:00"
+      - "iot-hum-01|2026-10-11T11:58:20+00:00"
+      - "iot-hum-01|2026-10-11T11:59:20+00:00"
+    attack_family: benign
+    default_condition: C1
+    highlight: "Honest limitation: the agent over-triages benign traffic as an attack. Toggle Brain to Baseline A to compare."
+  - id: honest-limitation
+    title: "Where the agent struggles"
+    description: "A botnet episode the agent misclassifies or withholds; Baseline A classifies it correctly."
+    episode_id: ep-bot-eval-004
+    bundle_ids: null
+    attack_family: botnet
+    default_condition: C1
+    highlight: "Toggle Brain to Baseline A (C7): it gets the class right where the agent does not (H2/H4)."
