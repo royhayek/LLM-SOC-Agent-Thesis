@@ -12,6 +12,7 @@ or any network (§1.1).
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
@@ -315,6 +316,55 @@ def create_app(
         return ScenarioEvents(
             scenario=scenario, condition=condition, window_seconds=window, events=events
         )
+
+    @app.get("/demo/live/{bundle_id}/trace")
+    def live_trace(bundle_id: str, condition: str = DEFAULT_CONDITION) -> StreamingResponse:
+        # Run the real three-node graph on one bundle against the hosted model and stream the node
+        # outputs. Gated on the hosted env. Never writes results (§ frozen experiment); the agent
+        # only recommends (§1.1). Not configured -> 503, never a 500 or a hang.
+        if not os.environ.get("LLM_BASE_URL"):
+            raise HTTPException(status_code=503, detail="hosted model not configured")
+        if bundle_id not in bundle_meta:
+            raise HTTPException(status_code=404, detail="unknown incident")
+
+        def events() -> Iterator[str]:
+            from thesis.agent.graph import run_graph
+            from thesis.eval.exploratory import _provenance
+            from thesis.eval.full_run import MODEL_REVISION
+            from thesis.eval.run import load_conditions
+            from thesis.llm.client import LLMClient
+
+            bundle = demo.reconstruct_bundle(bundle_id, meta=bundle_meta, alerts=alert_index)
+            client = LLMClient.from_env(model_revision=MODEL_REVISION)
+            conditions = load_conditions(_provenance(client))
+            labels = _condition_labels(conditions_path)
+            config = next(
+                (
+                    c
+                    for c in conditions
+                    if labels.get(
+                        (c.strategy.value, c.safety.value, frozenset(s.value for s in c.sources))
+                    )
+                    == condition
+                ),
+                None,
+            )
+            if config is None or config.strategy.value != "agentic":
+                detail = json.dumps({"detail": "condition not runnable live"})
+                yield f"event: error\ndata: {detail}\n\n"
+                return
+            trace = run_graph(bundle, config, client=client, repetition=0)
+            for name, payload in (
+                ("evidence", trace.findings),
+                ("classify", trace.classification),
+                ("recommend", trace.recommendation),
+            ):
+                data = json.dumps({"completion": payload.model_dump_json()})
+                yield f"event: {name}\ndata: {data}\n\n"
+            verdict = json.dumps({"withheld": trace.emitted is None})
+            yield f"event: verdict\ndata: {verdict}\n\n"
+
+        return StreamingResponse(events(), media_type="text/event-stream")
 
     return app
 

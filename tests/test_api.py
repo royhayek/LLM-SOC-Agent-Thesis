@@ -229,3 +229,10 @@ def test_demo_scenarios_list_and_events(tmp_path: Path) -> None:
     assert {"bundle_formed", "verdict", "recommendation"} <= kinds
     assert {e["bundle_id"] for e in ev["events"]} == {"eb1", "eb2"}
     assert client.get("/demo/scenarios/nope").status_code == 404
+
+
+def test_demo_live_requires_hosted_env(tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.delenv("LLM_BASE_URL", raising=False)
+    client = _demo_client(tmp_path)
+    # the live run is gated: no hosted model configured -> 503, never a 500 or a hang.
+    assert client.get("/demo/live/eb1/trace").status_code == 503

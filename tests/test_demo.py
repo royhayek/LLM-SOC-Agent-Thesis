@@ -139,3 +139,16 @@ def test_bundle_ids_selector_when_no_episode() -> None:
         call_log_path=None,
     )
     assert {e.bundle_id for e in events} == {"b2"}  # only the listed bundle
+
+
+@pytest.mark.skipif(not EVAL_PARQUET.exists(), reason="bundle parquet not on disk")
+def test_reconstruct_bundle_from_parquet() -> None:
+    from thesis.api.demo import reconstruct_bundle
+
+    meta = load_bundle_meta()
+    alerts = load_alert_index()
+    bid = next(b for b, m in meta.items() if m.alert_ids and all(a in alerts for a in m.alert_ids))
+    bundle = reconstruct_bundle(bid, meta=meta, alerts=alerts)
+    assert bundle.bundle_id == bid
+    assert len(bundle.alerts) == len(meta[bid].alert_ids)
+    assert all(a.alert_id for a in bundle.alerts)

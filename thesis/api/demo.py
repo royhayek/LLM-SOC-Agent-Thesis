@@ -13,6 +13,9 @@ from typing import Literal, cast
 import yaml  # type: ignore[import-untyped]
 from pydantic import BaseModel
 
+from thesis.assemble.bundles import Bundle
+from thesis.schema.alert import Alert
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCENARIOS_PATH = REPO_ROOT / "config" / "demo_scenarios.yaml"
 EVAL_PARQUET = REPO_ROOT / "data" / "bundles" / "v1.0.0" / "eval.parquet"
@@ -252,6 +255,25 @@ def build_scenario_events(
     return sorted(events, key=lambda e: e.t)
 
 
+def reconstruct_bundle(
+    bundle_id: str, *, meta: dict[str, BundleMeta], alerts: dict[str, AlertRow]
+) -> Bundle:
+    """Rebuild a full `Bundle` (with real `Alert` objects) from the persisted parquet, for the live
+    run — no corpus rerun. `alert_json` round-trips back into an `Alert`."""
+    m = meta[bundle_id]
+    objs = tuple(Alert.model_validate(alerts[a].alert_json) for a in m.alert_ids if a in alerts)
+    return Bundle(
+        bundle_id=m.bundle_id,
+        device=m.device,
+        window_start=m.window_start,
+        window_end=m.window_end,
+        label=m.label,
+        episode_id=m.episode_id,
+        sources=tuple(m.sources),
+        alerts=objs,
+    )
+
+
 __all__ = [
     "ANNOTATED_DIRS",
     "EVAL_PARQUET",
@@ -264,4 +286,5 @@ __all__ = [
     "load_alert_index",
     "load_bundle_meta",
     "load_scenarios",
+    "reconstruct_bundle",
 ]
