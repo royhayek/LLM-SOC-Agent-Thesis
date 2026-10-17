@@ -51,7 +51,7 @@ export default function App() {
   const hideChrome = presenter && current === "demo";
 
   return (
-    <div className="app-grid flex min-h-screen">
+    <div className="app-grid flex h-screen overflow-hidden">
       {!hideChrome && (
       <aside className="flex w-60 shrink-0 flex-col justify-between border-r border-line bg-panel/60 px-3 py-5">
         <div>
@@ -95,9 +95,9 @@ export default function App() {
       </aside>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {!hideChrome && (
-          <header className="flex h-14 items-center justify-between border-b border-line px-6">
+          <header className="flex h-14 shrink-0 items-center justify-between border-b border-line px-6">
             <h1 className="text-sm font-medium text-muted">
               {current === "audit" ? "Audit log" : current === "demo" ? "Demo" : "Incidents"}
             </h1>
@@ -105,7 +105,7 @@ export default function App() {
           </header>
         )}
 
-        <main className="fade-in min-w-0 flex-1 overflow-auto p-6">
+        <main className="fade-in min-h-0 min-w-0 flex-1 overflow-auto p-6">
           {current === "incidents" && (
             <IncidentList
               condition={condition}
