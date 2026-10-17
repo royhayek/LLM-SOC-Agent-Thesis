@@ -1,15 +1,20 @@
 // The console shell: a fixed sidebar, a top bar, and one of four screens (list, detail, decision,
 // audit). Localhost only. The agent recommends and never executes.
-import { ListChecks, Lock, ScrollText, ShieldCheck } from "lucide-react";
+import { ListChecks, Lock, PlayCircle, ScrollText, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getConditions } from "./api/client";
 import { cn } from "./lib/utils";
 import AuditLog from "./screens/AuditLog";
+import Demo from "./screens/Demo";
 import IncidentDetail from "./screens/IncidentDetail";
 import IncidentList from "./screens/IncidentList";
 
-type View = { name: "incidents" } | { name: "detail"; bundleId: string } | { name: "audit" };
+type View =
+  | { name: "incidents" }
+  | { name: "detail"; bundleId: string }
+  | { name: "audit" }
+  | { name: "demo" };
 
 function NavItem(props: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
   return (
@@ -67,6 +72,12 @@ export default function App() {
               icon={<ScrollText className="h-4 w-4" />}
               label="Audit log"
             />
+            <NavItem
+              active={current === "demo"}
+              onClick={() => setView({ name: "demo" })}
+              icon={<PlayCircle className="h-4 w-4" />}
+              label="Demo"
+            />
           </nav>
         </div>
         <div className="rounded-md border border-line bg-panel-2 px-3 py-2.5">
@@ -83,7 +94,7 @@ export default function App() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between border-b border-line px-6">
           <h1 className="text-sm font-medium text-muted">
-            {current === "audit" ? "Audit log" : "Incidents"}
+            {current === "audit" ? "Audit log" : current === "demo" ? "Demo" : "Incidents"}
           </h1>
           <span className="font-mono text-[11px] text-muted">127.0.0.1 · read-only</span>
         </header>
@@ -105,6 +116,7 @@ export default function App() {
             />
           )}
           {current === "audit" && <AuditLog onSelectIncident={openDetail} />}
+          {current === "demo" && <Demo />}
         </main>
       </div>
     </div>
