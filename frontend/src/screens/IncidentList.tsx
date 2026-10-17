@@ -47,8 +47,8 @@ export default function IncidentList(props: {
   const lastPage = (page + 1) * PAGE >= sorted.length;
 
   return (
-    <section className="mx-auto max-w-5xl space-y-4">
-      <div className="flex items-end justify-between">
+    <section className="mx-auto flex h-full max-w-5xl flex-col gap-4">
+      <div className="flex shrink-0 items-end justify-between">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Incidents</h2>
           <p className="text-sm text-muted">
@@ -80,10 +80,11 @@ export default function IncidentList(props: {
         </p>
       )}
 
-      <Panel className="overflow-hidden">
+      <Panel className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-line text-left text-xs font-medium text-muted">
+            <tr className="sticky top-0 z-10 border-b border-line bg-panel text-left text-xs font-medium text-muted">
               <th className="px-4 py-2.5 font-medium">Incident</th>
               <th className="px-4 py-2.5 font-medium">Type</th>
               <th className="px-4 py-2.5 font-medium">Severity</th>
@@ -134,6 +135,7 @@ export default function IncidentList(props: {
             )}
           </tbody>
         </table>
+        </div>
       </Panel>
 
       {sorted.length > PAGE && (
