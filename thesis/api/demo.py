@@ -8,6 +8,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Literal, cast
 
 import yaml  # type: ignore[import-untyped]
 from pydantic import BaseModel
@@ -122,13 +123,144 @@ def load_alert_index(dirs: list[Path] = ANNOTATED_DIRS) -> dict[str, AlertRow]:
     return out
 
 
+class DemoEvent(BaseModel):
+    """One time-stamped event in a scenario replay. `t` is seconds from the window start."""
+
+    t: float
+    kind: Literal["alert", "bundle_formed", "reasoning", "verdict", "recommendation"]
+    bundle_id: str
+    payload: dict[str, object]
+
+
+# Synthetic spacing (seconds) for the agent's reasoning steps after a bundle forms. The reasoning
+# happened offline, so the demo narrates it just after the bundle closes (spec §5 timing model).
+_REASON_GAP = 2.0
+
+
+def _scenario_bundles(scenario: Scenario, meta: dict[str, BundleMeta]) -> list[BundleMeta]:
+    """The scenario's bundles in time order: the episode's bundles, or the explicit bundle_ids."""
+    if scenario.episode_id is not None:
+        chosen = [m for m in meta.values() if m.episode_id == scenario.episode_id]
+    else:
+        chosen = [meta[b] for b in (scenario.bundle_ids or []) if b in meta]
+    return sorted(chosen, key=lambda m: m.window_start)
+
+
+def build_scenario_events(
+    scenario: Scenario,
+    condition: str,
+    *,
+    meta: dict[str, BundleMeta],
+    alerts: dict[str, AlertRow],
+    rows_by_bundle: dict[str, dict[str, object]],
+    call_log_path: Path | None,
+) -> list[DemoEvent]:
+    """Assemble the time-ordered replay events for one scenario under one condition, from the frozen
+    alerts, result rows and (optionally) the recorded reasoning trace."""
+    bundles = _scenario_bundles(scenario, meta)
+    if not bundles:
+        return []
+    t0 = bundles[0].window_start
+    events: list[DemoEvent] = []
+    for b in bundles:
+        for aid in b.alert_ids:
+            a = alerts.get(aid)
+            if a is None:
+                continue
+            events.append(
+                DemoEvent(
+                    t=(a.ts - t0).total_seconds(),
+                    kind="alert",
+                    bundle_id=b.bundle_id,
+                    payload={
+                        "alert_id": a.alert_id,
+                        "source": a.source,
+                        "detector_label": a.detector_label,
+                        "detector_score": a.detector_score,
+                        "summary": a.summary,
+                    },
+                )
+            )
+        bt = (b.window_end - t0).total_seconds()
+        events.append(
+            DemoEvent(
+                t=bt,
+                kind="bundle_formed",
+                bundle_id=b.bundle_id,
+                payload={
+                    "device": b.device,
+                    "sources": b.sources,
+                    "n_alerts": len(b.alert_ids),
+                    "ground_truth": b.label,
+                },
+            )
+        )
+        row = rows_by_bundle.get(b.bundle_id)
+        if row is None:
+            continue
+        trace: list[dict[str, object]] = []
+        if call_log_path is not None:
+            from thesis.api.app import _load_trace
+
+            trace = _load_trace(call_log_path, b.bundle_id, str(row["config_hash"]))
+        for i, step in enumerate(trace, start=1):
+            events.append(
+                DemoEvent(
+                    t=bt + i * _REASON_GAP,
+                    kind="reasoning",
+                    bundle_id=b.bundle_id,
+                    payload={
+                        "node": step["node"],
+                        "event": step["event"],
+                        "completion": step["completion"],
+                    },
+                )
+            )
+        vt = bt + (len(trace) + 1) * _REASON_GAP
+        emitted = bool(row["emitted"]) and row["incident_type"] is not None
+        events.append(
+            DemoEvent(
+                t=vt,
+                kind="verdict",
+                bundle_id=b.bundle_id,
+                payload=(
+                    {"withheld": True}
+                    if not emitted
+                    else {
+                        "withheld": False,
+                        "incident_type": row["incident_type"],
+                        "severity": row["severity"],
+                        "affected_device": row["affected_device"],
+                        "confidence": row["confidence"],
+                    }
+                ),
+            )
+        )
+        if emitted:
+            events.append(
+                DemoEvent(
+                    t=vt + _REASON_GAP,
+                    kind="recommendation",
+                    bundle_id=b.bundle_id,
+                    payload={
+                        "recommended_action": row["recommended_action"],
+                        "severity": row["severity"],
+                        "evidence": list(cast("list[object]", row["evidence"] or [])),
+                    },
+                )
+            )
+    return sorted(events, key=lambda e: e.t)
+
+
 __all__ = [
     "ANNOTATED_DIRS",
     "EVAL_PARQUET",
     "SCENARIOS_PATH",
     "AlertRow",
     "BundleMeta",
+    "DemoEvent",
     "Scenario",
+    "build_scenario_events",
     "load_alert_index",
     "load_bundle_meta",
     "load_scenarios",
