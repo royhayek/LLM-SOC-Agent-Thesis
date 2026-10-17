@@ -5,10 +5,10 @@
 // rehype-raw), so an attacker's `<img onerror>` in the report shows as inert text, not an element.
 import { ArrowLeft, Cpu } from "lucide-react";
 import { useEffect, useState } from "react";
-import ReactMarkdown, { type Components } from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 import { getIncident, getReport, traceUrl, type Incident } from "../api/client";
+import { ReportMarkdown } from "../components/ReportMarkdown";
+import { TraceSteps } from "../components/TraceSteps";
 import { Panel, PanelHeader } from "../components/ui/Panel";
 import { SeverityBadge } from "../components/ui/SeverityBadge";
 import { Button } from "../components/ui/Button";
@@ -18,51 +18,6 @@ interface TraceStep {
   event: string;
   completion: string;
 }
-
-const STEP_TITLE: Record<string, string> = {
-  evidence: "Evidence analysis",
-  classify: "Classification",
-  recommend: "Recommendation",
-};
-
-// Pretty-print a reasoning-trace completion when it is JSON (the node outputs are), else leave it.
-function beautifyJson(text: string): string {
-  try {
-    return JSON.stringify(JSON.parse(text), null, 2);
-  } catch {
-    return text;
-  }
-}
-
-// Tailwind-styled renderers for the report Markdown, to match the console. `node` (the hast node)
-// is pulled out of each so it is not spread onto the DOM element.
-const REPORT_MD: Components = {
-  h1: ({ node: _n, ...p }) => <h1 className="mb-2 text-base font-semibold tracking-tight" {...p} />,
-  h2: ({ node: _n, ...p }) => (
-    <h2 className="mt-4 mb-1.5 text-sm font-semibold tracking-tight" {...p} />
-  ),
-  h3: ({ node: _n, ...p }) => <h3 className="mt-3 mb-1 text-sm font-medium" {...p} />,
-  p: ({ node: _n, ...p }) => <p className="my-2 text-sm leading-relaxed text-text/90" {...p} />,
-  ul: ({ node: _n, ...p }) => (
-    <ul className="my-2 list-disc space-y-1 pl-5 text-sm text-text/90" {...p} />
-  ),
-  ol: ({ node: _n, ...p }) => (
-    <ol className="my-2 list-decimal space-y-1 pl-5 text-sm text-text/90" {...p} />
-  ),
-  li: ({ node: _n, ...p }) => <li className="leading-relaxed" {...p} />,
-  table: ({ node: _n, ...p }) => <table className="my-2 w-full border-collapse text-sm" {...p} />,
-  th: ({ node: _n, ...p }) => (
-    <th className="border-b border-line px-2 py-1 text-left font-medium text-muted" {...p} />
-  ),
-  td: ({ node: _n, ...p }) => <td className="border-b border-line/60 px-2 py-1 align-top" {...p} />,
-  code: ({ node: _n, ...p }) => (
-    <code className="rounded bg-panel-2 px-1 py-0.5 font-mono text-xs break-all" {...p} />
-  ),
-  a: ({ node: _n, ...p }) => <a className="text-accent underline" {...p} />,
-  hr: ({ node: _n, ...p }) => <hr className="my-3 border-line" {...p} />,
-  strong: ({ node: _n, ...p }) => <strong className="font-semibold" {...p} />,
-  em: ({ node: _n, ...p }) => <em className="italic" {...p} />,
-};
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -151,11 +106,7 @@ export default function IncidentDetail(props: {
             <PanelHeader title="Report" />
             <div className="p-4">
               {report ? (
-                <div className="max-w-none overflow-x-auto text-text">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={REPORT_MD}>
-                    {report}
-                  </ReactMarkdown>
-                </div>
+                <ReportMarkdown markdown={report} />
               ) : (
                 <p className="text-sm text-muted">No report for this incident.</p>
               )}
@@ -196,20 +147,7 @@ export default function IncidentDetail(props: {
             {trace.length === 0 ? (
               <p className="text-sm text-muted">No recorded trace.</p>
             ) : (
-              <ol className="space-y-4">
-                {trace.map((step, i) => (
-                  <li key={step.event} className="relative pl-8">
-                    <span className="absolute top-0 left-0 flex h-6 w-6 items-center justify-center rounded-full border border-line-strong bg-panel-2 font-mono text-xs text-accent">
-                      {i + 1}
-                    </span>
-                    <div className="text-sm font-medium">{STEP_TITLE[step.event] ?? step.event}</div>
-                    <div className="sr-only">{step.event}</div>
-                    <pre className="mt-1.5 overflow-auto rounded border border-line bg-panel-2 p-2.5 font-mono text-xs leading-relaxed whitespace-pre-wrap text-text/80">
-                      {beautifyJson(step.completion)}
-                    </pre>
-                  </li>
-                ))}
-              </ol>
+              <TraceSteps steps={trace} />
             )}
           </div>
         </Panel>

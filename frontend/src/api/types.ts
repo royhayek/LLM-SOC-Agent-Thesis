@@ -38,6 +38,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/demo/live/{bundle_id}/trace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Live Trace */
+        get: operations["live_trace_demo_live__bundle_id__trace_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/demo/scenarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Scenarios */
+        get: operations["list_scenarios_demo_scenarios_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/demo/scenarios/{scenario_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Scenario Events */
+        get: operations["scenario_events_demo_scenarios__scenario_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/incidents": {
         parameters: {
             query?: never;
@@ -187,6 +238,25 @@ export interface components {
             /** Note */
             note: string | null;
         };
+        /**
+         * DemoEvent
+         * @description One time-stamped event in a scenario replay. `t` is seconds from the window start.
+         */
+        DemoEvent: {
+            /** Bundle Id */
+            bundle_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "alert" | "bundle_formed" | "reasoning" | "verdict" | "recommendation";
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** T */
+            t: number;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -222,6 +292,42 @@ export interface components {
         Recommendation: {
             recommended_action: components["schemas"]["Action"];
             severity: components["schemas"]["Severity"];
+        };
+        /**
+         * Scenario
+         * @description One curated replay scenario. It selects its bundles by `episode_id`, or by an explicit
+         *     `bundle_ids` list when the bundles carry no episode (benign background traffic).
+         */
+        Scenario: {
+            /** Attack Family */
+            attack_family: string | null;
+            /** Bundle Ids */
+            bundle_ids: string[] | null;
+            /** Default Condition */
+            default_condition: string;
+            /** Description */
+            description: string;
+            /** Episode Id */
+            episode_id: string | null;
+            /** Highlight */
+            highlight: string | null;
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+        };
+        /**
+         * ScenarioEvents
+         * @description A demo scenario and its time-ordered replay events, under one condition.
+         */
+        ScenarioEvents: {
+            /** Condition */
+            condition: string;
+            /** Events */
+            events: components["schemas"]["DemoEvent"][];
+            scenario: components["schemas"]["Scenario"];
+            /** Window Seconds */
+            window_seconds: number;
         };
         /**
          * Severity
@@ -312,6 +418,92 @@ export interface operations {
                 };
                 content: {
                     "application/json": string[];
+                };
+            };
+        };
+    };
+    live_trace_demo_live__bundle_id__trace_get: {
+        parameters: {
+            query?: {
+                condition?: string;
+            };
+            header?: never;
+            path: {
+                bundle_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_scenarios_demo_scenarios_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Scenario"][];
+                };
+            };
+        };
+    };
+    scenario_events_demo_scenarios__scenario_id__get: {
+        parameters: {
+            query?: {
+                condition?: string;
+            };
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioEvents"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

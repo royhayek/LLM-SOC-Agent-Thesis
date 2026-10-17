@@ -12,6 +12,7 @@ or any network (§1.1).
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
@@ -22,7 +23,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
 
-from thesis.api import db
+from thesis.api import db, demo
 from thesis.obs.logging import LOG_PATH
 from thesis.report.render import report_filename
 from thesis.safety.audit import AUDIT_PATH, AuditRecord
@@ -32,6 +33,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 RESULTS_PARQUET = REPO_ROOT / "results" / "results.parquet"
 REPORTS_DIR = REPO_ROOT / "reports"
 CONDITIONS_YAML = REPO_ROOT / "config" / "conditions.yaml"
+# The demo live run logs here, never the frozen experiment call log (research integrity).
+DEMO_LIVE_LOG = REPO_ROOT / "logs" / "demo_live.jsonl"
 
 HOST = "127.0.0.1"  # localhost only (§4, §6.8); never 0.0.0.0
 PORT = 8000
@@ -63,6 +66,15 @@ class DecisionOut(BaseModel):
     decision: str
     note: str | None
     decided_at: str
+
+
+class ScenarioEvents(BaseModel):
+    """A demo scenario and its time-ordered replay events, under one condition."""
+
+    scenario: demo.Scenario
+    condition: str
+    window_seconds: float
+    events: list[demo.DemoEvent]
 
 
 def _condition_labels(path: Path = CONDITIONS_YAML) -> dict[tuple[str, str, frozenset[str]], str]:
@@ -153,10 +165,34 @@ def create_app(
     db_path: Path = db.DB_PATH,
     call_log_path: Path = LOG_PATH,
     conditions_path: Path = CONDITIONS_YAML,
+    scenarios_path: Path = demo.SCENARIOS_PATH,
+    eval_path: Path = demo.EVAL_PARQUET,
+    annotated_dirs: list[Path] | None = None,
+    demo_bundle_meta: dict[str, demo.BundleMeta] | None = None,
+    demo_alert_index: dict[str, demo.AlertRow] | None = None,
 ) -> FastAPI:
     """Build the console API over the given artifact paths (so tests can point at fixtures)."""
     app = FastAPI(title="SOC console", description="Read-only over experiment outputs (EPIC-10).")
     by_condition = _load_by_condition(results_path, _condition_labels(conditions_path))
+
+    # Demo-simulator data: the catalog, and the bundle/alert indexes (loaded once, or injected by
+    # tests). Missing artifacts degrade to an empty catalog so the app still starts.
+    scenarios = (
+        {s.id: s for s in demo.load_scenarios(scenarios_path)} if scenarios_path.exists() else {}
+    )
+    if demo_bundle_meta is not None:
+        bundle_meta = demo_bundle_meta
+    elif eval_path.exists():
+        bundle_meta = demo.load_bundle_meta(eval_path)
+    else:
+        bundle_meta = {}
+    alert_index = (
+        demo_alert_index
+        if demo_alert_index is not None
+        else demo.load_alert_index(
+            annotated_dirs if annotated_dirs is not None else demo.ANNOTATED_DIRS
+        )
+    )
 
     def _incident(
         condition: str, bundle_id: str, row: dict[str, object], conn: sqlite3.Connection
@@ -259,6 +295,89 @@ def create_app(
         finally:
             conn.close()
         return DecisionOut.model_validate(stored)
+
+    @app.get("/demo/scenarios")
+    def list_scenarios() -> list[demo.Scenario]:
+        return list(scenarios.values())
+
+    @app.get("/demo/scenarios/{scenario_id}")
+    def scenario_events(scenario_id: str, condition: str = DEFAULT_CONDITION) -> ScenarioEvents:
+        scenario = scenarios.get(scenario_id)
+        if scenario is None:
+            raise HTTPException(status_code=404, detail="unknown scenario")
+        rows = _rows_for(condition)
+        events = demo.build_scenario_events(
+            scenario,
+            condition,
+            meta=bundle_meta,
+            alerts=alert_index,
+            rows_by_bundle=rows,
+            call_log_path=call_log_path,
+        )
+        window = max((e.t for e in events), default=0.0)
+        return ScenarioEvents(
+            scenario=scenario, condition=condition, window_seconds=window, events=events
+        )
+
+    @app.get("/demo/live/{bundle_id}/trace")
+    def live_trace(bundle_id: str, condition: str = DEFAULT_CONDITION) -> StreamingResponse:
+        # Run the real three-node graph on one bundle against the hosted model and stream the node
+        # outputs. Gated on the hosted env. Never writes results (§ frozen experiment); the agent
+        # only recommends (§1.1). Not configured -> 503, never a 500 or a hang.
+        if not os.environ.get("LLM_BASE_URL"):
+            raise HTTPException(status_code=503, detail="hosted model not configured")
+        if bundle_id not in bundle_meta:
+            raise HTTPException(status_code=404, detail="unknown incident")
+
+        def events() -> Iterator[str]:
+            # Any failure (missing model/key, a model error, a reconstruction error) must surface as
+            # a clean SSE error event, never a mid-stream 500 (the headers are already sent).
+            try:
+                from thesis.agent.graph import run_graph
+                from thesis.eval.exploratory import _provenance
+                from thesis.eval.full_run import MODEL_REVISION
+                from thesis.eval.run import load_conditions
+                from thesis.llm.client import LLMClient
+
+                bundle = demo.reconstruct_bundle(bundle_id, meta=bundle_meta, alerts=alert_index)
+                # Log to a throwaway path so the live run never writes the frozen call log.
+                client = LLMClient.from_env(model_revision=MODEL_REVISION, log_path=DEMO_LIVE_LOG)
+                conditions = load_conditions(_provenance(client))
+                labels = _condition_labels(conditions_path)
+                config = next(
+                    (
+                        c
+                        for c in conditions
+                        if labels.get(
+                            (
+                                c.strategy.value,
+                                c.safety.value,
+                                frozenset(s.value for s in c.sources),
+                            )
+                        )
+                        == condition
+                    ),
+                    None,
+                )
+                if config is None or config.strategy.value != "agentic":
+                    detail = json.dumps({"detail": "condition not runnable live"})
+                    yield f"event: error\ndata: {detail}\n\n"
+                    return
+                trace = run_graph(bundle, config, client=client, repetition=0)
+                for name, payload in (
+                    ("evidence", trace.findings),
+                    ("classify", trace.classification),
+                    ("recommend", trace.recommendation),
+                ):
+                    data = json.dumps({"completion": payload.model_dump_json()})
+                    yield f"event: {name}\ndata: {data}\n\n"
+                verdict = json.dumps({"withheld": trace.emitted is None})
+                yield f"event: verdict\ndata: {verdict}\n\n"
+            except Exception as exc:  # noqa: BLE001 - the stream must degrade, never 500
+                detail = json.dumps({"detail": f"live run failed: {type(exc).__name__}"})
+                yield f"event: error\ndata: {detail}\n\n"
+
+        return StreamingResponse(events(), media_type="text/event-stream")
 
     return app
 

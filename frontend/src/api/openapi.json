@@ -178,6 +178,43 @@
         "title": "DecisionOut",
         "type": "object"
       },
+      "DemoEvent": {
+        "description": "One time-stamped event in a scenario replay. `t` is seconds from the window start.",
+        "properties": {
+          "bundle_id": {
+            "title": "Bundle Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "alert",
+              "bundle_formed",
+              "reasoning",
+              "verdict",
+              "recommendation"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "t": {
+            "title": "T",
+            "type": "number"
+          }
+        },
+        "required": [
+          "t",
+          "kind",
+          "bundle_id",
+          "payload"
+        ],
+        "title": "DemoEvent",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -273,6 +310,117 @@
           "severity"
         ],
         "title": "Recommendation",
+        "type": "object"
+      },
+      "Scenario": {
+        "description": "One curated replay scenario. It selects its bundles by `episode_id`, or by an explicit\n`bundle_ids` list when the bundles carry no episode (benign background traffic).",
+        "properties": {
+          "attack_family": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attack Family"
+          },
+          "bundle_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bundle Ids"
+          },
+          "default_condition": {
+            "title": "Default Condition",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "episode_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Episode Id"
+          },
+          "highlight": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Highlight"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "episode_id",
+          "bundle_ids",
+          "attack_family",
+          "default_condition",
+          "highlight"
+        ],
+        "title": "Scenario",
+        "type": "object"
+      },
+      "ScenarioEvents": {
+        "description": "A demo scenario and its time-ordered replay events, under one condition.",
+        "properties": {
+          "condition": {
+            "title": "Condition",
+            "type": "string"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/DemoEvent"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "scenario": {
+            "$ref": "#/components/schemas/Scenario"
+          },
+          "window_seconds": {
+            "title": "Window Seconds",
+            "type": "number"
+          }
+        },
+        "required": [
+          "scenario",
+          "condition",
+          "window_seconds",
+          "events"
+        ],
+        "title": "ScenarioEvents",
         "type": "object"
       },
       "Severity": {
@@ -460,6 +608,124 @@
           }
         },
         "summary": "List Conditions"
+      }
+    },
+    "/demo/live/{bundle_id}/trace": {
+      "get": {
+        "operationId": "live_trace_demo_live__bundle_id__trace_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bundle_id",
+            "required": true,
+            "schema": {
+              "title": "Bundle Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "condition",
+            "required": false,
+            "schema": {
+              "default": "C1",
+              "title": "Condition",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Live Trace"
+      }
+    },
+    "/demo/scenarios": {
+      "get": {
+        "operationId": "list_scenarios_demo_scenarios_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Scenario"
+                  },
+                  "title": "Response List Scenarios Demo Scenarios Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Scenarios"
+      }
+    },
+    "/demo/scenarios/{scenario_id}": {
+      "get": {
+        "operationId": "scenario_events_demo_scenarios__scenario_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "condition",
+            "required": false,
+            "schema": {
+              "default": "C1",
+              "title": "Condition",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEvents"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Scenario Events"
       }
     },
     "/incidents": {

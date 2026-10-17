@@ -166,3 +166,85 @@ def test_audit_and_report_endpoints(tmp_path: Path) -> None:
     # A real bundle id (with ':' and '|') resolves to the renderer's sanitised filename.
     special = client.get(f"/reports/{SPECIAL_ID}")
     assert special.status_code == 200 and "A human decides" in special.text
+
+
+def _demo_client(tmp_path: Path) -> TestClient:
+    from datetime import UTC, datetime, timedelta
+
+    from thesis.api.demo import AlertRow, BundleMeta
+
+    rows = [{**_row("eb1"), "config_hash": "c"}, {**_row("eb2"), "config_hash": "c"}]
+    results = tmp_path / "results.parquet"
+    pq.write_table(pa.Table.from_pylist(rows), results)
+
+    catalog = tmp_path / "demo_scenarios.yaml"
+    catalog.write_text(
+        "scenarios:\n"
+        "  - id: demo-x\n"
+        "    title: t\n"
+        "    description: d\n"
+        "    episode_id: ep-x\n"
+        "    bundle_ids: null\n"
+        "    attack_family: syn_flood\n"
+        "    default_condition: C1\n"
+        "    highlight: null\n",
+        encoding="utf-8",
+    )
+    t0 = datetime(2026, 1, 1, tzinfo=UTC)
+    meta = {
+        bid: BundleMeta(
+            bundle_id=bid,
+            device="iot-cam-01",
+            window_start=t0 + timedelta(seconds=i * 60),
+            window_end=t0 + timedelta(seconds=i * 60 + 60),
+            label="syn_flood",
+            episode_id="ep-x",
+            sources=["flows"],
+            alert_ids=["a1"],
+        )
+        for i, bid in enumerate(["eb1", "eb2"])
+    }
+    alerts = {"a1": AlertRow("a1", "flows", t0 + timedelta(seconds=5), "syn_flood", 1.0, "sum", {})}
+    return TestClient(
+        create_app(
+            results_path=results,
+            reports_dir=tmp_path / "reports",
+            audit_path=tmp_path / "audit.jsonl",
+            db_path=tmp_path / "state.sqlite",
+            call_log_path=tmp_path / "nolog.jsonl",
+            scenarios_path=catalog,
+            demo_bundle_meta=meta,
+            demo_alert_index=alerts,
+        )
+    )
+
+
+def test_demo_scenarios_list_and_events(tmp_path: Path) -> None:
+    client = _demo_client(tmp_path)
+    scenarios = client.get("/demo/scenarios").json()
+    assert any(s["id"] == "demo-x" for s in scenarios)
+    ev = client.get("/demo/scenarios/demo-x", params={"condition": "C1"}).json()
+    assert ev["condition"] == "C1" and ev["window_seconds"] >= 0
+    kinds = {e["kind"] for e in ev["events"]}
+    assert {"bundle_formed", "verdict", "recommendation"} <= kinds
+    assert {e["bundle_id"] for e in ev["events"]} == {"eb1", "eb2"}
+    assert client.get("/demo/scenarios/nope").status_code == 404
+
+
+def test_demo_live_requires_hosted_env(tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.delenv("LLM_BASE_URL", raising=False)
+    client = _demo_client(tmp_path)
+    # the live run is gated: no hosted model configured -> 503, never a 500 or a hang.
+    assert client.get("/demo/live/eb1/trace").status_code == 503
+
+
+def test_demo_live_streams_error_not_500_on_partial_env(tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    # LLM_BASE_URL set (passes the 503 gate) but no model/key: the stream must emit a clean error
+    # event, never a mid-stream 500.
+    monkeypatch.setenv("LLM_BASE_URL", "http://127.0.0.1:1")
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    client = _demo_client(tmp_path)
+    resp = client.get("/demo/live/eb1/trace")
+    assert resp.status_code == 200
+    assert "event: error" in resp.text
