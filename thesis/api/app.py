@@ -22,7 +22,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from pydantic import BaseModel
 
-from thesis.api import db
+from thesis.api import db, demo
 from thesis.obs.logging import LOG_PATH
 from thesis.report.render import report_filename
 from thesis.safety.audit import AUDIT_PATH, AuditRecord
@@ -63,6 +63,15 @@ class DecisionOut(BaseModel):
     decision: str
     note: str | None
     decided_at: str
+
+
+class ScenarioEvents(BaseModel):
+    """A demo scenario and its time-ordered replay events, under one condition."""
+
+    scenario: demo.Scenario
+    condition: str
+    window_seconds: float
+    events: list[demo.DemoEvent]
 
 
 def _condition_labels(path: Path = CONDITIONS_YAML) -> dict[tuple[str, str, frozenset[str]], str]:
@@ -153,10 +162,34 @@ def create_app(
     db_path: Path = db.DB_PATH,
     call_log_path: Path = LOG_PATH,
     conditions_path: Path = CONDITIONS_YAML,
+    scenarios_path: Path = demo.SCENARIOS_PATH,
+    eval_path: Path = demo.EVAL_PARQUET,
+    annotated_dirs: list[Path] | None = None,
+    demo_bundle_meta: dict[str, demo.BundleMeta] | None = None,
+    demo_alert_index: dict[str, demo.AlertRow] | None = None,
 ) -> FastAPI:
     """Build the console API over the given artifact paths (so tests can point at fixtures)."""
     app = FastAPI(title="SOC console", description="Read-only over experiment outputs (EPIC-10).")
     by_condition = _load_by_condition(results_path, _condition_labels(conditions_path))
+
+    # Demo-simulator data: the catalog, and the bundle/alert indexes (loaded once, or injected by
+    # tests). Missing artifacts degrade to an empty catalog so the app still starts.
+    scenarios = (
+        {s.id: s for s in demo.load_scenarios(scenarios_path)} if scenarios_path.exists() else {}
+    )
+    if demo_bundle_meta is not None:
+        bundle_meta = demo_bundle_meta
+    elif eval_path.exists():
+        bundle_meta = demo.load_bundle_meta(eval_path)
+    else:
+        bundle_meta = {}
+    alert_index = (
+        demo_alert_index
+        if demo_alert_index is not None
+        else demo.load_alert_index(
+            annotated_dirs if annotated_dirs is not None else demo.ANNOTATED_DIRS
+        )
+    )
 
     def _incident(
         condition: str, bundle_id: str, row: dict[str, object], conn: sqlite3.Connection
@@ -259,6 +292,29 @@ def create_app(
         finally:
             conn.close()
         return DecisionOut.model_validate(stored)
+
+    @app.get("/demo/scenarios")
+    def list_scenarios() -> list[demo.Scenario]:
+        return list(scenarios.values())
+
+    @app.get("/demo/scenarios/{scenario_id}")
+    def scenario_events(scenario_id: str, condition: str = DEFAULT_CONDITION) -> ScenarioEvents:
+        scenario = scenarios.get(scenario_id)
+        if scenario is None:
+            raise HTTPException(status_code=404, detail="unknown scenario")
+        rows = _rows_for(condition)
+        events = demo.build_scenario_events(
+            scenario,
+            condition,
+            meta=bundle_meta,
+            alerts=alert_index,
+            rows_by_bundle=rows,
+            call_log_path=call_log_path,
+        )
+        window = max((e.t for e in events), default=0.0)
+        return ScenarioEvents(
+            scenario=scenario, condition=condition, window_seconds=window, events=events
+        )
 
     return app
 
